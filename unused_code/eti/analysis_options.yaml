@@ -1,0 +1,5 @@
+include: package:mek_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - '**'

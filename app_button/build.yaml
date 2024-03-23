@@ -1,0 +1,45 @@
+global_options:
+  source_gen:combining_builder:
+    options:
+      ignore_for_file: [ no_literal_bool_comparisons, constant_identifier_names ]
+
+targets:
+  $default:
+    sources:
+      exclude:
+        - 'test/**'
+    builders:
+      source_gen:combining_builder:
+        generate_for:
+          - '**/*_dto.dart'
+          - '**/*_dvo.dart'
+          - '**/*_model.dart'
+          - '**/*blocs.dart'
+          - '**/*_data.dart'
+          - '**/*routes.dart'
+
+      mek_data_class_generator|data_class:
+        generate_for:
+          - '**/*_dto.dart'
+          - '**/*_dvo.dart'
+          - '**/*_model.dart'
+          - '**/*blocs.dart'
+          - '**/*_data.dart'
+        options:
+          page_width: 100
+          changes_visible: false
+          fields_class_visible: false
+
+      json_serializable:json_serializable:
+        generate_for:
+          - '**/*_dto.dart'
+          - '**/*_dvo.dart'
+          - '**/*_data.dart'
+        options:
+          explicit_to_json: true
+          create_factory: false
+          create_to_json: false
+
+      go_router_builder:
+        generate_for:
+          - '**/*routes.dart'

@@ -1,0 +1,145 @@
+name: mek_gasol
+description: A new Flutter project.
+version: 1.0.0
+publish_to: "none"
+
+environment:
+  sdk: '>=3.2.0 <3.4.0'
+  flutter: '>=3.19.0 <3.20.0'
+
+scripts:
+  bootstrap: >-
+    dart pub global activate rps 0.7.0 &&
+    dart pub global activate flutterfire_cli 0.2.7 &&
+    flutterfire configure --yes --out=lib/apis/firebase/firebase_options.dart
+
+  run:server: flutter run -d web-server --web-port 8080 --web-hostname 0.0.0.0 --dart-define-from-file _/.env.json --web-renderer html # canvaskit
+
+  # To generate .g files:
+  runner:watch: dart run build_runner watch --delete-conflicting-outputs
+  # To generate assets: https://pub.dev/packages/mek_assets
+  generate:assets: >-
+    dart pub global activate mek_assets 1.1.1 &&
+    dart pub global run mek_assets build
+  # To generate launchers icons: https://pub.dev/packages/flutter_launcher_icons
+#    dart pub global run mek image --input=assets/logo.png --square=0x00000000
+  generate:icons: |-
+    dart pub global run mek image --input=assets/logo.png --alpha=0xffffff --output=assets/logo_ios.png &&
+    dart pub global activate flutter_launcher_icons 0.13.1 &&
+    dart pub global run flutter_launcher_icons
+
+  deploy: >-
+    flutter build web --dart-define-from-file=./_/.env.prod &&
+    firebase deploy --only=hosting
+
+  # Integration tools
+  integration: rps check-format && rps analyze
+  check-format: >-
+    dart format --line-length 100 --set-exit-if-changed --output none
+    $(find . ! -path "./.dart_tool/**" ! -path "./build/**" -name "*.dart" ! -name "*.g.dart")
+  analyze: flutter analyze --no-fatal-infos
+
+dependencies:
+  flutter: { sdk: flutter }
+
+# DATA
+  firebase_core: ^2.27.1
+  firebase_auth: ^4.17.9
+  cloud_firestore: ^4.15.9
+  firebase_storage: ^11.6.10
+
+# DOMAIN
+  mek_data_class: ^1.4.0
+  json_annotation: ^4.8.1
+
+  collection: ^1.18.0
+  rxdart: ^0.27.7
+  pure_extensions: ^5.0.0
+  intl: ^0.18.1
+  logging: ^1.2.0
+
+  bloc: ^8.1.3
+  decimal: ^2.3.3
+  version: ^3.0.2
+  fast_immutable_collections: ^10.2.1
+
+# PRESENTATION
+  riverbloc: ^2.2.0
+  flutter_riverpod: ^2.5.1
+  go_router: ^13.2.1
+  url_launcher: ^6.2.5
+  package_info_plus: ^4.2.0
+
+  core: { path: ../core }
+  mek: { path: ../../packages/mek_framework }
+
+dev_dependencies:
+  mek_lints: ^4.0.0
+
+  build_runner: ^2.4.8
+  mek_data_class_generator: ^1.5.1
+  json_serializable: ^6.7.1
+  go_router_builder: ^2.4.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    # mek_assets GENERATED CODE - DO NOT MODIFY BY HAND
+    - assets/ravioli/ravioli_carne.png
+    - assets/ravioli/ravioli_gamberi.png
+    - assets/ravioli/ravioli_verdure.png
+    - assets/ravioli/ravioli_xiao_long_bao.png
+    - assets/first_courses/spaghetti_uovo.png
+    - assets/first_courses/riso_gamberetti.png
+    - assets/first_courses/riso_cantonese.png
+    - assets/first_courses/gnocchi_riso.png
+    - assets/first_courses/spaghetti_udon.png
+    - assets/first_courses/riso_verdure_miste.png
+    # mek_assets
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/assets-and-images/#resolution-aware.
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/assets-and-images/#from-packages
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/#from-packages
+
+mek_assets:
+  format: single
+  page_width: 100
+  groups:
+    - input_dir: assets
+      output_dir: lib/shared/data
+      class_name: R
+      output_file_name: r
+
+flutter_icons:
+  image_path: "assets/logo.png"
+  android: true
+  ios: true
+  image_path_ios: "assets/logo_ios.png"
+  web:
+    generate: true
+    background_color: "#ffffff"
+    theme_color: "#ffffff"
+  macos:
+    generate: true

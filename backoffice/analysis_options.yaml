@@ -1,0 +1,20 @@
+include: package:mek_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - lib/core.dart
+
+# https://dart.dev/tools/linter-rules
+# https://dart-lang.github.io/linter/lints/index.html.
+linter:
+  rules:
+    implicit_reopen: true
+    invalid_case_patterns: true
+    no_default_cases: false
+    unnecessary_null_checks: true
+    use_build_context_synchronously: true
+    use_late_for_private_fields_and_variables: true
+    use_super_parameters: true
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
