@@ -1,26 +1,13 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:core/src/features/additions/additions_providers.dart';
-import 'package:core/src/features/additions/dto/addition_dto.dart';
-import 'package:core/src/features/carts/dto/cart_dto.dart';
-import 'package:core/src/features/carts/models/cart_model.dart';
-import 'package:core/src/features/carts/repositories/cart_items_repository.dart';
-import 'package:core/src/features/carts/repositories/carts_repository.dart';
-import 'package:core/src/features/carts/repositories/local_cart_items_repository.dart';
-import 'package:core/src/features/ingredients/ingredients_providers.dart';
-import 'package:core/src/features/orders/repositories/order_items_repository.dart';
-import 'package:core/src/features/orders/repositories/orders_repository.dart';
-import 'package:core/src/features/products/products_providers.dart';
-import 'package:core/src/features/products/repositories/products_repository.dart';
-import 'package:core/src/features/users/dto/user_dto.dart';
-import 'package:core/src/features/users/users_providers.dart';
-import 'package:core/src/shared/data/identifiable.dart';
+import 'package:core/core.dart';
 import 'package:core/src/utils/dart_utils.dart';
 import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_extensions/pure_extensions.dart';
+import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 
 abstract class CartsProviders {
   static final personal = FutureProvider.family((ref, String organizationId) async {
@@ -87,12 +74,13 @@ abstract class CartsProviders {
     }
   });
 
-  static Future<void> create(Ref ref, String organizationId, {required String title}) async {
+  static Future<void> create(MutationRef ref, String organizationId,
+      {required String title}) async {
     await CartsRepository.instance.create(organizationId, isPublic: true, title: title);
   }
 
-  static Future<void> sendOrder(
-    Ref ref,
+  static Future<String> sendOrder(
+    MutationRef ref,
     String organizationId, {
     required CartModel cart,
     required Iterable<CartItemModel> items,
@@ -108,7 +96,7 @@ abstract class CartsProviders {
       payerId: userId,
       cartId: cart.id,
       membersIds: items.expand((e) => e.buyers.map((e) => e.id)).toList(),
-      place: place?.nullIfEmpty(),
+      place: place?.nullIfEmpty,
       payedAmount: total,
     );
     await Future.wait(items.map((e) async {
@@ -129,9 +117,11 @@ abstract class CartsProviders {
     await Future.wait(items.map((e) async {
       await CartItemsRepository.instance.remove(cart.id, e.id);
     }));
+
+    return orderId;
   }
 
-  static Future<void> join(Ref ref, String organizationId, String cartId) async {
+  static Future<void> join(MutationRef ref, String organizationId, String cartId) async {
     final user = await ref.read(UsersProviders.current.future);
     if (user == null) throw MissingCredentialsFailure();
     await CartsRepository.instance.addMember(organizationId, cartId, userId: user.id);
@@ -182,7 +172,7 @@ abstract class CartItemsProviders {
   });
 
   static Future<void> upsert(
-    Ref ref,
+    MutationRef ref,
     String organizationId,
     String cartId, {
     String? itemId,
@@ -214,13 +204,34 @@ abstract class CartItemsProviders {
     await CartItemsRepository.instance.upsert(targetCartId, item);
   }
 
-  static Future<void> remove(Ref ref, String cartId, String itemId) async {
+  static Future<void> remove(MutationRef ref, String cartId, String itemId) async {
     if (cartId == CartModel.localId) {
       await LocalCartItemsRepository.instance.remove(itemId);
       return;
     }
     assert(cartId != CartModel.temporaryId, 'Item not exist in cart because it is temporary item');
     await CartItemsRepository.instance.remove(cartId, itemId);
+  }
+
+  static Future<void> upsertFromOrder(
+    MutationRef ref,
+    String organizationId,
+    String cartId,
+    IList<OrderItemModel> items,
+  ) async {
+    for (final item in items) {
+      await upsert(
+        ref,
+        organizationId,
+        cartId,
+        productId: item.product.id,
+        buyers: item.buyers,
+        ingredientsAdded: item.ingredientsAdded,
+        ingredientsRemoved: item.ingredientsRemoved,
+        levels: item.levels.map((key, value) => MapEntry(key.id, value)),
+        quantity: item.quantity,
+      );
+    }
   }
 
   static final _all = StreamProvider.family((ref, String cartId) {

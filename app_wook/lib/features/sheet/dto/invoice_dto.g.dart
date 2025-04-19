@@ -1,5 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
+// ignore_for_file: unused_field
+
 part of 'invoice_dto.dart';
 
 // **************************************************************************
@@ -42,28 +44,6 @@ mixin _$InvoiceDto {
       .toString();
 }
 
-class _InvoiceDtoFields {
-  // ignore: unused_element
-  const _InvoiceDtoFields([this._path = '']);
-
-  final String _path;
-
-  String get id => '${_path}id';
-
-  String get orderId => '${_path}orderId';
-
-  String get payerId => '${_path}payerId';
-
-  String get createdAt => '${_path}createdAt';
-
-  String get membersIds => '${_path}membersIds';
-
-  String get items => '${_path}items';
-
-  @override
-  String toString() => _path.isEmpty ? '_InvoiceDtoFields()' : _path;
-}
-
 mixin _$InvoiceItemDto {
   InvoiceItemDto get _self => this as InvoiceItemDto;
   @override
@@ -97,7 +77,7 @@ mixin _$InvoiceItemDto {
 
 InvoiceDto _$InvoiceDtoFromJson(Map<String, dynamic> json) => InvoiceDto(
       id: json['id'] as String,
-      orderId: json['orderId'] as String,
+      orderId: json['orderId'] as String?,
       payerId: json['payerId'] as String,
       createdAt:
           const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
@@ -109,6 +89,15 @@ InvoiceDto _$InvoiceDtoFromJson(Map<String, dynamic> json) => InvoiceDto(
             MapEntry(k, InvoiceItemDto.fromJson(e as Map<String, dynamic>)),
       ),
     );
+
+abstract final class _$InvoiceDtoJsonKeys {
+  static const String id = 'id';
+  static const String orderId = 'orderId';
+  static const String payerId = 'payerId';
+  static const String createdAt = 'createdAt';
+  static const String membersIds = 'membersIds';
+  static const String items = 'items';
+}
 
 Map<String, dynamic> _$InvoiceDtoToJson(InvoiceDto instance) =>
     <String, dynamic>{

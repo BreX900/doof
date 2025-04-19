@@ -14,7 +14,7 @@ class ProductsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (products.isEmpty) {
-      return const InfoTile(
+      return const InfoView(
         title: Text('🫑 Non ci sono prodotti... 🫑\n🍽 Beh, cambia categoria! 🍽'),
       );
     }

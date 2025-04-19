@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:backoffice/shared/widgets/admin_body_layout.dart';
-import 'package:backoffice/shared/widgets/bottom_button_bar.dart';
 import 'package:backoffice/shared/widgets/pointed_list.dart';
 import 'package:backoffice/shared/widgets/sliver_cards_layout.dart';
 import 'package:backoffice/shared/widgets/sliver_fields_layout.dart';
@@ -82,7 +81,7 @@ class _AdminProductScreenState extends ConsumerState<AdminOrderScreen> with Asyn
   Widget build(BuildContext context) {
     final state = ref.watch(widget.stateProvider);
     final items = state.valueOrNull;
-    final isIdle = ref.watchIdle(mutations: [_update]);
+    final isIdle = !ref.watchIsMutating([_update]);
 
     final formats = AppFormats.of(context);
 
@@ -142,7 +141,7 @@ class _AdminProductScreenState extends ConsumerState<AdminOrderScreen> with Asyn
       ),
       FieldText.from(
         value: order.payedAmount,
-        converter: FieldConvert.decimal(locale: Localizations.localeOf(context)),
+        converter: FieldConvert.decimalFrom(locale: Localizations.localeOf(context)),
         decoration: const InputDecoration(labelText: 'Payed Amount'),
       ),
     ];

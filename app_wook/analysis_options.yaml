@@ -1,5 +1,14 @@
 include: package:mek_lints/flutter.yaml
 
+formatter:
+  page_width: 100
+
+analyzer:
+  exclude:
+    - 'lib/apis/firebase/firebase_options.dart'
+  errors:
+    no_wildcard_variable_uses: ignore
+
 # https://dart.dev/tools/linter-rules
 # https://dart-lang.github.io/linter/lints/index.html.
 linter:

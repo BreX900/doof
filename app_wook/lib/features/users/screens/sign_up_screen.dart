@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
-import 'package:mek_gasol/shared/widgets/bottom_button_bar.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -15,42 +13,43 @@ class SignUpScreen extends ConsumerStatefulWidget {
 }
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
-  final _emailFb = FieldBloc(
+  final _emailFb = FormControlTyped(
     initialValue: '',
-    validator: Validation.email,
+    validators: [ValidatorsTyped.email()],
   );
-  final _passwordFb = FieldBloc(
+  final _passwordFb = FormControlTyped(
     initialValue: '',
-    validator: Validation.password,
+    validators: [ValidatorsTyped.password()],
   );
-  final _passwordConfirmationFb = FieldBloc(
+  final _passwordConfirmationFb = FormControlTyped(
     initialValue: '',
-    validator: Validation.password,
+    validators: [ValidatorsTyped.password()],
   );
 
-  late final _form = ListFieldBloc<void>(
-    fieldBlocs: [_emailFb, _passwordFb, _passwordConfirmationFb],
-  );
+  late final _form = FormArray<void>([_emailFb, _passwordFb, _passwordConfirmationFb]);
 
   @override
   void dispose() {
-    unawaited(_form.close());
+    _form.dispose();
     super.dispose();
   }
 
   late final _signUp = ref.mutation((ref, _) async {
     await UsersProviders.signUp(
       ref,
-      email: _emailFb.state.value,
-      password: _passwordFb.state.value,
-      passwordConfirmation: _passwordConfirmationFb.state.value,
+      email: _emailFb.value,
+      password: _passwordFb.value,
+      passwordConfirmation: _passwordConfirmationFb.value,
       organizationId: Env.organizationId,
     );
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
   });
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = ref.watchIdle(mutations: [_signUp]);
+    final isIdle = !ref.watchIsMutating([_signUp]);
+    final signUp = _form.handleSubmit(_signUp.run);
 
     return Scaffold(
       appBar: AppBar(
@@ -60,7 +59,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         children: [
           Expanded(
             child: ElevatedButton(
-              onPressed: isIdle ? ref.handleSubmit(_form, () => _signUp(null)) : null,
+              onPressed: isIdle ? () => signUp(null) : null,
               child: const Text('Viva Dart!'),
             ),
           ),
@@ -70,26 +69,23 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         minimum: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            FieldText(
-              fieldBloc: _emailFb,
-              converter: FieldConvert.text,
-              type: const TextFieldType.email(),
+            ReactiveTypedTextField(
+              formControl: _emailFb,
+              variant: const TextFieldVariant.email(),
               decoration: const InputDecoration(
                 labelText: 'Email',
               ),
             ),
-            FieldText(
-              fieldBloc: _passwordFb,
-              converter: FieldConvert.text,
-              type: const TextFieldType.password(),
+            ReactiveTypedTextField(
+              formControl: _passwordFb,
+              variant: const TextFieldVariant.password(),
               decoration: const InputDecoration(
                 labelText: 'Password',
               ),
             ),
-            FieldText(
-              fieldBloc: _passwordConfirmationFb,
-              converter: FieldConvert.text,
-              type: const TextFieldType.password(),
+            ReactiveTypedTextField(
+              formControl: _passwordConfirmationFb,
+              variant: const TextFieldVariant.password(),
               decoration: const InputDecoration(
                 labelText: 'Password Confirmation',
               ),

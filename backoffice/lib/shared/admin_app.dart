@@ -20,30 +20,36 @@ Widget buildAdminApp() {
     }
   }
 
-  final child = CoreApp(
-    initialLocation: const SignInRoute().location,
-    redirect: (state, status) {
-      switch (status) {
-        case SignStatus.none:
-          return redirect(state, isSigned: false);
-        case SignStatus.partial:
-        case SignStatus.unverified:
-        case SignStatus.full:
-          return redirect(state, isSigned: true);
-      }
-    },
-    routes: {
-      null: [$signInRoute, $adminAreaRoute],
-    },
-    localizationsDelegates: const [AppFormats.delegate],
-  );
+  final child = Builder(builder: (context) {
+    final theme = MekTheme.build(context: context);
 
-  return MultiDispenser(
-    dispensable: const [
-      DataBuilders(
-        errorBuilder: ErrorView.buildByData,
+    return CoreApp(
+      initialLocation: const SignInRoute().location,
+      redirect: (state, status) {
+        switch (status) {
+          case SignStatus.none:
+            return redirect(state, isSigned: false);
+          case SignStatus.partial:
+          case SignStatus.unverified:
+          case SignStatus.full:
+            return redirect(state, isSigned: true);
+        }
+      },
+      routes: {
+        null: [$signInRoute, $adminAreaRoute],
+      },
+      localizationsDelegates: const [AppFormats.delegate],
+      theme: theme.copyWith(
+        extensions: [
+          ...theme.extensions.values,
+          const DataBuilders(
+            errorListener: CoreUtils.showErrorByData,
+            errorBuilder: ErrorView.buildByData,
+          )
+        ],
       ),
-    ],
-    child: child,
-  );
+    );
+  });
+
+  return child;
 }

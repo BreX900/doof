@@ -105,15 +105,9 @@ class _CoreAppState extends State<CoreApp> {
       ],
       debugShowCheckedModeBanner: false,
       title: 'Doof App',
-      theme: widget.theme ?? MekTheme.build(),
+      theme: widget.theme ?? MekTheme.build(context: context),
       routerConfig: _router,
-      builder: (context, child) {
-        return AsyncConfig.from(
-          context: context,
-          refreshable: false,
-          child: child!,
-        );
-      },
+      builder: (context, child) => MekReactiveFormConfig(child: child!),
     );
 
     return ProviderScope(

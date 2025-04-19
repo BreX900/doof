@@ -21,7 +21,6 @@ import 'package:app_button/shared/navigation/areas/store_bottom_bar.dart'
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
-import 'package:pure_extensions/pure_extensions.dart';
 
 part 'routes.g.dart';
 
@@ -133,7 +132,7 @@ class StoreRoute extends ShellRouteData {
     final info = GoRouter.of(context).routeInformationProvider.value;
     if (!info.uri.path.startsWith('/store/')) return navigator;
 
-    final organizationId = state.pathParameters.get('organizationId');
+    final organizationId = state.pathParameters['organizationId']!;
 
     return DeferredLibraryBuilder(
       loader: store_bottom_bar.loadLibrary,

@@ -4,15 +4,15 @@ import 'package:mek_data_class/mek_data_class.dart';
 
 part 'ingredient_dto.g.dart';
 
+typedef LevelDtoFields = _$LevelDtoJsonKeys;
+
 /// Examples:
 /// [min] <= [initial] <= [max] | [offset] ([initialOffset])
 /// 0 <= 2 <= 5 => 5 (0.4)
 /// 1 <= 2 <= 5 => 4 (0.5)
-@DataClass(createFieldsClass: true)
-@DtoSerializable()
+@DataClass()
+@DtoSerializable(createJsonKeys: true)
 class LevelDto with Identifiable, _$LevelDto {
-  static const fields = _LevelDtoFields();
-
   @override
   final String id;
   final String title;

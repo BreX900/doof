@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,11 +12,11 @@ class CartUpsertDialog extends ConsumerStatefulWidget with TypedWidgetMixin<void
 }
 
 class _CartCreateDialogState extends ConsumerState<CartUpsertDialog> {
-  final _titleFb = FieldBloc(initialValue: '');
+  final _titleFb = FormControlTyped(initialValue: '');
 
   @override
   void dispose() {
-    unawaited(_titleFb.close());
+    _titleFb.dispose();
     super.dispose();
   }
 
@@ -26,21 +24,23 @@ class _CartCreateDialogState extends ConsumerState<CartUpsertDialog> {
     await CartsProviders.create(
       ref,
       Env.organizationId,
-      title: _titleFb.state.value,
+      title: _titleFb.value,
     );
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
   }, onSuccess: (_, __) {
     widget.pop(context);
   });
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = ref.watchIdle(mutations: [_create]);
+    final isIdle = !ref.watchIsMutating([_create]);
+    final create = _titleFb.handleSubmit(_create.run);
 
     return AlertDialog(
       title: const Text('Create Cart'),
-      content: FieldText(
-        fieldBloc: _titleFb,
-        converter: FieldConvert.text,
+      content: ReactiveTypedTextField(
+        formControl: _titleFb,
         decoration: const InputDecoration(
           labelText: 'Title',
         ),
@@ -51,7 +51,7 @@ class _CartCreateDialogState extends ConsumerState<CartUpsertDialog> {
           child: const Text('Anulla'),
         ),
         ElevatedButton(
-          onPressed: isIdle ? ref.handleSubmit(_titleFb, () => _create(null)) : null,
+          onPressed: isIdle ? () => create(null) : null,
           child: const Text('Crea'),
         ),
       ],

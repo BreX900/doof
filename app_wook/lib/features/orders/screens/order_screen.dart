@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/core.dart';
 import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
@@ -9,8 +11,9 @@ import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/features/orders/utils/orders_utils.dart';
 import 'package:mek_gasol/features/products/utils/purchasable_products_utils.dart';
 import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
+import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 
-final _stateProvider = FutureProvider.autoDispose.family((ref, String orderId) async {
+final _screenProvider = FutureProvider.autoDispose.family((ref, String orderId) async {
   final userId = await ref.watch(UsersProviders.currentId.future);
   if (userId == null) throw MissingCredentialsFailure();
 
@@ -26,10 +29,12 @@ final _stateProvider = FutureProvider.autoDispose.family((ref, String orderId) a
 
 class OrderScreen extends ConsumerStatefulWidget {
   final String orderId;
+  final bool isNew;
 
   const OrderScreen({
     super.key,
     required this.orderId,
+    required this.isNew,
   });
 
   @override
@@ -37,10 +42,21 @@ class OrderScreen extends ConsumerStatefulWidget {
 }
 
 class _OrderScreenState extends ConsumerState<OrderScreen> {
+  AutoDisposeFutureProvider<({OrderModel order, IList<OrderItemModel> orderItems, String userId})>
+      get _provider => _screenProvider(widget.orderId);
+
   IList<OrderItemModel>? _selection;
 
-  AutoDisposeFutureProvider<({OrderModel order, IList<OrderItemModel> orderItems, String userId})>
-      get stateProvider => _stateProvider(widget.orderId);
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_init());
+  }
+
+  Future<void> _init() async {
+    final data = await ref.read(_provider.futureOfData);
+    if (widget.isNew) _sendMessage(data.orderItems);
+  }
 
   late final _addItemsToCart = ref.mutation((ref, IList<OrderItemModel> items) async {
     final userId = await ref.read(UsersProviders.currentId.future);
@@ -59,6 +75,8 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
         quantity: item.quantity,
       );
     }
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
   }, onSuccess: (_, __) {
     setState(() {
       _selection = null;
@@ -71,6 +89,8 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
   late final _sendMessage = ref.mutation((ref, IList<OrderItemModel> items) async {
     final message = OrdersUtils.generateMessage(items);
     await PlatformUtils.shareToWhatsApp(Env.phoneNumber, message);
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
   });
 
   void _toggleSelection(String userId, IList<OrderItemModel> items) {
@@ -85,12 +105,12 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(stateProvider);
+    final state = ref.watch(_provider);
     final data = state.valueOrNull;
     final formats = AppFormats.of(context);
     final selection = _selection;
 
-    final isIdle = ref.watchIdle(mutations: [_addItemsToCart, _sendMessage]);
+    final isIdle = !ref.watchIsMutating([_addItemsToCart, _sendMessage]);
 
     Widget? floatingActionButton;
     if (selection != null) {
@@ -106,7 +126,9 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
         actions: [
           IconButton(
             tooltip: 'Create invoice.',
-            onPressed: () => OrderInvoiceRoute(widget.orderId).go(context),
+            onPressed: data?.order.status == OrderStatus.accepting
+                ? () => OrderInvoiceRoute(widget.orderId).go(context)
+                : null,
             icon: const Icon(Icons.create_new_folder_outlined),
           ),
           IconButton(
@@ -124,6 +146,7 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
       ),
       floatingActionButton: floatingActionButton,
       body: state.buildView(
+        onRefresh: () => ref.invalidateWithAncestors(_provider),
         data: (items) => _buildBody(
           context,
           ref,
@@ -169,7 +192,7 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
         }
 
         Widget? trailing;
-        if (selection != null) {
+        if (selection != null && item.buyers.any((e) => e.id == userId)) {
           trailing = Checkbox(
             value: selection.contains(item),
             onChanged: (shouldSelected) => toggleItem(selection, shouldSelected!),

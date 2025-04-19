@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks
+// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks, unused_field
 
 part of 'category_dto.dart';
 
@@ -35,31 +35,21 @@ mixin _$CategoryDto {
       .toString();
 }
 
-class _CategoryDtoFields {
-  // ignore: unused_element
-  const _CategoryDtoFields([this._path = '']);
-
-  final String _path;
-
-  String get id => '${_path}id';
-
-  String get weight => '${_path}weight';
-
-  String get title => '${_path}title';
-
-  @override
-  String toString() => _path.isEmpty ? '_CategoryDtoFields()' : _path;
-}
-
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
 CategoryDto _$CategoryDtoFromJson(Map<String, dynamic> json) => CategoryDto(
       id: json['id'] as String,
-      weight: json['weight'] as int,
+      weight: (json['weight'] as num).toInt(),
       title: json['title'] as String,
     );
+
+abstract final class _$CategoryDtoJsonKeys {
+  static const String id = 'id';
+  static const String weight = 'weight';
+  static const String title = 'title';
+}
 
 Map<String, dynamic> _$CategoryDtoToJson(CategoryDto instance) =>
     <String, dynamic>{

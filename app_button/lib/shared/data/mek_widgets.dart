@@ -45,7 +45,7 @@ class ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final child = InfoTile(
+    final child = InfoView(
       onTap: error is MissingCredentialsFailure ? null : onTap,
       icon: const Icon(Icons.error_outline),
       title: _buildTitle(error),

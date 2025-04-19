@@ -10,8 +10,8 @@ import 'package:core/src/features/users/users_providers.dart';
 import 'package:core/src/shared/core_utils.dart';
 import 'package:core/src/shared/data/identifiable.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
-import 'package:riverbloc/riverbloc.dart';
 
 abstract class OrdersProviders {
   static final all = StreamProvider.family(
@@ -30,7 +30,7 @@ abstract class OrdersProviders {
     }
   });
 
-  static Future<void> delete(Ref ref, String organizationId, OrderModel order) async {
+  static Future<void> delete(MutationRef ref, String organizationId, OrderModel order) async {
     if (order.status != OrderStatus.accepting) throw StateError('Cant delete draft order');
 
     final items = await ref.read(OrderItemsProviders.all((organizationId, order.id)).future);
@@ -43,7 +43,7 @@ abstract class OrdersProviders {
 
   /// ========== ADMIN
 
-  static final pageCursor = BlocProvider<CursorBloc, CursorState>((ref) {
+  static final pageCursor = StateNotifierProvider<CursorBloc, CursorState>((ref) {
     return CursorBloc(size: CoreUtils.tableSize);
   });
 
@@ -55,7 +55,7 @@ abstract class OrdersProviders {
     final onPage = OrdersRepository.instance.watchPage(organizationId, cursor);
 
     await for (final page in onPage) {
-      ref.read(pageCursor.bloc).registerOffsets(page.ids, page: cursor.page);
+      ref.read(pageCursor.notifier).registerOffsets(page.ids, page: cursor.page);
       yield page.map((e) => _modelFrom(e, users: users)).toList();
     }
   });
@@ -70,7 +70,7 @@ abstract class OrdersProviders {
   });
 
   static Future<void> update(
-    Ref ref,
+    MutationRef ref,
     String organizationId,
     String orderId, {
     required OrderStatus status,

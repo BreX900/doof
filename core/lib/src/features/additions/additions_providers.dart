@@ -3,8 +3,8 @@ import 'package:core/src/features/additions/repositories/additions_repository.da
 import 'package:core/src/shared/core_utils.dart';
 import 'package:core/src/shared/data/identifiable.dart';
 import 'package:decimal/decimal.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
-import 'package:riverbloc/riverbloc.dart';
 
 abstract class IngredientsProviders {
   static final all = FutureProvider.family((ref, String organizationId) async {
@@ -13,7 +13,7 @@ abstract class IngredientsProviders {
 
   /// ========== ADMIN
 
-  static final pageCursor = BlocProvider<CursorBloc, CursorState>((ref) {
+  static final pageCursor = StateNotifierProvider<CursorBloc, CursorState>((ref) {
     return CursorBloc(size: CoreUtils.tableSize);
   });
 
@@ -21,7 +21,7 @@ abstract class IngredientsProviders {
     final cursor = ref.watch(pageCursor.select((state) => state.pageCursor));
 
     final page = await IngredientsRepository.instance.fetchPage(organizationId, cursor);
-    ref.read(pageCursor.bloc).registerOffsets(page.ids);
+    ref.read(pageCursor.notifier).registerOffsets(page.ids);
 
     return page;
   });
@@ -33,7 +33,7 @@ abstract class IngredientsProviders {
   });
 
   static Future<void> upsert(
-    MutatorRef<void> ref, {
+    MutationRef<void> ref, {
     required String organizationId,
     required String? ingredientId,
     required String title,

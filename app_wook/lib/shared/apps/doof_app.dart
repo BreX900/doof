@@ -1,5 +1,4 @@
 import 'package:core/core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
@@ -21,15 +20,6 @@ class DoofApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = PlatformDispatcher.instance.platformBrightness;
-    const colorPrimary = Color(0xFFFF0200);
-
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: colorPrimary,
-      brightness: brightness,
-      background: brightness == Brightness.light ? null : Colors.black,
-    );
-
     return CoreApp(
       initialLocation: initialLocation,
       redirect: (state, status) {
@@ -56,7 +46,8 @@ class DoofApp extends StatelessWidget {
       },
       localizationsDelegates: const [AppFormats.delegate],
       theme: MekTheme.build(
-        colorScheme: colorScheme,
+        context: context,
+        colorScheme: MekTheme.buildColorScheme(context, Colors.red, Colors.red),
       ),
     );
   }

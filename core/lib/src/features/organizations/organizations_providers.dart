@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
-import 'package:riverbloc/riverbloc.dart';
 
 abstract class OrganizationsProviders {
   static final single = FutureProvider.family((ref, String organizationId) async {
@@ -9,7 +9,7 @@ abstract class OrganizationsProviders {
 
   /// ========== ADMIN
 
-  static final pageCursor = BlocProvider<CursorBloc, CursorState>((ref) {
+  static final pageCursor = StateNotifierProvider<CursorBloc, CursorState>((ref) {
     return CursorBloc(size: CoreUtils.tableSize);
   });
 
@@ -17,7 +17,7 @@ abstract class OrganizationsProviders {
     final cursor = ref.watch(pageCursor.select((state) => state.pageCursor));
 
     final page = await OrganizationsRepository.instance.fetchPage(cursor);
-    ref.read(pageCursor.bloc).registerOffsets(page.ids);
+    ref.read(pageCursor.notifier).registerOffsets(page.ids);
 
     return page;
   });

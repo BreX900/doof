@@ -10,6 +10,7 @@ import 'package:core/src/utils/env.dart';
 import 'package:core/src/utils/logger.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mek/mek.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum SignStatus { none, unverified, partial, full }
@@ -83,7 +84,7 @@ abstract class UsersProviders {
   });
 
   static Future<void> signIn(
-    Ref ref, {
+    MutationRef ref, {
     required String email,
     required String password,
     required String? organizationId,
@@ -94,7 +95,7 @@ abstract class UsersProviders {
   }
 
   static Future<void> signUp(
-    Ref ref, {
+    MutationRef ref, {
     required String email,
     required String password,
     required String passwordConfirmation,
@@ -106,12 +107,12 @@ abstract class UsersProviders {
     await _moveCartItemsOnline(user, organizationId);
   }
 
-  static Future<String> signInWithPhoneNumber(Ref ref, String phoneNumber) async {
+  static Future<String> signInWithPhoneNumber(MutationRef ref, String phoneNumber) async {
     return await UsersRepository.instance.signInWithPhoneNumber(phoneNumber);
   }
 
   static Future<void> confirmPhoneNumberVerification(
-    Ref ref,
+    MutationRef ref,
     String verificationId, {
     required String code,
     required String? organizationId,
@@ -125,7 +126,7 @@ abstract class UsersProviders {
     await Instances.auth.signOut();
   }
 
-  static Future<void> sendPasswordResetEmail(Ref ref, String email) async {
+  static Future<void> sendPasswordResetEmail(MutationRef ref, String email) async {
     await Instances.auth.sendPasswordResetEmail(email: email);
   }
 

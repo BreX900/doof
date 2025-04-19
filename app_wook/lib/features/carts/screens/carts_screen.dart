@@ -8,8 +8,9 @@ import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/features/products/utils/purchasable_products_utils.dart';
 import 'package:mek_gasol/shared/navigation/areas/user_area.dart';
 import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
+import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 
-final _stateProvider = FutureProvider.autoDispose((ref) async {
+final _screenProvider = FutureProvider.autoDispose((ref) async {
   final userId = await ref.watch(UsersProviders.currentId.future);
   if (userId == null) throw MissingCredentialsFailure();
 
@@ -26,40 +27,51 @@ final _stateProvider = FutureProvider.autoDispose((ref) async {
   return (userId: userId, productsInCarts: productsInCarts);
 });
 
-class CartsScreen extends ConsumerStatefulWidget with AsyncConsumerStatefulWidget {
-  CartsScreen({super.key});
-
-  late final stateProvider = _stateProvider;
-
-  @override
-  ProviderBase<Object?> get asyncProvider => stateProvider;
+class CartsScreen extends ConsumerStatefulWidget {
+  const CartsScreen({super.key});
 
   @override
   ConsumerState<CartsScreen> createState() => _CartsScreenState();
 }
 
-class _CartsScreenState extends ConsumerState<CartsScreen> with AsyncConsumerState {
-  late final _removeItem = ref.mutation((ref, (CartModel cart, CartItemModel item) args) async {
-    final (cart, item) = args;
+class _CartsScreenState extends ConsumerState<CartsScreen> {
+  AutoDisposeFutureProvider<
+          ({IMap<CartModel, IList<CartItemModel>> productsInCarts, String userId})>
+      get _provider => _screenProvider;
+
+  var _pendingItems = const ISet<(String, String)>.empty();
+
+  late final _removeItem = ref.mutation((ref, (CartModel cart, CartItemModel item) __) async {
+    final (cart, item) = __;
+    setState(() => _pendingItems = _pendingItems.add((cart.id, item.id)));
     await CartItemsProviders.remove(ref, cart.id, item.id);
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
+  }, onFinish: (__, _, ___) {
+    final (cart, item) = __;
+    setState(() => _pendingItems = _pendingItems.remove((cart.id, item.id)));
   });
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(widget.stateProvider);
+    final state = ref.watch(_provider);
     final carts = state.valueOrNull?.productsInCarts ?? const IMapConst({});
 
     final Widget child = Scaffold(
       appBar: AppBar(
         title: const Text('Cart'),
       ),
-      body: AsyncViewBuilder(
-        state: state,
-        builder: (context, items) => _buildBody(
-          context,
-          ref,
-          userId: items.userId,
-          carts: items.productsInCarts,
+      body: state.buildView(
+        onRefresh: () => ref.invalidateWithAncestors(_provider),
+        data: (data) => _CartsBody(
+          state: this,
+          userId: data.userId,
+          carts: data.productsInCarts.map((cart, items) {
+            return MapEntry(
+              cart,
+              items.where((item) => !_pendingItems.contains((cart.id, item.id))).toIList(),
+            );
+          }),
         ),
       ),
     );
@@ -69,19 +81,23 @@ class _CartsScreenState extends ConsumerState<CartsScreen> with AsyncConsumerSta
       child: child,
     );
   }
+}
 
-  Widget _buildBody(
-    BuildContext context,
-    WidgetRef ref, {
-    required String? userId,
-    required IMap<CartModel, IList<CartItemModel>> carts,
-  }) {
-    final isIdle = ref.watchIdle(mutations: [_removeItem]);
+class _CartsBody extends ConsumerWidget {
+  final _CartsScreenState state;
+  final String? userId;
+  final IMap<CartModel, IList<CartItemModel>> carts;
+
+  const _CartsBody({required this.state, required this.userId, required this.carts});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isMutating = ref.watchIsMutating([state._removeItem]);
 
     final tabController = DefaultTabController.of(context);
     final formats = AppFormats.of(context);
 
-    final tabIndex = ref.watch(tabController.pick((listenable) => listenable.index));
+    final tabIndex = ref.watch(tabController.provider.index);
     final cartEntry = carts.entries.elementAt(tabIndex);
     final cart = cartEntry.key;
     final items = cartEntry.value;
@@ -91,7 +107,7 @@ class _CartsScreenState extends ConsumerState<CartsScreen> with AsyncConsumerSta
         .fold(Decimal.zero, (amount, e) => amount + e.individualCost);
 
     if (items.isEmpty) {
-      return InfoTile(
+      return InfoView(
         onTap: () => ref.read(UserArea.tab.notifier).state = UserAreaTab.products,
         title: const Text('😱 Non ci sono prodotti nel carrello! 😱\n🍾 Vai al menu! 🥙'),
       );
@@ -106,7 +122,7 @@ class _CartsScreenState extends ConsumerState<CartsScreen> with AsyncConsumerSta
 
     final buttons = SizedBox(
       width: double.infinity,
-      child: ElevatedButton.icon(
+      child: FilledButton.icon(
         onPressed: () => const OrderCheckoutRoute().go(context),
         icon: const Icon(Icons.send),
         label: const Text('Order'),
@@ -116,24 +132,14 @@ class _CartsScreenState extends ConsumerState<CartsScreen> with AsyncConsumerSta
     final itemsInLists = ProductItemListTile.buildLists(
       userId: userId,
       items: items,
-      builder: (context, item) {
-        return ProductItemListTile(
+      builder: (context, item) => Dismissible(
+        key: ValueKey(item),
+        onDismissed: !isMutating ? (_) => state._removeItem((cart, item)) : null,
+        child: ProductItemListTile(
           onTap: () => CartItemRoute(item.id).go(context),
           item: item,
-          trailing: PopupMenuButton(
-            enabled: isIdle,
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                onTap: () => _removeItem((cart, item)),
-                child: const ListTile(
-                  title: Text('Delete'),
-                  leading: Icon(Icons.delete),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+        ),
+      ),
     );
 
     return CustomScrollView(

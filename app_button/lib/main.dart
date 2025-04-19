@@ -1,6 +1,5 @@
 import 'package:app_button/apis/firebase/firebase_options.dart';
 import 'package:app_button/shared/app_theme.dart';
-import 'package:app_button/shared/data/mek_widgets.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:core/core.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,8 +17,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  MekUtils.errorTranslator = CoreUtils.translateError;
 
   // Fix many tasks scheduled at same time
   final container = ProviderContainer(
@@ -43,19 +40,12 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return UncontrolledProviderScope(
       container: container,
-      child: MultiDispenser(
-        dispensable: const [
-          DataBuilders(
-            errorBuilder: ErrorView.buildByData,
-          ),
-        ],
-        child: CoreApp(
-          initialLocation: const QrCodeRoute().location,
-          routes: {null: $appRoutes},
-          redirect: (context, status) => null,
-          localizationsDelegates: const [AppFormats.delegate],
-          theme: AppTheme.build(),
-        ),
+      child: CoreApp(
+        initialLocation: const QrCodeRoute().location,
+        routes: {null: $appRoutes},
+        redirect: (context, status) => null,
+        localizationsDelegates: const [AppFormats.delegate],
+        theme: AppTheme.build(),
       ),
     );
   }

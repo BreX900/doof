@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks
+// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks, unused_field
 
 part of 'ticket_dto.dart';
 
@@ -73,26 +73,6 @@ class _TicketDtoChanges {
       );
 }
 
-class _TicketDtoFields {
-  // ignore: unused_element
-  const _TicketDtoFields([this._path = '']);
-
-  final String _path;
-
-  String get id => '${_path}id';
-
-  String get createAt => '${_path}createAt';
-
-  String get updatedAt => '${_path}updatedAt';
-
-  String get status => '${_path}status';
-
-  String get place => '${_path}place';
-
-  @override
-  String toString() => _path.isEmpty ? '_TicketDtoFields()' : _path;
-}
-
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
@@ -106,6 +86,14 @@ TicketDto _$TicketDtoFromJson(Map<String, dynamic> json) => TicketDto(
       status: $enumDecode(_$TicketStatusEnumMap, json['status']),
       place: json['place'] as String,
     );
+
+abstract final class _$TicketDtoJsonKeys {
+  static const String id = 'id';
+  static const String createAt = 'createAt';
+  static const String updatedAt = 'updatedAt';
+  static const String status = 'status';
+  static const String place = 'place';
+}
 
 Map<String, dynamic> _$TicketDtoToJson(TicketDto instance) => <String, dynamic>{
       'id': instance.id,

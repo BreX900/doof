@@ -1,4 +1,3 @@
-import 'package:core/core.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +7,6 @@ import 'package:mek_gasol/apis/doof_migrations.dart';
 import 'package:mek_gasol/apis/firebase/firebase_options.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/shared/apps/user_app.dart';
-import 'package:mek_gasol/shared/data/mek_widgets.dart';
 import 'package:mek_gasol/shared/widgets/guards/modules_app.dart';
 import 'package:mek_gasol/shared/widgets/guards/modules_guard.dart';
 import 'package:mek_gasol/shared/widgets/guards/version_guard.dart';
@@ -26,10 +24,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  MekUtils.errorTranslator = CoreUtils.translateError;
-
   if (Env.flavour == EnvFlavour.frontend) {
-    _runApp(VersionGuard(
+    runApp(VersionGuard(
       child: buildUserApp(),
     ));
     // } else if (Env.flavour == EnvFlavour.backoffice) {
@@ -37,7 +33,7 @@ void main() async {
     //     child: buildAdminApp(),
     //   ));
   } else {
-    _runApp(AppsGuard(
+    runApp(AppsGuard(
       values: EnvFlavour.values,
       pickerBuilder: (context, isLoading) {
         return AppsApp(
@@ -75,15 +71,4 @@ void main() async {
       },
     ));
   }
-}
-
-void _runApp(Widget child) {
-  runApp(MultiDispenser(
-    dispensable: const [
-      DataBuilders(
-        errorBuilder: ErrorView.buildByData,
-      ),
-    ],
-    child: child,
-  ));
 }

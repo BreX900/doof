@@ -1,11 +1,13 @@
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/features/products/widgets/products_list.dart';
-import 'package:pure_extensions/pure_extensions.dart';
+import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
+import 'package:mekart/mekart.dart';
 
-final _stateProvider = FutureProvider.autoDispose((ref) async {
+final _screenProvider = FutureProvider.autoDispose((ref) async {
   final categories = await ref.watch(CategoriesProviders.all(Env.organizationId).future);
   final products = await ref.watch(ProductsProviders.all(Env.organizationId).future);
 
@@ -14,17 +16,19 @@ final _stateProvider = FutureProvider.autoDispose((ref) async {
   }).toMap();
 });
 
-class ProductsScreen extends AsyncConsumerWidget {
-  ProductsScreen({super.key});
-
-  late final stateProvider = _stateProvider;
+class ProductsScreen extends ConsumerStatefulWidget {
+  const ProductsScreen({super.key});
 
   @override
-  ProviderBase<Object?> get asyncProvider => stateProvider;
+  ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
+}
+
+class _ProductsScreenState extends ConsumerState<ProductsScreen> {
+  AutoDisposeFutureProvider<Map<CategoryDto, List<ProductModel>>> get _provider => _screenProvider;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(stateProvider);
+  Widget build(BuildContext context) {
+    final state = ref.watch(_provider);
     final items = state.valueOrNull;
 
     PreferredSizeWidget? tabBar;
@@ -44,9 +48,9 @@ class ProductsScreen extends AsyncConsumerWidget {
         title: const Text('Menu'),
         bottom: tabBar,
       ),
-      body: AsyncViewBuilder(
-        state: state,
-        builder: _buildBody,
+      body: state.buildView(
+        onRefresh: () => ref.invalidateWithAncestors(_provider),
+        data: _buildBody,
       ),
     );
 
@@ -59,8 +63,7 @@ class ProductsScreen extends AsyncConsumerWidget {
     return child;
   }
 
-  Widget _buildBody(
-      BuildContext context, Map<CategoryDto, List<ProductModel>> categorizedProducts) {
+  Widget _buildBody(Map<CategoryDto, List<ProductModel>> categorizedProducts) {
     return TabBarView(
       children: categorizedProducts.values.map((products) {
         return ProductsList(

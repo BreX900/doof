@@ -12,5 +12,43 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "mek-gasol",
+          "appId": "1:578583198489:android:b8839032b7cef76b112388",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "mek-gasol",
+          "appId": "1:578583198489:ios:c62f278bd29a0b4c112388",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "mek-gasol",
+          "appId": "1:578583198489:ios:65cc60f332b2495e112388",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/apis/firebase/firebase_options.dart": {
+          "projectId": "mek-gasol",
+          "configurations": {
+            "android": "1:578583198489:android:b8839032b7cef76b112388",
+            "ios": "1:578583198489:ios:c62f278bd29a0b4c112388",
+            "macos": "1:578583198489:ios:65cc60f332b2495e112388",
+            "web": "1:578583198489:web:69ad269ccbcb4378112388"
+          }
+        }
+      }
+    }
   }
 }

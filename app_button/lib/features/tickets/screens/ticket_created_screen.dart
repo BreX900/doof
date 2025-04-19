@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:app_button/apis/riverpod/safe_ref.dart';
 import 'package:app_button/shared/data/r.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:app_button/shared/widgets/app_info_view.dart';
@@ -10,9 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mek/mek.dart';
 
-final _stateProvider = FutureProvider.autoDispose.family((unsafeRef, String organizationId) async {
-  final ref = unsafeRef.safe;
-
+final _stateProvider = FutureProvider.autoDispose.family((ref, String organizationId) async {
   final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
 
   return (organization: organization);

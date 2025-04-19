@@ -4,11 +4,11 @@ import 'package:mek_data_class/mek_data_class.dart';
 
 part 'category_dto.g.dart';
 
-@DataClass(createFieldsClass: true)
-@DtoSerializable()
-class CategoryDto with Identifiable, _$CategoryDto implements Comparable<CategoryDto> {
-  static const fields = _CategoryDtoFields();
+typedef CategoryDtoFields = _$CategoryDtoJsonKeys;
 
+@DataClass()
+@DtoSerializable(createJsonKeys: true)
+class CategoryDto with Identifiable, _$CategoryDto implements Comparable<CategoryDto> {
   @override
   final String id;
   final int weight;

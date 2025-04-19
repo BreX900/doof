@@ -9,17 +9,17 @@ targets:
           - '**/*_dto.dart'
           - '**/*_dvo.dart'
           - '**/*_model.dart'
-          - '**/*blocs.dart'
           - '**/*routes.dart'
+        options:
+          ignore_for_file:
+            - unused_field
 
-      mek_data_class_generator|data_class:
+      mek_data_class_generator:
         generate_for:
           - '**/*_dto.dart'
           - '**/*_dvo.dart'
           - '**/*_model.dart'
-          - '**/*blocs.dart'
         options:
-          page_width: 100
           changes_visible: false
           fields_class_visible: false
 

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks
+// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks, unused_field
 
 part of 'addition_dto.dart';
 
@@ -38,24 +38,6 @@ mixin _$IngredientDto {
       .toString();
 }
 
-class _IngredientDtoFields {
-  // ignore: unused_element
-  const _IngredientDtoFields([this._path = '']);
-
-  final String _path;
-
-  String get id => '${_path}id';
-
-  String get title => '${_path}title';
-
-  String get description => '${_path}description';
-
-  String get price => '${_path}price';
-
-  @override
-  String toString() => _path.isEmpty ? '_IngredientDtoFields()' : _path;
-}
-
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
@@ -67,6 +49,13 @@ IngredientDto _$IngredientDtoFromJson(Map<String, dynamic> json) =>
       description: json['description'] as String,
       price: Decimal.fromJson(json['price'] as String),
     );
+
+abstract final class _$IngredientDtoJsonKeys {
+  static const String id = 'id';
+  static const String title = 'title';
+  static const String description = 'description';
+  static const String price = 'price';
+}
 
 Map<String, dynamic> _$IngredientDtoToJson(IngredientDto instance) =>
     <String, dynamic>{

@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:core/core.dart';
 import 'package:flutter/widgets.dart';
-import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 
 class AppsGuard<T extends Enum> extends StatefulWidget {
   final List<T> values;
@@ -27,7 +28,12 @@ class AppsGuard<T extends Enum> extends StatefulWidget {
 }
 
 class AppsGuardState<T extends Enum> extends State<AppsGuard<T>> {
-  static final Bin<String> _bin = Bin(name: 'module', deserializer: (data) => data as String);
+  static final _bin = BinStore<String?>(
+    session: Instances.bins,
+    name: 'module',
+    deserializer: (data) => data as String,
+    fallbackData: null,
+  );
   late bool _isLoading;
   T? _selected;
 
@@ -44,7 +50,7 @@ class AppsGuardState<T extends Enum> extends State<AppsGuard<T>> {
   }
 
   Future<void> _loadModule() async {
-    final moduleName = await _bin.readOrNull();
+    final moduleName = await _bin.read();
     final module = widget.values.firstWhereOrNull((e) => e.name == moduleName);
     setState(() {
       _isLoading = false;
@@ -54,11 +60,7 @@ class AppsGuardState<T extends Enum> extends State<AppsGuard<T>> {
 
   Future<void> select(T? app) async {
     if (_selected == app) return;
-    if (app == null) {
-      await _bin.delete();
-    } else {
-      await _bin.write(app.name);
-    }
+    await _bin.write(app?.name);
     setState(() => _selected = app);
   }
 

@@ -38,31 +38,3 @@ class Paragraph extends StatelessWidget {
     );
   }
 }
-
-class ParagraphTile extends StatelessWidget {
-  final Widget title;
-  final Widget trailing;
-
-  const ParagraphTile({
-    super.key,
-    required this.title,
-    required this.trailing,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: kMinInteractiveDimension),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        child: Row(
-          children: [
-            title,
-            const Spacer(),
-            trailing,
-          ],
-        ),
-      ),
-    );
-  }
-}

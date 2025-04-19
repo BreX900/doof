@@ -56,7 +56,7 @@ class _VersionGuardState extends State<VersionGuard> {
     if (_isBlocked) {
       return MaterialApp(
         title: 'Doof App',
-        theme: MekTheme.build(),
+        theme: MekTheme.build(context: context),
         home: _BlockedScreen(
           currentVersion: _currentVersion,
           targetVersion: _minVersion!,

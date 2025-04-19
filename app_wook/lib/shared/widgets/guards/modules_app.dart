@@ -21,7 +21,7 @@ class AppsApp<T extends Enum> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: MekTheme.build(),
+      theme: MekTheme.build(context: context),
       home: _AppsScreen(
         values: values,
         descriptionBuilder: descriptionBuilder,

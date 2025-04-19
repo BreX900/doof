@@ -1,7 +1,3 @@
-import 'dart:async';
-
-import 'package:app_button/apis/material/text_icon.dart';
-import 'package:app_button/apis/riverpod/safe_ref.dart';
 import 'package:app_button/shared/data/r.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:core/core.dart';
@@ -9,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mek/mek.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
-final _stateProvider = FutureProvider.autoDispose.family((unsafeRef, String organizationId) async {
-  final ref = unsafeRef.safe;
-
+final _stateProvider = FutureProvider.autoDispose.family((ref, String organizationId) async {
   final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
 
   return (organization: organization);
@@ -33,15 +28,15 @@ class TicketCreateScreen extends ConsumerStatefulWidget {
 }
 
 class _TicketCreateScreenState extends ConsumerState<TicketCreateScreen> {
-  final _placeFb = FieldBloc(
+  final _placeFb = FormControlTyped<String>(
     initialValue: '',
-    validator: const TextValidation(minLength: 1),
+    validators: [ValidatorsTyped.required()],
   );
 
   late final _createTicket = ref.mutation((ref, arg) async {
     return await TicketsProviders.create(
       organizationId: widget.organizationId,
-      place: _placeFb.state.value,
+      place: _placeFb.value,
     );
   }, onSuccess: (_, __) {
     TicketCreatedRoute(widget.organizationId).go(context);
@@ -49,7 +44,7 @@ class _TicketCreateScreenState extends ConsumerState<TicketCreateScreen> {
 
   @override
   void dispose() {
-    unawaited(_placeFb.close());
+    _placeFb.dispose();
     super.dispose();
   }
 
@@ -58,7 +53,7 @@ class _TicketCreateScreenState extends ConsumerState<TicketCreateScreen> {
     final textTheme = theme.textTheme;
     final colors = theme.colorScheme;
 
-    final isIdle = ref.watchIdle(mutations: [_createTicket]);
+    final isIdle = !ref.watchIsMutating([_createTicket]);
 
     return Column(
       children: [
@@ -74,10 +69,9 @@ class _TicketCreateScreenState extends ConsumerState<TicketCreateScreen> {
         Row(
           children: [
             Expanded(
-              child: FieldText(
-                fieldBloc: _placeFb,
-                converter: FieldConvert.text,
-                decoration: FieldBuilder.decorationBorderless.copyWith(
+              child: ReactiveTextField(
+                formControl: _placeFb,
+                decoration: InputDecorations.borderless.copyWith(
                   iconColor: colors.primary,
                   icon: const TextIcon('#'),
                   hintText: 'numero',

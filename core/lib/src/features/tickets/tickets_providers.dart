@@ -2,8 +2,8 @@ import 'package:core/src/features/tickets/dto/ticket_dto.dart';
 import 'package:core/src/features/tickets/repositories/tickets_repository.dart';
 import 'package:core/src/shared/core_utils.dart';
 import 'package:core/src/shared/data/identifiable.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
-import 'package:riverbloc/riverbloc.dart';
 
 abstract class TicketsProviders {
   static Future<void> create({
@@ -28,7 +28,7 @@ abstract class TicketsProviders {
   //   return await TicketsRepository.instance.fetchAll(organizationId);
   // });
 
-  static final pageCursor = BlocProvider<CursorBloc, CursorState>((ref) {
+  static final pageCursor = StateNotifierProvider<CursorBloc, CursorState>((ref) {
     return CursorBloc(size: CoreUtils.tableSize);
   });
 
@@ -38,7 +38,7 @@ abstract class TicketsProviders {
     final onPage = await TicketsRepository.instance.watchPage(organizationId, cursor);
 
     await for (final page in onPage) {
-      ref.read(pageCursor.bloc).registerOffsets(page.ids, page: cursor.page);
+      ref.read(pageCursor.notifier).registerOffsets(page.ids, page: cursor.page);
 
       yield page;
     }

@@ -3,10 +3,11 @@ import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
-import 'package:pure_extensions/pure_extensions.dart';
+import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 
-final _stateProvider =
+final _screenProvider =
     FutureProvider.autoDispose.family((ref, (_StatsScreenType, String) items) async {
   final id = items.$2;
 
@@ -23,7 +24,7 @@ final _stateProvider =
     return MapEntry(e, productsItems.where((element) => element.buyers.contains(e)));
   }));
 
-  return buyersOrder.generateIterable((user, products) {
+  return buyersOrder.mapTo((user, products) {
     final total = products.fold(Decimal.zero, (total, product) {
       return total + product.individualCost;
     });
@@ -37,41 +38,44 @@ final _stateProvider =
 
 enum _StatsScreenType { cart, order }
 
-class StatsScreen extends AsyncConsumerWidget {
+class StatsScreen extends ConsumerStatefulWidget {
   final _StatsScreenType _type;
   final String id;
 
-  StatsScreen.fromCart({super.key})
+  const StatsScreen.fromCart({super.key})
       : _type = _StatsScreenType.cart,
         id = Env.cartId;
 
-  StatsScreen.fromOrder({
+  const StatsScreen.fromOrder({
     super.key,
     required String orderId,
   })  : _type = _StatsScreenType.order,
         id = orderId;
 
-  late final stateProvider = _stateProvider((_type, id));
+  @override
+  ConsumerState<StatsScreen> createState() => _StatsScreenState();
+}
+
+class _StatsScreenState extends ConsumerState<StatsScreen> {
+  AutoDisposeFutureProvider<IList<_UserStat>> get _provider =>
+      _screenProvider((widget._type, widget.id));
 
   @override
-  ProviderBase<Object?> get asyncProvider => stateProvider;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(stateProvider);
+  Widget build(BuildContext context) {
+    final state = ref.watch(_provider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Stats'),
       ),
-      body: AsyncViewBuilder(
-        state: state,
-        builder: _buildBody,
+      body: state.buildView(
+        onRefresh: () => ref.invalidateWithAncestors(_provider),
+        data: _buildBody,
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, IList<_UserStat> stats) {
+  Widget _buildBody(IList<_UserStat> stats) {
     final formats = AppFormats.of(context);
 
     return ListView(

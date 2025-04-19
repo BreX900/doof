@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: no_literal_bool_comparisons, constant_identifier_names
+// ignore_for_file: no_literal_bool_comparisons, constant_identifier_names, unused_field
 
 part of 'qr_code_data.dart';
 

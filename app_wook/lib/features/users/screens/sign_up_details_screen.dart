@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
-import 'package:mek_gasol/shared/widgets/bottom_button_bar.dart';
 import 'package:mek_gasol/shared/widgets/sign_out_icon_button.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 class SignUpDetailsScreen extends ConsumerStatefulWidget {
   const SignUpDetailsScreen({super.key});
@@ -15,27 +13,30 @@ class SignUpDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _SignUpDetailsScreenState extends ConsumerState<SignUpDetailsScreen> {
-  final _displayNameFb = FieldBloc(
+  final _displayNameFb = FormControlTyped<String>(
     initialValue: '',
-    validator: const TextValidation(minLength: 5),
+    validators: [ValidatorsTyped.required(), ValidatorsTyped.text(minLength: 5)],
   );
 
   @override
   void dispose() {
-    unawaited(_displayNameFb.close());
+    _displayNameFb.dispose();
     super.dispose();
   }
 
   late final _signUp = ref.mutation((ref, arg) async {
     await UsersRepository.instance.create(
       phoneNumber: null,
-      displayName: _displayNameFb.state.value,
+      displayName: _displayNameFb.value,
     );
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
   });
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = ref.watchIdle(mutations: [_signUp]);
+    final isIdle = !ref.watchIsMutating([_signUp]);
+    final signUp = _displayNameFb.handleSubmit(_signUp.run);
 
     return Scaffold(
       appBar: AppBar(
@@ -46,7 +47,7 @@ class _SignUpDetailsScreenState extends ConsumerState<SignUpDetailsScreen> {
         children: [
           Expanded(
             child: ElevatedButton(
-              onPressed: isIdle ? ref.handleSubmit(_displayNameFb, () => _signUp(null)) : null,
+              onPressed: isIdle ? () => signUp(null) : null,
               child: const Text('Viva Flutter!'),
             ),
           ),
@@ -56,9 +57,8 @@ class _SignUpDetailsScreenState extends ConsumerState<SignUpDetailsScreen> {
         minimum: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            FieldText(
-              fieldBloc: _displayNameFb,
-              converter: FieldConvert.text,
+            ReactiveTextField(
+              formControl: _displayNameFb,
               decoration: const InputDecoration(
                 labelText: 'Display Name',
               ),

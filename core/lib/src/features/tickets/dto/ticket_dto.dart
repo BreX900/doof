@@ -5,11 +5,11 @@ part 'ticket_dto.g.dart';
 
 enum TicketStatus { pending, processing, resolved }
 
-@DataClass(createFieldsClass: true, changeable: true)
-@DtoSerializable()
-class TicketDto with Identifiable, _$TicketDto {
-  static const fields = _TicketDtoFields();
+typedef TicketDtoFields = _$TicketDtoJsonKeys;
 
+@DataClass(changeable: true)
+@DtoSerializable(createJsonKeys: true)
+class TicketDto with Identifiable, _$TicketDto {
   @override
   final String id;
   final DateTime createAt;

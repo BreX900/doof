@@ -5,7 +5,7 @@ import 'package:core/src/features/tickets/dto/ticket_dto.dart';
 import 'package:core/src/shared/instances.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:mek/mek.dart';
-import 'package:pure_extensions/pure_extensions.dart';
+import 'package:mekart/mekart.dart';
 
 class TicketsRepository {
   static TicketsRepository get instance => TicketsRepository._();
@@ -22,7 +22,7 @@ class TicketsRepository {
       .withJsonConverter(TicketDto.fromJson);
 
   Future<void> create(String organizationId, TicketDto ticket) async {
-    await _ref(organizationId).doc(ticket.id.nullIfEmpty()).set(ticket);
+    await _ref(organizationId).doc(ticket.id.nullIfEmpty).set(ticket);
   }
 
   // Future<void> delete(String organizationId, TicketDto ingredient) async {
@@ -56,7 +56,7 @@ class TicketsRepository {
 
   Future<Stream<IList<TicketDto>>> watchPage(String organizationId, Cursor cursor) async {
     final onSnapshot = _ref(organizationId)
-        .orderBy(TicketDto.fields.createAt, descending: true)
+        .orderBy(TicketDtoFields.createAt, descending: true)
         .apply(cursor)
         .snapshots();
     return onSnapshot.map((snapshot) => snapshot.docs.map((e) => e.data()).toIList());

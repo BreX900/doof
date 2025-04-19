@@ -9,9 +9,12 @@ import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/shared/navigation/areas/user_area.dart';
-import 'package:mek_gasol/shared/widgets/bottom_button_bar.dart';
+import 'package:mek_gasol/shared/widgets/field_padding.dart';
+import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
+import 'package:mekart/mekart.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
-final _stateProvider =
+final _screenProvider =
     FutureProvider.autoDispose.family((ref, (String?, String?, String?) items) async {
   ProductModel product;
   CartModel? cart;
@@ -37,14 +40,14 @@ final _stateProvider =
   );
 });
 
-class ProductScreen extends ConsumerStatefulWidget with AsyncConsumerStatefulWidget {
+class ProductScreen extends ConsumerStatefulWidget {
   final String? productId;
   final String? cartId;
   final String? cartItemId;
   final OrderModel? order;
   final OrderItemModel? orderItem;
 
-  ProductScreen({
+  const ProductScreen({
     super.key,
     required String this.productId,
     this.order,
@@ -52,7 +55,7 @@ class ProductScreen extends ConsumerStatefulWidget with AsyncConsumerStatefulWid
   })  : cartId = null,
         cartItemId = null;
 
-  ProductScreen.fromCart({
+  const ProductScreen.fromCart({
     super.key,
     required String this.cartItemId,
   })  : productId = null,
@@ -60,31 +63,34 @@ class ProductScreen extends ConsumerStatefulWidget with AsyncConsumerStatefulWid
         orderItem = null,
         cartId = Env.cartId;
 
-  late final stateProvider = _stateProvider((productId, cartId, cartItemId));
-
-  @override
-  ProviderBase<void> get asyncProvider => stateProvider;
-
   @override
   ConsumerState<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsumerState {
-  final _cartFb = FieldBloc<CartModel?>(
-    initialValue: null,
-    validator: const RequiredValidation<CartModel>(),
-  );
-  final _buyersFb = FieldBloc<IList<UserDto>>(
-    initialValue: const IListConst([]),
-    validator: const OptionsValidation<UserDto>(minLength: 1),
-  );
-  final _quantityFb = FieldBloc<int>(initialValue: 1);
-  final _ingredientsAddableFb = FieldBloc<IList<IngredientDto>>(
-    initialValue: const IListConst([]),
-  );
-  final _levelsFb = MapFieldBloc<String, double>();
+class _ProductScreenState extends ConsumerState<ProductScreen> {
+  AutoDisposeFutureProvider<
+      ({
+        CartModel? cart,
+        CartItemModel? cartItem,
+        IList<CartModel> carts,
+        ProductModel product,
+        UserDto? user
+      })> get _provider => _screenProvider((widget.productId, widget.cartId, widget.cartItemId));
 
-  late final _form = ListFieldBloc<void>();
+  final _cartFb = FormControlTypedOptional<CartModel>(
+    validators: [ValidatorsTyped.required()],
+  );
+  final _buyersFb = FormControlTyped<ISet<UserDto>>(
+    initialValue: const ISet.empty(),
+    validators: [ValidatorsTyped.iterable(minLength: 1)],
+  );
+  final _quantityFb = FormControlTyped<int>(initialValue: 1);
+  final _ingredientsAddableFb = FormControlTyped<IList<IngredientDto>>(
+    initialValue: const IListConst([]),
+  );
+  final _levelsFb = FormMap<AbstractControl<double>, double>({});
+
+  late final _form = FormArray<void>([_cartFb, _quantityFb, _ingredientsAddableFb, _levelsFb]);
 
   @override
   void initState() {
@@ -94,13 +100,12 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
 
   @override
   void dispose() {
-    unawaited(_form.close());
+    _form.dispose();
     super.dispose();
   }
 
   Future<void> _init() async {
-    final (:user, :product, :carts, :cart, :cartItem) =
-        await ref.read(widget.stateProvider.futureOfData);
+    final (:user, :product, :carts, :cart, :cartItem) = await ref.read(_provider.futureOfData);
     final levels = product.levels;
 
     final order = widget.order;
@@ -109,7 +114,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
     final orderItemBuyers = orderCart != null ? orderItem?.buyers : null;
 
     _cartFb.updateValue(cart ?? orderCart ?? carts.singleOrNull);
-    if (user != null) _buyersFb.updateValue(cartItem?.buyers ?? orderItemBuyers ?? IList([user]));
+    if (user != null) {
+      _buyersFb.updateValue((cartItem?.buyers ?? orderItemBuyers)?.toISet() ?? ISet([user]));
+    }
     _quantityFb.updateValue(cartItem?.quantity ?? orderItem?.quantity);
     _ingredientsAddableFb.updateValue(cartItem?.ingredientsAdded ?? orderItem?.ingredientsAdded);
 
@@ -120,36 +127,30 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
       return ingredient.initialOffset;
     }
 
-    _levelsFb.updateFieldBlocs({
+    _levelsFb.addAll({
       for (final ingredient in levels)
-        ingredient.id: FieldBloc(
+        ingredient.id: FormControlTyped(
           initialValue: resolveInitialIngredientValue(ingredient),
         ),
-    }.toIMap());
+    });
 
-    _form.updateFieldBlocs([
-      _cartFb,
-      if (user != null) _buyersFb,
-      _quantityFb,
-      _ingredientsAddableFb,
-      _levelsFb,
-    ]);
+    if (user != null) _form.add(_buyersFb);
   }
 
   late final _upsertProduct = ref.mutation((ref, ProductModel product) async {
     await CartItemsProviders.upsert(
       ref,
       Env.organizationId,
-      _cartFb.state.value!.id,
+      _cartFb.value!.id,
       itemId: widget.cartItemId,
-      buyers: _buyersFb.state.value,
+      buyers: _buyersFb.value,
       productId: product.id,
-      quantity: _quantityFb.state.value,
-      ingredientsAdded: _ingredientsAddableFb.state.value,
-      levels: _levelsFb.state.value,
+      quantity: _quantityFb.value,
+      ingredientsAdded: _ingredientsAddableFb.value,
+      levels: _levelsFb.value.lockUnsafe.cast(),
     );
   }, onError: (_, error) {
-    DataBuilders.listenError(context, error);
+    CoreUtils.showErrorSnackBar(context, error);
   }, onSuccess: (product, __) {
     final tabBloc = ref.read(UserArea.tab.notifier);
 
@@ -165,29 +166,22 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(widget.stateProvider);
+    final state = ref.watch(_provider);
     final items = state.valueOrNull;
-    final isIdle = ref.watchIdle(mutations: [_upsertProduct]);
+    final isIdle = !ref.watchIsMutating([_upsertProduct]);
 
-    return Scaffold(
+    return HarmonicScaffold(
       appBar: AppBar(
         title: Text(state.valueOrNull?.product.title ?? 'Product...'),
       ),
-      bottomNavigationBar: BottomButtonBar(
-        children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: isIdle && items != null ? () => _upsertProduct(items.product) : null,
-              icon: widget.cartItemId == null ? const Icon(Icons.add) : const Icon(Icons.edit),
-              label: Text(widget.cartItemId == null ? 'Add to Cart' : 'Update Cart Item'),
-            ),
-          ),
-        ],
+      floatingActionButton: FixedFloatingActionButton.extended(
+        onPressed: isIdle && items != null ? () => _upsertProduct(items.product) : null,
+        icon: widget.cartItemId == null ? const Icon(Icons.add) : const Icon(Icons.edit),
+        label: Text(widget.cartItemId == null ? 'Add to Cart' : 'Update Cart Item'),
       ),
-      body: AsyncViewBuilder(
-        state: state,
-        refreshableScroll: true,
-        builder: (context, items) => _buildBody(
+      body: state.buildView(
+        onRefresh: () => ref.invalidateWithAncestors(_provider),
+        data: (items) => _buildBody(
           context,
           items.product.addableIngredients,
           items.product.levels,
@@ -206,8 +200,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
     final t = AppFormats.of(context);
 
     Widget buildCartField() {
-      return FieldDropdown(
-        fieldBloc: _cartFb,
+      return FieldPadding(ReactiveDropdownField(
+        formControl: _cartFb,
         decoration: const InputDecoration(labelText: 'Cart'),
         items: carts.map((e) {
           return DropdownMenuItem(
@@ -215,31 +209,26 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
             child: Text(e.displayTitle),
           );
         }).toList(),
-      );
+      ));
     }
 
     Widget buildBuyersField(IList<UserDto> users) {
-      return FieldChipsInput<UserDto>(
-        fieldBloc: _buyersFb,
+      return FieldPadding(ReactivePopupMenuButton<UserDto>.withChip(
+        formControl: _buyersFb,
         decoration: const InputDecoration(labelText: 'Buyers'),
-        findSuggestions: (query) {
-          return users.where((user) {
-            return user.displayName!.toLowerCase().contains(query.toLowerCase());
-          }).toList();
-        },
-        suggestionBuilder: (context, suggestion) => ListTile(title: Text(suggestion.displayName!)),
-        chipBuilder: (context, state, value) {
-          return Chip(
-            onDeleted: () => state.deleteChip(value),
-            label: Text(value.displayName!),
+        itemBuilder: (field) => users.map((user) {
+          return CheckedPopupMenuItem(
+            value: user,
+            checked: field.value.contains(user),
+            child: Text(user.displayName!),
           );
-        },
-      );
+        }).toList(),
+      ));
     }
 
     Widget buildQuantityField() {
-      return FieldDropdown(
-        fieldBloc: _quantityFb,
+      return FieldPadding(ReactiveDropdownField(
+        formControl: _quantityFb,
         decoration: const InputDecoration(labelText: 'Quantity'),
         items: [
           for (var i = 1; i <= 8; i++)
@@ -248,22 +237,22 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
               child: Text('$i'),
             ),
         ],
-      );
+      ));
     }
 
-    Widget buildLevelsFields(IMap<String, FieldBlocRule<double>> fieldBlocs) {
+    Widget buildLevelsFields(Map<String, FormControl<double>> fieldBlocs) {
       return Column(
         children: fieldBlocs.entries.mapTo((ingredientId, fieldBloc) {
           final ingredient = levels.firstWhereOrNull((e) => e.id == ingredientId);
           if (ingredient == null) return const SizedBox.shrink();
 
           final divisions = ingredient.offset;
-          return FieldSlider(
-            fieldBloc: fieldBloc,
+          return FieldPadding(ReactiveDecoratedSlider(
+            formControl: fieldBloc,
             divisions: divisions,
             decoration: InputDecoration(labelText: ingredient.title),
             labelBuilder: (value) => (divisions * value).toStringAsFixed(0),
-          );
+          ));
         }).toList(),
       );
     }
@@ -271,40 +260,38 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
     Widget buildIngredientsField() {
       if (addableIngredients.isEmpty) return const SizedBox.shrink();
 
-      return FieldGroupBuilder(
-        fieldBloc: _ingredientsAddableFb,
-        valuesCount: addableIngredients.length,
+      return FieldPadding(ReactiveFormFieldDecorated(
+        formControl: _ingredientsAddableFb,
         decoration: const InputDecoration(
           labelText: 'Additions',
         ),
-        valueBuilder: (state, index) {
-          final value = addableIngredients[index];
-
-          return CheckboxListTile(
-            value: state.value.contains(value),
-            enabled: state.isEnabled,
-            onChanged: (isSelected) => state.fieldBloc.changeTogglingValue(isSelected, value),
-            title: Text('${t.formatPrice(value.price)} - ${value.title}'),
-            subtitle: Text(value.description),
-          );
-        },
-      );
+        builder: (field) => Column(
+          children: addableIngredients.map((value) {
+            return CheckboxListTile(
+              value: field.value?.contains(value),
+              enabled: field.control.enabled,
+              onChanged: (isSelected) => field.didToggle(isSelected, value),
+              title: Text('${t.formatPrice(value.price)} - ${value.title}'),
+              subtitle: Text(value.description),
+            );
+          }).toList(),
+        ),
+      ));
     }
 
-    return SingleChildScrollView(
+    return HarmonicSingleChildScrollView(
       child: Column(
         children: [
           if (carts.length > 1) buildCartField(),
           Consumer(builder: (context, ref, _) {
-            final members =
-                ref.watch(_cartFb.select((state) => state.value?.members ?? const IListConst([])));
+            final members = ref.watch(_cartFb.provider.value)?.members ?? const IListConst([]);
             if (members.length <= 1) return const SizedBox.shrink();
             return buildBuyersField(members);
           }),
           buildQuantityField(),
           Consumer(builder: (context, ref, _) {
-            final fieldBlocs = ref.watch(_levelsFb.select((state) => state.fieldBlocs));
-            return buildLevelsFields(fieldBlocs);
+            final fieldBlocs = ref.watch(_levelsFb.provider.controls);
+            return buildLevelsFields(fieldBlocs.cast());
           }),
           buildIngredientsField(),
         ],

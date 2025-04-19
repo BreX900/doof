@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
-import 'package:mek_gasol/shared/widgets/text_icon.dart';
+import 'package:mek/mek.dart';
 
 typedef ItemWidgetBuilder<T> = Widget Function(BuildContext context, T data);
 
@@ -36,12 +36,13 @@ class ProductItemListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formats = AppFormats.of(context);
     final product = item.product;
+    final formats = AppFormats.of(context);
+    final ThemeData(:colorScheme) = Theme.of(context);
 
     return ListTile(
       onTap: onTap,
-      leading: TextIcon('${item.quantity}'),
+      leading: TextIcon('${item.quantity}', color: colorScheme.primary),
       title: Text('${formats.formatPrice(item.totalCost)} - ${product.title}'),
       subtitle: Text(_buildTitle()),
       trailing: trailing,

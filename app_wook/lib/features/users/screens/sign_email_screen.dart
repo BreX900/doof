@@ -2,8 +2,6 @@ import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
-import 'package:mek_gasol/shared/widgets/bottom_button_bar.dart';
-import 'package:mek_gasol/shared/widgets/hide_banner_button.dart';
 import 'package:mek_gasol/shared/widgets/sign_out_icon_button.dart';
 
 class SignEmailScreen extends ConsumerStatefulWidget {
@@ -16,6 +14,8 @@ class SignEmailScreen extends ConsumerStatefulWidget {
 class _SignEmailScreenState extends ConsumerState<SignEmailScreen> {
   late final _sendEmailVerification = ref.mutation((ref, arg) async {
     await Instances.auth.currentUser!.sendEmailVerification();
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
   }, onSuccess: (_, __) {
     ScaffoldMessenger.of(context).showMaterialBanner(const MaterialBanner(
       content: Text('Verification email sent!'),
@@ -26,11 +26,13 @@ class _SignEmailScreenState extends ConsumerState<SignEmailScreen> {
   late final _reload = ref.mutation((ref, arg) async {
     await Instances.auth.currentUser!.reload();
     ref.invalidate(UsersProviders.currentAuth);
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
   });
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = ref.watchIdle(mutations: [_sendEmailVerification, _reload]);
+    final isIdle = !ref.watchIsMutating([_sendEmailVerification, _reload]);
 
     return Scaffold(
       appBar: AppBar(
@@ -43,7 +45,7 @@ class _SignEmailScreenState extends ConsumerState<SignEmailScreen> {
           ),
         ],
       ),
-      body: InfoTile(
+      body: InfoView(
         onTap: isIdle ? () => _reload(null) : null,
         icon: const Icon(Icons.mark_email_unread_outlined),
         title: Text('Please verify your email:\n'

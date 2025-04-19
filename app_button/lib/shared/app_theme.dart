@@ -1,5 +1,8 @@
+import 'package:app_button/shared/data/mek_widgets.dart';
+import 'package:core/core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mek/mek.dart';
 
 class AppTheme {
   static ThemeData build({Brightness? brightness}) {
@@ -39,6 +42,12 @@ class AppTheme {
           borderRadius: BorderRadius.vertical(top: Radius.circular(32.0)),
         ),
       ),
+      extensions: {
+        const DataBuilders(
+          errorListener: CoreUtils.showErrorByData,
+          errorBuilder: ErrorView.buildByData,
+        )
+      },
     );
   }
 }

@@ -5,11 +5,11 @@ import 'package:mek_data_class/mek_data_class.dart';
 
 part 'addition_dto.g.dart';
 
-@DataClass(createFieldsClass: true)
-@DtoSerializable()
-class IngredientDto with Identifiable, _$IngredientDto {
-  static const fields = _IngredientDtoFields();
+typedef IngredientDtoFields = _$IngredientDtoJsonKeys;
 
+@DataClass()
+@DtoSerializable(createJsonKeys: true)
+class IngredientDto with Identifiable, _$IngredientDto {
   @override
   final String id;
   final String title;

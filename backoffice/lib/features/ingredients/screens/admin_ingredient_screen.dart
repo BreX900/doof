@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:backoffice/shared/widgets/admin_body_layout.dart';
-import 'package:backoffice/shared/widgets/bottom_button_bar.dart';
 import 'package:backoffice/shared/widgets/sliver_fields_layout.dart';
 import 'package:core/core.dart';
 import 'package:decimal/decimal.dart';
@@ -9,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 final _stateProvider = FutureProvider.autoDispose
     .family((ref, (String organizationId, String? ingredientId) args) async {
@@ -46,28 +46,28 @@ class AdminIngredientScreen extends ConsumerStatefulWidget with AsyncConsumerSta
 
 class _AdminProductScreenState extends ConsumerState<AdminIngredientScreen>
     with AsyncConsumerState {
-  final _titleFb = FieldBloc<String>(
+  final _titleFb = FormControlTyped<String>(
     initialValue: '',
     validator: const TextValidation(minLength: 3),
   );
-  final _descriptionFb = FieldBloc<String>(
+  final _descriptionFb = FormControlTyped<String>(
     initialValue: '',
   );
-  final _priceFb = FieldBloc<Decimal?>(
+  final _priceFb = FormControlTypedOptional<Decimal>(
     initialValue: null,
     validator: const RequiredValidation<Decimal>(),
   );
 
-  late final _form = ListFieldBloc<void>(fieldBlocs: [_titleFb, _descriptionFb, _priceFb]);
+  late final _form = FormArray<void>([_titleFb, _descriptionFb, _priceFb]);
 
   late final _upsertIngredient = ref.mutation((ref, arg) async {
     return await IngredientsProviders.upsert(
       ref,
       organizationId: widget.organizationId,
       ingredientId: widget.ingredientId,
-      title: _titleFb.state.value,
-      description: _descriptionFb.state.value,
-      price: _priceFb.state.value!,
+      title: _titleFb.value,
+      description: _descriptionFb.value,
+      price: _priceFb.value!,
     );
   }, onSuccess: (_, __) {
     context.pop();
@@ -81,7 +81,7 @@ class _AdminProductScreenState extends ConsumerState<AdminIngredientScreen>
 
   @override
   void dispose() {
-    unawaited(_form.close());
+    _form.dispose();
     super.dispose();
   }
 
@@ -95,26 +95,24 @@ class _AdminProductScreenState extends ConsumerState<AdminIngredientScreen>
 
   Widget _buildBody() {
     final fields = [
-      FieldText(
-        fieldBloc: _titleFb,
-        converter: FieldConvert.text,
+      ReactiveTextField(
+        formControl: _titleFb,
         maxLines: 2,
         minLines: 1,
         keyboardType: TextInputType.text,
         decoration: const InputDecoration(labelText: 'Title'),
       ),
-      FieldText(
-        fieldBloc: _descriptionFb,
-        converter: FieldConvert.text,
+      ReactiveTextField(
+        formControl: _descriptionFb,
         maxLines: 4,
         minLines: 1,
         keyboardType: TextInputType.text,
         decoration: const InputDecoration(labelText: 'Description'),
       ),
-      FieldText(
-        fieldBloc: _priceFb,
-        converter: FieldConvert.decimal(locale: Localizations.localeOf(context)),
-        type: const TextFieldType.decimal(),
+      ReactiveTypedTextField(
+        formControl: _priceFb,
+        valueAccessor: MekAccessors.decimalToString(Localizations.localeOf(context)),
+        variant: const TextFieldVariant.decimal(),
         decoration: const InputDecoration(labelText: 'Price'),
       ),
     ];
@@ -133,7 +131,7 @@ class _AdminProductScreenState extends ConsumerState<AdminIngredientScreen>
     final state = ref.watch(widget.stateProvider);
     final data = state.valueOrNull;
 
-    final isIdle = ref.watchIdle(mutations: [_upsertIngredient]);
+    final isIdle = !ref.watchIsMutating([_upsertIngredient]);
 
     return Scaffold(
       appBar: AppBar(

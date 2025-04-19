@@ -8,11 +8,11 @@ import 'package:mek_data_class/mek_data_class.dart';
 
 part 'order_item_dto.g.dart';
 
-@DataClass(createFieldsClass: true)
-@DtoSerializable()
-class OrderItemDto with _$OrderItemDto {
-  static const fields = _OrderItemDtoFields();
+typedef OrderItemDtoFields = _$OrderItemDtoJsonKeys;
 
+@DataClass()
+@DtoSerializable(createJsonKeys: true)
+class OrderItemDto with _$OrderItemDto {
   final String id;
   final DateTime createdAt;
   final IList<String> buyers;

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:backoffice/shared/widgets/admin_body_layout.dart';
-import 'package:backoffice/shared/widgets/bottom_button_bar.dart';
 import 'package:backoffice/shared/widgets/sliver_fields_layout.dart';
 import 'package:core/core.dart';
 import 'package:decimal/decimal.dart';
@@ -10,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 final _stateProvider =
     FutureProvider.autoDispose.family((ref, (String organizationId, String? productId) args) async {
@@ -59,14 +59,14 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
     initialValue: null,
     validator: const RequiredValidation<Decimal>(),
   );
-  final _ingredientsFb = FieldBloc<IList<IngredientDto>>(
-    initialValue: const IListConst([]),
+  final _ingredientsFb = FieldBloc<ISet<IngredientDto>>(
+    initialValue: const ISet.empty(),
   );
-  final _removableIngredientsFb = FieldBloc<IList<IngredientDto>>(
-    initialValue: const IListConst([]),
+  final _removableIngredientsFb = FieldBloc<ISet<IngredientDto>>(
+    initialValue: const ISet.empty(),
   );
-  final _addableIngredientsFb = FieldBloc<IList<IngredientDto>>(
-    initialValue: const IListConst([]),
+  final _addableIngredientsFb = FieldBloc<ISet<IngredientDto>>(
+    initialValue: const ISet.empty(),
   );
 
   late final _form =
@@ -110,24 +110,29 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
     _titleFb.updateValue(product?.title);
     _descriptionFb.updateValue(product?.description);
     _priceFb.updateValue(product?.price);
-    _ingredientsFb.updateValue(product?.ingredients ?? const IListConst([]));
-    _addableIngredientsFb.updateValue(product?.addableIngredients ?? const IListConst([]));
-    _removableIngredientsFb.updateValue(product?.removableIngredients ?? const IListConst([]));
+    _ingredientsFb.updateValue(product?.ingredients.toISet());
+    _addableIngredientsFb.updateValue(product?.addableIngredients.toISet());
+    _removableIngredientsFb.updateValue(product?.removableIngredients.toISet());
   }
 
   Widget _buildIngredientsField({
-    required FieldBloc<IList<IngredientDto>> fieldBloc,
+    required FieldBloc<ISet<IngredientDto>> fieldBloc,
     required IList<IngredientDto> ingredients,
     required InputDecoration decoration,
   }) {
-    return FieldChipsInput(
+    return FieldMultiDropdown<ISet<IngredientDto>, IngredientDto>.withChip(
       fieldBloc: fieldBloc,
       decoration: decoration.copyWith(
         labelStyle: const TextStyle(height: 0.0),
       ),
-      findSuggestions: (query) =>
-          ingredients.where((e) => e.title.toLowerCase().contains(query.toLowerCase())).toList(),
-      labelBuilder: (context, value) => Text(value.title),
+      converter: const DefaultFieldConverter(),
+      itemsBuilder: (context, selection) => ingredients.map((ingredient) {
+        return CheckedPopupMenuItem(
+          value: ingredient,
+          checked: selection.contains(ingredient),
+          child: Text(ingredient.title),
+        );
+      }).toList(),
     );
   }
 
@@ -147,26 +152,24 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
           );
         }).toList(),
       ),
-      FieldText(
-        fieldBloc: _titleFb,
-        converter: FieldConvert.text,
+      ReactiveTextField(
+        formControl: _titleFb,
         maxLines: 2,
         minLines: 1,
         keyboardType: TextInputType.text,
         decoration: const InputDecoration(labelText: 'Title'),
       ),
-      FieldText(
-        fieldBloc: _descriptionFb,
-        converter: FieldConvert.text,
+      ReactiveTextField(
+        formControl: _descriptionFb,
         maxLines: 4,
         minLines: 1,
         keyboardType: TextInputType.text,
         decoration: const InputDecoration(labelText: 'Description'),
       ),
-      FieldText(
-        fieldBloc: _priceFb,
-        converter: FieldConvert.decimal(locale: Localizations.localeOf(context)),
-        type: const TextFieldType.decimal(),
+      ReactiveTypedTextField(
+        formControl: _priceFb,
+        valueAccessor: MekAccessors.decimalToString(Localizations.localeOf(context)),
+        variant: const TextFieldVariant.decimal(),
         decoration: const InputDecoration(labelText: 'Price'),
       ),
       _buildIngredientsField(
@@ -180,7 +183,7 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
 
         return _buildIngredientsField(
           fieldBloc: _removableIngredientsFb,
-          ingredients: consumableIngredients,
+          ingredients: consumableIngredients.toIList(),
           decoration: const InputDecoration(labelText: 'Removable ingredients'),
         );
       }),
@@ -216,7 +219,7 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
     final state = ref.watch(widget.stateProvider);
     final items = state.valueOrNull;
 
-    final isIdle = ref.watchIdle(mutations: [_upsertProduct]);
+    final isIdle = !ref.watchIsMutating([_upsertProduct]);
     final canSubmit = ref.watchCanSubmit(_form);
 
     return Scaffold(

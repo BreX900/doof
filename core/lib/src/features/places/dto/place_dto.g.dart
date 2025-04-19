@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks
+// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks, unused_field
 
 part of 'place_dto.dart';
 
@@ -13,7 +13,9 @@ mixin _$PlaceDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PlaceDto && runtimeType == other.runtimeType && _self.id == other.id;
+      other is PlaceDto &&
+          runtimeType == other.runtimeType &&
+          _self.id == other.id;
   @override
   int get hashCode {
     var hashCode = 0;
@@ -22,7 +24,8 @@ mixin _$PlaceDto {
   }
 
   @override
-  String toString() => (ClassToString('PlaceDto')..add('id', _self.id)).toString();
+  String toString() =>
+      (ClassToString('PlaceDto')..add('id', _self.id)).toString();
 }
 
 // **************************************************************************

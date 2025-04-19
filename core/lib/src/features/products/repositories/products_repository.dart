@@ -5,7 +5,7 @@ import 'package:core/src/features/products/dto/product_dto.dart';
 import 'package:core/src/shared/instances.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:mek/mek.dart';
-import 'package:pure_extensions/pure_extensions.dart';
+import 'package:mekart/mekart.dart';
 
 class ProductsRepository {
   static ProductsRepository get instance => ProductsRepository._();
@@ -22,7 +22,7 @@ class ProductsRepository {
       .withJsonConverter(ProductDto.fromJson);
 
   Future<void> upsert(String organizationId, ProductDto product) async {
-    await _ref(organizationId).doc(product.id.nullIfEmpty()).set(product);
+    await _ref(organizationId).doc(product.id.nullIfEmpty).set(product);
   }
 
   Future<void> delete(String organizationId, ProductDto product) async {

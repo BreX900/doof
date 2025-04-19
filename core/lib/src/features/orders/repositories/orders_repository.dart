@@ -72,17 +72,17 @@ class OrdersRepository {
     required String userId,
     List<OrderStatus> whereNotStatusIn = const [],
   }) {
-    var query = _ref(organizationId).where(OrderDto.fields.membersIds, arrayContains: userId);
+    var query = _ref(organizationId).where(OrderDtoFields.membersIds, arrayContains: userId);
     // if (organizationId != null) {
     //   query = query.where(OrderDto.fields.organizationId, isEqualTo: organizationId);
     // }
     if (whereNotStatusIn.isNotEmpty) {
       query = query
-          .where(OrderDto.fields.status, whereNotIn: whereNotStatusIn.map((e) => e.name))
-          .orderBy(OrderDto.fields.status);
+          .where(OrderDtoFields.status, whereNotIn: whereNotStatusIn.map((e) => e.name))
+          .orderBy(OrderDtoFields.status);
     }
     return query
-        .orderBy(OrderDto.fields.createdAt, descending: true)
+        .orderBy(OrderDtoFields.createdAt, descending: true)
         .snapshots()
         .takeUntil(_auth.userLogged)
         .map((event) => event.docs.map((e) => e.data()).toIList());
@@ -90,7 +90,7 @@ class OrdersRepository {
 
   Stream<IList<OrderDto>> watchPage(String organizationId, Cursor cursor) {
     final onSnapshot =
-        _ref(organizationId).orderBy(OrderDto.fields.updatedAt).apply(cursor).snapshots();
+        _ref(organizationId).orderBy(OrderDtoFields.updatedAt).apply(cursor).snapshots();
     return onSnapshot.map((snapshot) => snapshot.docs.map((e) => e.data()).toIList());
   }
 }

@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 final _stateProvider = FutureProvider.autoDispose
     .family((ref, (String organizationId, Either<String, String> id) args) async {
@@ -59,18 +61,18 @@ class ProductScreen extends ConsumerStatefulWidget with AsyncConsumerStatefulWid
 }
 
 class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsumerState {
-  final _quantityFb = FieldBloc<int>(
+  final _quantityFb = FormControlTyped<int>(
     initialValue: 1,
-    validator: const NumberValidation(greaterOrEqualThan: 1),
+    validators: [ValidatorsTyped.comparable(greaterOrEqualThan: 1)],
   );
-  final _removableIngredientsFb = FieldBloc<IList<IngredientDto>>(
+  final _removableIngredientsFb = FormControlTyped<IList<IngredientDto>>(
     initialValue: const IListConst([]),
   );
-  final _addableIngredientsFb = FieldBloc<IList<IngredientDto>>(
+  final _addableIngredientsFb = FormControlTyped<IList<IngredientDto>>(
     initialValue: const IListConst([]),
   );
 
-  late final _formBloc = ListFieldBloc(fieldBlocs: [
+  late final _form = FormArray([
     _quantityFb,
     _removableIngredientsFb,
     _addableIngredientsFb,
@@ -82,9 +84,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
       widget.organizationId,
       args.cartId,
       productId: args.productId,
-      quantity: _quantityFb.state.value,
-      ingredientsRemoved: _removableIngredientsFb.state.value,
-      ingredientsAdded: _addableIngredientsFb.state.value,
+      quantity: _quantityFb.value,
+      ingredientsRemoved: _removableIngredientsFb.value,
+      ingredientsAdded: _addableIngredientsFb.value,
     );
   }, onSuccess: (_, __) {
     context.pop();
@@ -98,7 +100,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
 
   @override
   void dispose() {
-    unawaited(_formBloc.close());
+    _form.dispose();
     super.dispose();
   }
 
@@ -121,12 +123,12 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
-    final isIdle = ref.watchIdle(mutations: [_upsertProduct]);
-    final canSubmit = ref.watchCanSubmit(_formBloc);
+    final isIdle = !ref.watchIsMutating([_upsertProduct]);
+    final upsertProduct = _form.handleSubmit(_upsertProduct.run);
 
     Widget buildQuantityField() {
-      return FieldDropdown(
-        fieldBloc: _quantityFb,
+      return ReactiveDropdownField(
+        formControl: _quantityFb,
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         decoration: const InputDecoration(labelText: 'Quantity'),
         items: [
@@ -140,30 +142,33 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
     }
 
     Widget buildIngredientsField({
-      required FieldBloc<IList<IngredientDto>> fieldBloc,
+      required FormControl<IList<IngredientDto>> fieldBloc,
       required IList<IngredientDto> ingredients,
       required String labelText,
     }) {
       if (ingredients.isEmpty) return const SizedBox.shrink();
 
-      return FieldGroupBuilder(
-        fieldBloc: fieldBloc,
-        valuesCount: ingredients.length,
+      return ReactiveFormFieldDecorated(
+        formControl: fieldBloc,
         decoration: InputDecoration(labelText: labelText),
-        valueBuilder: (state, index) {
-          final value = ingredients[index];
-
-          return CheckboxListTile(
-            splashRadius: 8.0,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            value: state.value.contains(value),
-            visualDensity: const VisualDensity(vertical: VisualDensity.minimumDensity),
-            enabled: state.isEnabled,
-            onChanged: (isSelected) => state.fieldBloc.changeTogglingValue(isSelected, value),
-            title: Text('${formats.formatPrice(value.price)} - ${value.title}'),
-            subtitle: Text(value.description),
+        builder: (field) {
+          final selection = field.value ?? const IList<IngredientDto>.empty();
+          return Column(
+            children: ingredients.map((value) {
+              return CheckboxListTile(
+                splashRadius: 8.0,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                value: selection.contains(value),
+                visualDensity: const VisualDensity(vertical: VisualDensity.minimumDensity),
+                enabled: field.control.enabled,
+                onChanged: (isSelected) =>
+                    field.didChange(isSelected! ? selection.add(value) : selection.remove(value)),
+                title: Text('${formats.formatPrice(value.price)} - ${value.title}'),
+                subtitle: Text(value.description),
+              );
+            }).toList(),
           );
         },
       );
@@ -212,10 +217,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
             child: Row(
               children: [
                 Consumer(builder: (context, ref, child) {
-                  final quantity =
-                      ref.watch(_quantityFb.select((state) => state.value.toDecimal()));
-                  final extras = ref.watch(_addableIngredientsFb
-                      .select((state) => state.value.map((e) => e.price).toIList()));
+                  final quantity = Decimal.fromInt(ref.watch(_quantityFb.provider.value) ?? 0);
+                  final extras =
+                      ref.watch(_addableIngredientsFb.provider.value)?.map((e) => e.price) ?? [];
                   final total = (product.price + extras.sum) * quantity;
 
                   return Text(formats.formatPrice(total), style: textTheme.labelLarge);
@@ -223,8 +227,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
                 const SizedBox(width: 12.0),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: isIdle && canSubmit
-                        ? () => _upsertProduct((cartId: cart.id, productId: product.id))
+                    onPressed: isIdle
+                        ? () => upsertProduct((cartId: cart.id, productId: product.id))
                         : null,
                     child: const Text('Add to Cart'),
                   ),

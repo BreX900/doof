@@ -2,8 +2,8 @@ import 'package:core/src/features/categories/dto/category_dto.dart';
 import 'package:core/src/features/categories/repositories/categories_repository.dart';
 import 'package:core/src/shared/core_utils.dart';
 import 'package:core/src/shared/data/identifiable.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
-import 'package:riverbloc/riverbloc.dart';
 
 abstract class CategoriesProviders {
   static final all = FutureProvider.family((ref, String organizationId) async {
@@ -12,14 +12,14 @@ abstract class CategoriesProviders {
 
   /// ========== ADMIN
 
-  static final pageCursor = BlocProvider<CursorBloc, CursorState>((ref) {
+  static final pageCursor = StateNotifierProvider<CursorBloc, CursorState>((ref) {
     return CursorBloc(size: CoreUtils.tableSize);
   });
 
   static final page = FutureProvider.family((ref, String organizationId) async {
     final cursor = ref.watch(pageCursor.select((state) => state.pageCursor));
     final page = await CategoriesRepository.instance.fetchPage(organizationId, cursor);
-    ref.read(pageCursor.bloc).registerOffsets(page.ids);
+    ref.read(pageCursor.notifier).registerOffsets(page.ids);
     return page;
   });
 
@@ -31,7 +31,7 @@ abstract class CategoriesProviders {
   });
 
   static Future<void> upsert(
-    Ref ref,
+    MutationRef ref,
     String organizationId, {
     required String? id,
     required int weight,

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks
+// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks, unused_field
 
 part of 'order_item_dto.dart';
 
@@ -50,32 +50,6 @@ mixin _$OrderItemDto {
       .toString();
 }
 
-class _OrderItemDtoFields {
-  // ignore: unused_element
-  const _OrderItemDtoFields([this._path = '']);
-
-  final String _path;
-
-  String get id => '${_path}id';
-
-  String get createdAt => '${_path}createdAt';
-
-  String get buyers => '${_path}buyers';
-
-  ProductDtoFields get product => ProductDtoFields('${_path}product.');
-
-  String get quantity => '${_path}quantity';
-
-  String get ingredients => '${_path}ingredients';
-
-  String get levels => '${_path}levels';
-
-  String get payedAmount => '${_path}payedAmount';
-
-  @override
-  String toString() => _path.isEmpty ? '_OrderItemDtoFields()' : _path;
-}
-
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
@@ -87,7 +61,7 @@ OrderItemDto _$OrderItemDtoFromJson(Map<String, dynamic> json) => OrderItemDto(
       buyers:
           IList<String>.fromJson(json['buyers'], (value) => value as String),
       product: ProductDto.fromJson(json['product'] as Map<String, dynamic>),
-      quantity: json['quantity'] as int,
+      quantity: (json['quantity'] as num).toInt(),
       ingredients: IList<OrderIngredientDto>.fromJson(
           json['ingredients'],
           (value) =>
@@ -96,6 +70,17 @@ OrderItemDto _$OrderItemDtoFromJson(Map<String, dynamic> json) => OrderItemDto(
           (value) => OrderLevelDto.fromJson(value as Map<String, dynamic>)),
       payedAmount: Decimal.fromJson(json['payedAmount'] as String),
     );
+
+abstract final class _$OrderItemDtoJsonKeys {
+  static const String id = 'id';
+  static const String createdAt = 'createdAt';
+  static const String buyers = 'buyers';
+  static const String product = 'product';
+  static const String quantity = 'quantity';
+  static const String ingredients = 'ingredients';
+  static const String levels = 'levels';
+  static const String payedAmount = 'payedAmount';
+}
 
 Map<String, dynamic> _$OrderItemDtoToJson(OrderItemDto instance) =>
     <String, dynamic>{

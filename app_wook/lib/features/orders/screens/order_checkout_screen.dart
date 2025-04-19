@@ -7,10 +7,10 @@ import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/features/orders/utils/orders_utils.dart';
 import 'package:mek_gasol/features/products/utils/purchasable_products_utils.dart';
-import 'package:mek_gasol/shared/widgets/bottom_button_bar.dart';
-import 'package:mek_gasol/shared/widgets/hide_banner_button.dart';
+import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
+import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 
-final _stateProvider = FutureProvider.autoDispose((ref) async {
+final _screenProvider = FutureProvider.autoDispose((ref) async {
   final cart = await ref.watch(CartsProviders.public((Env.organizationId, Env.cartId)).future);
   final items = await ref.watch(CartItemsProviders.all((Env.organizationId, Env.cartId)).future);
   final message = OrdersUtils.generateMessage(items);
@@ -18,28 +18,24 @@ final _stateProvider = FutureProvider.autoDispose((ref) async {
   return (cart: cart, items: items, message: message);
 });
 
-class OrderCheckoutScreen extends ConsumerStatefulWidget with AsyncConsumerStatefulWidget {
-  OrderCheckoutScreen({
-    super.key,
-  });
-
-  late final stateProvider = _stateProvider;
+class OrderCheckoutScreen extends ConsumerStatefulWidget {
+  const OrderCheckoutScreen({super.key});
 
   @override
   ConsumerState<OrderCheckoutScreen> createState() => _OrderCheckoutScreenState();
-
-  @override
-  ProviderBase<Object?> get asyncProvider => stateProvider;
 }
 
-class _OrderCheckoutScreenState extends ConsumerState<OrderCheckoutScreen> with AsyncConsumerState {
+class _OrderCheckoutScreenState extends ConsumerState<OrderCheckoutScreen> {
+  AutoDisposeFutureProvider<({CartModel cart, IList<CartItemModel> items, String message})>
+      get _provider => _screenProvider;
+
   VoidCallback? _bannerCartChangedCloser;
   bool _isCartOrdering = false;
 
   @override
   void initState() {
     super.initState();
-    ref.listenManualFuture(widget.stateProvider.future, (_) async {
+    ref.listenManualFuture(_provider.future, (_) async {
       await _showCartUpdatedBanner();
     });
   }
@@ -68,8 +64,8 @@ class _OrderCheckoutScreenState extends ConsumerState<OrderCheckoutScreen> with 
   }
 
   late final _placeOrder = ref.mutation((ref, arg) async {
-    final data = await ref.read(_stateProvider.future);
-    await CartsProviders.sendOrder(
+    final data = await ref.read(_screenProvider.future);
+    return await CartsProviders.sendOrder(
       ref,
       Env.organizationId,
       cart: data.cart,
@@ -77,53 +73,41 @@ class _OrderCheckoutScreenState extends ConsumerState<OrderCheckoutScreen> with 
     );
   }, onStart: (_) {
     _isCartOrdering = true;
-  }, onSuccess: (_, __) {
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
+  }, onSuccess: (_, orderId) {
     _isCartOrdering = false;
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      backgroundColor: colors.primary,
-      content: const Text('Order sent!'),
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Order sent!'),
     ));
-    Navigator.pop(context);
+    OrderRoute(orderId, isNew: true).go(context);
   });
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(widget.stateProvider);
+    final state = ref.watch(_provider);
     final items = state.valueOrNull;
 
-    final isIdle = ref.watchIdle(mutations: [_placeOrder]);
+    final isIdle = !ref.watchIsMutating([_placeOrder]);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Conferma invio ordine'),
       ),
+      floatingActionButton: FixedFloatingActionButton.extended(
+        onPressed: isIdle && items != null && _bannerCartChangedCloser == null
+            ? () => _placeOrder(null)
+            : null,
+        icon: const Icon(Icons.send),
+        label: const Text('Invia'),
+      ),
       body: state.buildView(
+        onRefresh: () => ref.invalidateWithAncestors(_provider),
         data: (items) => _buildBody(
           context,
           items: items.items,
           message: items.message,
         ),
-      ),
-      bottomNavigationBar: BottomButtonBar(
-        children: [
-          Expanded(
-            child: TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annulla'),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: ElevatedButton(
-              onPressed: isIdle && items != null && _bannerCartChangedCloser == null
-                  ? () => _placeOrder(null)
-                  : null,
-              child: const Text('Invia'),
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -1,8 +1,11 @@
 include: package:mek_lints/flutter.yaml
 
-#analyzer:
-#  enable-experiment:
-#    - inline-class
+formatter:
+  page_width: 100
+
+analyzer:
+  exclude:
+    - '**'
 
 # https://dart.dev/tools/linter-rules
 # https://dart-lang.github.io/linter/lints/index.html.

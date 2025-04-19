@@ -1,4 +1,3 @@
-import 'package:app_button/apis/riverpod/safe_ref.dart';
 import 'package:app_button/features/products/widgets/product_tile.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:app_button/shared/widgets/sliver_order_status_bar.dart';
@@ -8,10 +7,9 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 
-final _stateProvider = FutureProvider.family((unsafeRef, String organizationId) async {
-  final ref = unsafeRef.safe;
-
+final _stateProvider = FutureProvider.family((ref, String organizationId) async {
   final user = await ref.watch(UsersProviders.currentAuth.future);
   final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
   final products = await ref.watch(ProductsProviders.all(organizationId).future);

@@ -11,7 +11,7 @@ import 'package:core/src/features/users/dto/user_dto.dart';
 import 'package:core/src/shared/instances.dart';
 import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
-import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 
 class OrderItemsRepository {
   static OrderItemsRepository get instance => OrderItemsRepository._();

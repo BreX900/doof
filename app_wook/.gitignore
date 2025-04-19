@@ -41,6 +41,6 @@ app.*.map.json
 /macos/Runner/GoogleService-Info.plist
 
 # Custom
-.env*
+_/.env
 .env*.json
 assets/logo_ios.png

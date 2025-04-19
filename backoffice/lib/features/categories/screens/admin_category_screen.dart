@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:backoffice/shared/widgets/admin_body_layout.dart';
-import 'package:backoffice/shared/widgets/bottom_button_bar.dart';
 import 'package:backoffice/shared/widgets/sliver_fields_layout.dart';
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 final _stateProvider = FutureProvider.autoDispose
     .family((ref, (String organizationId, String? categoryId) args) async {
@@ -39,15 +39,15 @@ class AdminCategoryScreen extends ConsumerStatefulWidget with AsyncConsumerState
 }
 
 class _AdminCategoryScreenState extends ConsumerState<AdminCategoryScreen> with AsyncConsumerState {
-  final _titleFb = FieldBloc(
+  final _titleFb = FormControlTyped<String>(
     initialValue: '',
-    validator: const TextValidation(minLength: 3).call,
+    validators: [ValidatorsTyped.required(), ValidatorsTyped.text(minLength: 3)],
   );
-  final _weightFb = FieldBloc<int>(
+  final _weightFb = FormControlTyped<int>(
     initialValue: 0,
   );
 
-  late final _form = ListFieldBloc<void>(fieldBlocs: [_titleFb, _weightFb]);
+  late final _form = FormArray<void>([_titleFb, _weightFb]);
 
   @override
   void initState() {
@@ -83,7 +83,7 @@ class _AdminCategoryScreenState extends ConsumerState<AdminCategoryScreen> with 
   Widget build(BuildContext context) {
     final state = ref.watch(widget.stateProvider);
     final items = state.valueOrNull;
-    final isIdle = ref.watchIdle(mutations: [_upsertCategory]);
+    final isIdle = !ref.watchIsMutating([_upsertCategory]);
 
     return Scaffold(
       appBar: AppBar(
@@ -108,18 +108,16 @@ class _AdminCategoryScreenState extends ConsumerState<AdminCategoryScreen> with 
 
   Widget _buildBody(BuildContext context) {
     final fields = [
-      FieldText(
-        fieldBloc: _titleFb,
-        converter: FieldConvert.text,
+      ReactiveTextField(
+        formControl: _titleFb,
         maxLines: 2,
         minLines: 1,
         keyboardType: TextInputType.text,
         decoration: const InputDecoration(labelText: 'Title'),
       ),
-      FieldText(
-        fieldBloc: _weightFb,
-        converter: FieldConvert.integer,
-        type: const TextFieldType.integer(),
+      ReactiveTypedTextField(
+        formControl: _weightFb,
+        variant: const TextFieldVariant.integer(),
         decoration: const InputDecoration(labelText: 'Weight'),
       ),
     ];

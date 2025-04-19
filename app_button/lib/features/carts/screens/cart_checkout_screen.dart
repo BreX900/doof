@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:app_button/shared/widgets/app_button_bar.dart';
 import 'package:app_button/shared/widgets/paragraph.dart';
 import 'package:core/core.dart';
@@ -9,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 final _stateProvider = FutureProvider.autoDispose.family((ref, (String organizaionId,) args) async {
   final (organizationId,) = args;
@@ -35,13 +34,13 @@ class CartCheckoutScreen extends ConsumerStatefulWidget {
 }
 
 class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
-  final _placeFb = FieldBloc(initialValue: '');
+  final _placeFb = FormControlTyped(initialValue: '');
 
-  late final _form = ListFieldBloc(fieldBlocs: [_placeFb]);
+  late final _form = FormArray([_placeFb]);
 
   @override
   void dispose() {
-    unawaited(_form.close());
+    _form.dispose();
     super.dispose();
   }
 
@@ -52,7 +51,7 @@ class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
       widget.organizationId,
       cart: arg.cart,
       items: arg.cartItems,
-      place: _placeFb.state.value,
+      place: _placeFb.value,
     );
   });
 
@@ -63,7 +62,7 @@ class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
   }) {
     final formats = AppFormats.of(context);
 
-    final isIdle = ref.watchIdle(mutations: [_checkout]);
+    final isIdle = !ref.watchIsMutating([_checkout]);
     final total = cartItems.fold(Decimal.zero, (total, item) => total + item.totalCost);
 
     return Column(
@@ -71,10 +70,9 @@ class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
         const SizedBox(height: 16.0),
         Paragraph(
           title: const Text('Ombrellone'),
-          child: FieldText(
-            fieldBloc: _placeFb,
-            converter: FieldConvert.text,
-            decoration: FieldBuilder.decorationBorderless.copyWith(
+          child: ReactiveTextField(
+            formControl: _placeFb,
+            decoration: InputDecorations.borderless.copyWith(
               prefixIcon: const Icon(Icons.tag_outlined),
             ),
           ),

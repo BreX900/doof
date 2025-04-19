@@ -1,5 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
+// ignore_for_file: unused_field
+
 part of 'app_routes.dart';
 
 // **************************************************************************
@@ -20,7 +22,7 @@ RouteBase get $userAreaRoute => GoRouteData.$route(
         ),
         GoRouteData.$route(
           path: 'orders/:orderId',
-          factory: $OrdersRouteExtension._fromState,
+          factory: $OrderRouteExtension._fromState,
           routes: [
             GoRouteData.$route(
               path: 'stat',
@@ -47,6 +49,10 @@ RouteBase get $userAreaRoute => GoRouteData.$route(
         GoRouteData.$route(
           path: 'carts/items/:cartItemId',
           factory: $CartItemRouteExtension._fromState,
+        ),
+        GoRouteData.$route(
+          path: 'invoices/create',
+          factory: $InvoiceCreateRouteExtension._fromState,
         ),
         GoRouteData.$route(
           path: 'invoices/:invoiceId',
@@ -94,13 +100,19 @@ extension $ProductRouteExtension on ProductRoute {
       context.replace(location, extra: $extra);
 }
 
-extension $OrdersRouteExtension on OrdersRoute {
-  static OrdersRoute _fromState(GoRouterState state) => OrdersRoute(
+extension $OrderRouteExtension on OrderRoute {
+  static OrderRoute _fromState(GoRouterState state) => OrderRoute(
         state.pathParameters['orderId']!,
+        isNew: _$convertMapValue(
+                'is-new', state.uri.queryParameters, _$boolConverter) ??
+            false,
       );
 
   String get location => GoRouteData.$location(
         '/orders/${Uri.encodeComponent(orderId)}',
+        queryParams: {
+          if (isNew != false) 'is-new': isNew.toString(),
+        },
       );
 
   void go(BuildContext context) => context.go(location);
@@ -223,6 +235,24 @@ extension $CartItemRouteExtension on CartItemRoute {
   void replace(BuildContext context) => context.replace(location);
 }
 
+extension $InvoiceCreateRouteExtension on InvoiceCreateRoute {
+  static InvoiceCreateRoute _fromState(GoRouterState state) =>
+      const InvoiceCreateRoute();
+
+  String get location => GoRouteData.$location(
+        '/invoices/create',
+      );
+
+  void go(BuildContext context) => context.go(location);
+
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  void replace(BuildContext context) => context.replace(location);
+}
+
 extension $InvoiceRouteExtension on InvoiceRoute {
   static InvoiceRoute _fromState(GoRouterState state) => InvoiceRoute(
         state.pathParameters['invoiceId']!,
@@ -240,4 +270,24 @@ extension $InvoiceRouteExtension on InvoiceRoute {
       context.pushReplacement(location);
 
   void replace(BuildContext context) => context.replace(location);
+}
+
+T? _$convertMapValue<T>(
+  String key,
+  Map<String, String> map,
+  T? Function(String) converter,
+) {
+  final value = map[key];
+  return value == null ? null : converter(value);
+}
+
+bool _$boolConverter(String value) {
+  switch (value) {
+    case 'true':
+      return true;
+    case 'false':
+      return false;
+    default:
+      throw UnsupportedError('Cannot convert "$value" into a bool.');
+  }
 }

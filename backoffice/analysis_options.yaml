@@ -1,8 +1,12 @@
 include: package:mek_lints/flutter.yaml
 
+formatter:
+  page_width: 100
+
 analyzer:
   exclude:
     - lib/core.dart
+    - '**'
 
 # https://dart.dev/tools/linter-rules
 # https://dart-lang.github.io/linter/lints/index.html.

@@ -5,11 +5,11 @@ import 'package:mek_data_class/mek_data_class.dart';
 
 part 'cart_dto.g.dart';
 
-@DataClass(createFieldsClass: true)
-@DtoSerializable()
-class CartDto with Identifiable, _$CartDto {
-  static const fields = _CartDtoFields();
+typedef CartDtoFields = _$CartDtoJsonKeys;
 
+@DataClass()
+@DtoSerializable(createJsonKeys: true)
+class CartDto with Identifiable, _$CartDto {
   @override
   final String id;
   final String ownerId;

@@ -1,5 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
+// ignore_for_file: unused_field
+
 part of 'heart_model.dart';
 
 // **************************************************************************
@@ -13,6 +15,7 @@ mixin _$LifeBar {
       identical(this, other) ||
       other is LifeBar &&
           runtimeType == other.runtimeType &&
+          _self.user == other.user &&
           _self.data == other.data &&
           _self.full == other.full &&
           _self.missed == other.missed &&
@@ -23,6 +26,7 @@ mixin _$LifeBar {
   @override
   int get hashCode {
     var hashCode = 0;
+    hashCode = $hashCombine(hashCode, _self.user.hashCode);
     hashCode = $hashCombine(hashCode, _self.data.hashCode);
     hashCode = $hashCombine(hashCode, _self.full.hashCode);
     hashCode = $hashCombine(hashCode, _self.missed.hashCode);
@@ -35,6 +39,7 @@ mixin _$LifeBar {
 
   @override
   String toString() => (ClassToString('LifeBar')
+        ..add('user', _self.user)
         ..add('data', _self.data)
         ..add('full', _self.full)
         ..add('missed', _self.missed)

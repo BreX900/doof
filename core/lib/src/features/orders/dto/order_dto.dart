@@ -18,11 +18,11 @@ enum OrderStatus {
   delivered,
 }
 
-@DataClass(createFieldsClass: true)
-@DtoSerializable()
-class OrderDto with Identifiable, _$OrderDto {
-  static const fields = _OrderDtoFields();
+typedef OrderDtoFields = _$OrderDtoJsonKeys;
 
+@DataClass()
+@DtoSerializable(createJsonKeys: true)
+class OrderDto with Identifiable, _$OrderDto {
   @override
   final String id;
   final String? originCartId;

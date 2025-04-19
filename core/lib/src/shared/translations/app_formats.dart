@@ -1,4 +1,5 @@
 import 'package:decimal/decimal.dart';
+import 'package:decimal/intl.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
@@ -15,14 +16,16 @@ class AppFormats {
   static AppFormats of(BuildContext context) => Localizations.of(context, AppFormats)!;
 
   String formatPrice(Decimal price) {
-    return NumberFormat.compactSimpleCurrency(
+    return DecimalFormatter(NumberFormat.compactSimpleCurrency(
       locale: _locale,
       name: 'EUR',
-    ).format(price.toDouble());
+    )).format(price);
   }
 
   String formatDouble(double value) =>
       NumberFormat.decimalPatternDigits(locale: _locale, decimalDigits: 2).format(value);
+
+  String formatPercent(double value) => NumberFormat.percentPattern(_locale).format(value);
 
   String formatDate(DateTime date) => DateFormat.yMd(_locale).format(date);
 

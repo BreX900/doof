@@ -1,8 +1,4 @@
-import 'dart:async';
-
-import 'package:app_button/apis/material/text_icon.dart';
 import 'package:app_button/shared/data/r.dart';
-import 'package:app_button/shared/form/field_phone_number.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
-import 'package:phone_form_field/phone_form_field.dart';
+import 'package:reactive_phone_form_field/reactive_phone_form_field.dart';
 
 class SignInPhoneNumberScreen extends ConsumerStatefulWidget {
   final String? organizationId;
@@ -29,23 +25,25 @@ class SignInPhoneNumberScreen extends ConsumerStatefulWidget {
 }
 
 class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScreen> {
-  final _phoneNumberFb = FieldBloc<PhoneNumber?>(
-    initialValue: null,
-    validator: RequiredValidation<PhoneNumber>(validators: [
-      (value) {
+  final _phoneNumberFb = FormControlTypedOptional<PhoneNumber>(
+    validators: [
+      ValidatorsTyped.required(),
+      ValidatorsTyped.from((control) {
+        final value = control.value;
+        if (value == null) return null;
         if (value.isValid(type: PhoneNumberType.mobile)) return null;
-        return const InvalidValidationError();
-      }
-    ]),
+        return {ValidationCodes.invalid: null};
+      }),
+    ],
   );
 
-  final _sentCodeFb = FieldBloc(
+  final _sentCodeFb = FormControlTyped<String>(
     initialValue: '',
-    validator: const TextValidation(minLength: 6),
+    validators: [ValidatorsTyped.required(), ValidatorsTyped.text(minLength: 6)],
   );
 
-  late final _signIn = ref.mutation((ref, arg) async {
-    final phoneNumber = _phoneNumberFb.state.value!;
+  late final _signIn = ref.mutation((ref, Nil _) async {
+    final phoneNumber = _phoneNumberFb.value!;
     return UsersProviders.signInWithPhoneNumber(ref, phoneNumber.international);
   }, onSuccess: (_, verificationId) {
     SignInPhoneNumberRoute(
@@ -59,7 +57,7 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
       ref,
       verificationId,
       organizationId: widget.organizationId,
-      code: _sentCodeFb.state.value,
+      code: _sentCodeFb.value,
     );
   }, onSuccess: (_, __) {
     final organizationId = widget.organizationId;
@@ -74,7 +72,7 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
 
   @override
   void dispose() {
-    unawaited(_sentCodeFb.close());
+    _sentCodeFb.dispose();
     super.dispose();
   }
 
@@ -117,44 +115,43 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
     final verificationId = widget.verificationId;
     switch (verificationId) {
       case null:
-        final isIdle = ref.watchIdle(mutations: [_signIn]);
-        final canSubmit = ref.watchCanSubmit(_phoneNumberFb);
+        final isIdle = !ref.watchIsMutating([_signIn]);
+        final signIn = _phoneNumberFb.handleSubmit(_signIn.run);
 
         return _buildContent(
           title: const Text('Ultimo sforzo, conferma il tuo ordine tramite sms\n\nGrazie!'),
-          field: FieldPhoneNumber(
-            fieldBloc: _phoneNumberFb,
+          field: ReactivePhoneFormField(
+            formControl: _phoneNumberFb,
             // converter: FieldConvert.text,
             // type: const TextFieldType.numeric(),
-            decoration: FieldBuilder.decorationBorderless.copyWith(
+            decoration: InputDecorations.borderless.copyWith(
               iconColor: colors.primary,
               icon: const TextIcon('#'),
               hintText: 'numero',
             ),
           ),
           action: OutlinedButton(
-            onPressed: isIdle && canSubmit ? () => _signIn(null) : null,
+            onPressed: isIdle ? () => signIn(nil) : null,
             child: const Text('SEND'),
           ),
         );
       default:
-        final isIdle = ref.watchIdle(mutations: [_confirmVerification]);
-        final canSubmit = ref.watchCanSubmit(_sentCodeFb);
+        final isIdle = !ref.watchIsMutating([_confirmVerification]);
+        final confirmVerification = _sentCodeFb.handleSubmit(_confirmVerification.run);
 
         return _buildContent(
           title: const Text('Ultimo sforzo, conferma il tuo ordine tramite sms\n\nGrazie!'),
-          field: FieldText(
-            fieldBloc: _sentCodeFb,
-            converter: FieldConvert.text,
-            type: const TextFieldType.integer(),
-            decoration: FieldBuilder.decorationBorderless.copyWith(
+          field: ReactiveTypedTextField(
+            formControl: _sentCodeFb,
+            variant: const TextFieldVariant.integer(),
+            decoration: InputDecorations.borderless.copyWith(
               iconColor: colors.primary,
               icon: const TextIcon('#'),
               hintText: 'Codice',
             ),
           ),
           action: OutlinedButton(
-            onPressed: isIdle && canSubmit ? () => _confirmVerification(verificationId) : null,
+            onPressed: isIdle ? () => confirmVerification(verificationId) : null,
             child: const Text('CONFIRM'),
           ),
         );

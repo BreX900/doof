@@ -1,5 +1,4 @@
 import 'package:app_button/apis/flutter_svg/svg_icon.dart';
-import 'package:app_button/apis/riverpod/safe_ref.dart';
 import 'package:app_button/shared/data/r.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:core/core.dart';
@@ -7,9 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 
-final _stateProvider = FutureProvider.family((unsafeRef, String organizationId) async {
-  final ref = unsafeRef.safe;
-
+final _stateProvider = FutureProvider.family((ref, String organizationId) async {
   final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
 
   return (organization: organization);

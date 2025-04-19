@@ -16,7 +16,7 @@ part 'app_routes.g.dart';
 
 @TypedGoRoute<UserAreaRoute>(path: '/', routes: [
   TypedGoRoute<ProductRoute>(path: 'products/:productId'),
-  TypedGoRoute<OrdersRoute>(path: 'orders/:orderId', routes: [
+  TypedGoRoute<OrderRoute>(path: 'orders/:orderId', routes: [
     TypedGoRoute<OrderStatRoute>(path: 'stat'),
     TypedGoRoute<OrderInvoiceRoute>(path: 'invoice'),
   ]),
@@ -24,6 +24,7 @@ part 'app_routes.g.dart';
   TypedGoRoute<CartStatsRoute>(path: 'cart/stat'),
   TypedGoRoute<OrderCheckoutRoute>(path: 'carts/checkout'),
   TypedGoRoute<CartItemRoute>(path: 'carts/items/:cartItemId'),
+  TypedGoRoute<InvoiceCreateRoute>(path: 'invoices/create'),
   TypedGoRoute<InvoiceRoute>(path: 'invoices/:invoiceId'),
 ])
 class UserAreaRoute extends GoRouteData {
@@ -112,16 +113,17 @@ class OrderCheckoutRoute extends GoRouteData {
   }
 }
 
-class OrdersRoute extends GoRouteData {
+class OrderRoute extends GoRouteData {
   final String orderId;
+  final bool isNew;
 
-  const OrdersRoute(this.orderId);
+  const OrderRoute(this.orderId, {this.isNew = false});
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: order_screen.loadLibrary,
-      builder: (context) => order_screen.OrderScreen(orderId: orderId),
+      builder: (context) => order_screen.OrderScreen(orderId: orderId, isNew: isNew),
     );
   }
 }
@@ -163,7 +165,19 @@ class InvoiceRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: invoice_screen.loadLibrary,
-      builder: (context) => invoice_screen.InvoiceScreen(invoiceId: invoiceId),
+      builder: (context) => invoice_screen.InvoiceScreen.update(invoiceId: invoiceId),
+    );
+  }
+}
+
+class InvoiceCreateRoute extends GoRouteData {
+  const InvoiceCreateRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return DeferredLibraryBuilder(
+      loader: invoice_screen.loadLibrary,
+      builder: (context) => invoice_screen.InvoiceScreen(),
     );
   }
 }

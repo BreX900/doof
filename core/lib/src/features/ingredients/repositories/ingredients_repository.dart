@@ -4,7 +4,7 @@ import 'package:core/src/features/ingredients/dto/ingredient_dto.dart';
 import 'package:core/src/features/organizations/repositories/organizations_repository.dart';
 import 'package:core/src/shared/instances.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
-import 'package:pure_extensions/pure_extensions.dart';
+import 'package:mekart/mekart.dart';
 
 class LevelsRepository {
   static LevelsRepository get instance => LevelsRepository._();
@@ -21,7 +21,7 @@ class LevelsRepository {
       .withJsonConverter(LevelDto.fromJson);
 
   Future<void> save(String organizationId, LevelDto level) async {
-    await _ref(organizationId).doc(level.id.nullIfEmpty()).set(level);
+    await _ref(organizationId).doc(level.id.nullIfEmpty).set(level);
   }
 
   Future<void> delete(String organizationId, LevelDto level) async {
@@ -31,7 +31,7 @@ class LevelsRepository {
   Future<IList<LevelDto>> fetchAll(String organizationId) async {
     final snapshot = await _ref(organizationId)
         // .where(IngredientDto.fields.productIds, arrayContains: productId)
-        .orderBy(LevelDto.fields.title)
+        .orderBy(LevelDtoFields.title)
         .get();
     return snapshot.docs.map((e) => e.data()).toIList();
   }

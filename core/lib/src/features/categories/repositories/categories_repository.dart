@@ -5,7 +5,7 @@ import 'package:core/src/features/organizations/repositories/organizations_repos
 import 'package:core/src/shared/instances.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:mek/mek.dart';
-import 'package:pure_extensions/pure_extensions.dart';
+import 'package:mekart/mekart.dart';
 
 class CategoriesRepository {
   static CategoriesRepository get instance => CategoriesRepository._();
@@ -22,7 +22,7 @@ class CategoriesRepository {
       .withJsonConverter(CategoryDto.fromJson);
 
   Future<void> upsert(String organizationId, CategoryDto category) async {
-    await _ref(organizationId).doc(category.id.nullIfEmpty()).set(category);
+    await _ref(organizationId).doc(category.id.nullIfEmpty).set(category);
   }
 
   Future<void> delete(String organizationId, CategoryDto category) async {
@@ -35,7 +35,7 @@ class CategoriesRepository {
   }
 
   Future<IList<CategoryDto>> fetchAll(String organizationId) async {
-    final snapshot = await _ref(organizationId).orderBy(CategoryDto.fields.weight).get();
+    final snapshot = await _ref(organizationId).orderBy(CategoryDtoFields.weight).get();
     return snapshot.docs.map((e) => e.data()).toIList();
   }
 

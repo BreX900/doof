@@ -6,31 +6,40 @@ import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/shared/navigation/areas/user_area.dart';
 import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
+import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mek_gasol/shared/widgets/sign_out_icon_button.dart';
 
-class OrdersScreen extends ConsumerStatefulWidget with AsyncConsumerStatefulWidget {
-  OrdersScreen({super.key});
-
-  late final stateProvider = OrdersProviders.all((
-    Env.organizationId,
-    whereNotStatusIn: const [],
-  ));
-
-  @override
-  ProviderBase<Object?> get asyncProvider => stateProvider;
+class OrdersScreen extends ConsumerStatefulWidget {
+  const OrdersScreen({super.key});
 
   @override
   ConsumerState<OrdersScreen> createState() => _OrdersScreenState();
 }
 
-class _OrdersScreenState extends ConsumerState<OrdersScreen> with AsyncConsumerState {
+class _OrdersScreenState extends ConsumerState<OrdersScreen> {
+  StreamProvider<IList<OrderModel>> get _provider => OrdersProviders.all((
+        Env.organizationId,
+        whereNotStatusIn: const [],
+      ));
+
+  late final _cancelOrder = ref.mutation((ref, OrderModel order) async {
+    final items = await ref.read(OrderItemsProviders.all((Env.organizationId, order.id)).future);
+    await CartItemsProviders.upsertFromOrder(ref, Env.organizationId, Env.cartId, items);
+
+    await OrdersProviders.delete(ref, Env.organizationId, order);
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
+  });
+
   late final _deleteOrder = ref.mutation((ref, OrderModel order) async {
     await OrdersProviders.delete(ref, Env.organizationId, order);
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
   });
 
   @override
   Widget build(BuildContext context) {
-    final orders = ref.watch(widget.stateProvider);
+    final orders = ref.watch(_provider);
 
     return Scaffold(
       appBar: AppBar(
@@ -43,24 +52,24 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> with AsyncConsumerS
         // ),
         // ],
       ),
-      body: AsyncViewBuilder(
-        state: orders,
-        builder: _buildBody,
+      body: orders.buildView(
+        onRefresh: () => ref.invalidateWithAncestors(_provider),
+        data: _buildBody,
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, IList<OrderModel> orders) {
+  Widget _buildBody(IList<OrderModel> orders) {
     if (orders.isEmpty) {
       return Consumer(builder: (context, ref, _) {
-        return InfoTile(
+        return InfoView(
           onTap: () => ref.read(UserArea.tab.notifier).state = UserAreaTab.carts,
           title: const Text('😰 Non hai ancora fatto nessun ordine! 😰\n🛒 Vai al carrello! 🛒'),
         );
       });
     }
 
-    final isIdle = ref.watchIdle(mutations: [_deleteOrder]);
+    final isMutating = ref.watchIsMutating([_deleteOrder]);
     final formats = AppFormats.of(context);
 
     return ListView.builder(
@@ -68,24 +77,28 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> with AsyncConsumerS
       itemBuilder: (context, index) {
         final order = orders[index];
 
-        return ListTile(
-          onTap: () => OrdersRoute(order.id).go(context),
-          title: Text('${formats.formatDateTime(order.createdAt)}  Status: ${order.status.name}'),
-          subtitle: Text('Total: ${formats.formatPrice(order.payedAmount)}'),
-          trailing: PopupMenuButton(
-            enabled: isIdle,
-            itemBuilder: (context) {
-              return [
-                if (order.status == OrderStatus.accepting)
-                  PopupMenuItem(
-                    onTap: () => _deleteOrder(order),
-                    child: const ListTile(
-                      title: Text('Delete'),
-                      leading: Icon(Icons.delete),
-                    ),
-                  ),
-              ];
-            },
+        return Dismissible(
+          key: ValueKey(order.id),
+          onDismissed: isMutating
+              ? (direction) => switch (direction) {
+                    DismissDirection.startToEnd => _cancelOrder(order),
+                    DismissDirection.endToStart => _deleteOrder(order),
+                    _ => null,
+                  }
+              : null,
+          background: const DismissingTile.left(
+            secondary: Icon(Icons.cancel),
+            title: Text('Cancel'),
+            subtitle: Text('Add items to cart'),
+          ),
+          secondaryBackground: const DismissingTile.right(
+            secondary: Icon(Icons.delete),
+            title: Text('Delete'),
+          ),
+          child: ListTile(
+            onTap: () => OrderRoute(order.id).go(context),
+            title: Text('${formats.formatDateTime(order.createdAt)}  Status: ${order.status.name}'),
+            subtitle: Text('Total: ${formats.formatPrice(order.payedAmount)}'),
           ),
         );
       },

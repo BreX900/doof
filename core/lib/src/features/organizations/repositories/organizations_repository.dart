@@ -4,7 +4,7 @@ import 'package:core/src/features/organizations/dto/organization_dto.dart';
 import 'package:core/src/shared/instances.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:mek/mek.dart';
-import 'package:pure_extensions/pure_extensions.dart';
+import 'package:mekart/mekart.dart';
 
 class OrganizationsRepository {
   static OrganizationsRepository get instance => OrganizationsRepository._();
@@ -18,7 +18,7 @@ class OrganizationsRepository {
       _firestore.collection(collection).withJsonConverter(OrganizationDto.fromJson);
 
   Future<void> save(OrganizationDto organization) async {
-    await _ref().doc(organization.id.nullIfEmpty()).set(organization);
+    await _ref().doc(organization.id.nullIfEmpty).set(organization);
   }
 
   Future<void> delete(OrganizationDto organization) async {

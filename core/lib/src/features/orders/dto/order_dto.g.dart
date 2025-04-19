@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks
+// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks, unused_field
 
 part of 'order_dto.dart';
 
@@ -62,40 +62,6 @@ mixin _$OrderDto {
       .toString();
 }
 
-class _OrderDtoFields {
-  // ignore: unused_element
-  const _OrderDtoFields([this._path = '']);
-
-  final String _path;
-
-  String get id => '${_path}id';
-
-  String get originCartId => '${_path}originCartId';
-
-  String get createdAt => '${_path}createdAt';
-
-  String get updatedAt => '${_path}updatedAt';
-
-  String get at => '${_path}at';
-
-  String get organizationId => '${_path}organizationId';
-
-  String get payerId => '${_path}payerId';
-
-  String get membersIds => '${_path}membersIds';
-
-  String get shippable => '${_path}shippable';
-
-  String get status => '${_path}status';
-
-  String get place => '${_path}place';
-
-  String get payedAmount => '${_path}payedAmount';
-
-  @override
-  String toString() => _path.isEmpty ? '_OrderDtoFields()' : _path;
-}
-
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
@@ -118,6 +84,21 @@ OrderDto _$OrderDtoFromJson(Map<String, dynamic> json) => OrderDto(
       place: json['place'] as String?,
       payedAmount: Decimal.fromJson(json['payedAmount'] as String),
     );
+
+abstract final class _$OrderDtoJsonKeys {
+  static const String id = 'id';
+  static const String originCartId = 'originCartId';
+  static const String createdAt = 'createdAt';
+  static const String updatedAt = 'updatedAt';
+  static const String at = 'at';
+  static const String organizationId = 'organizationId';
+  static const String payerId = 'payerId';
+  static const String membersIds = 'membersIds';
+  static const String shippable = 'shippable';
+  static const String status = 'status';
+  static const String place = 'place';
+  static const String payedAmount = 'payedAmount';
+}
 
 Map<String, dynamic> _$OrderDtoToJson(OrderDto instance) => <String, dynamic>{
       'id': instance.id,

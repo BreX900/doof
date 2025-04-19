@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks
+// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks, unused_field
 
 part of 'cart_dto.dart';
 
@@ -39,26 +39,6 @@ mixin _$CartDto {
         ..add('isPublic', _self.isPublic)
         ..add('title', _self.title))
       .toString();
-}
-
-class _CartDtoFields {
-  // ignore: unused_element
-  const _CartDtoFields([this._path = '']);
-
-  final String _path;
-
-  String get id => '${_path}id';
-
-  String get ownerId => '${_path}ownerId';
-
-  String get membersIds => '${_path}membersIds';
-
-  String get isPublic => '${_path}isPublic';
-
-  String get title => '${_path}title';
-
-  @override
-  String toString() => _path.isEmpty ? '_CartDtoFields()' : _path;
 }
 
 mixin _$CartItemDto {
@@ -153,6 +133,14 @@ CartDto _$CartDtoFromJson(Map<String, dynamic> json) => CartDto(
       title: json['title'] as String?,
     );
 
+abstract final class _$CartDtoJsonKeys {
+  static const String id = 'id';
+  static const String ownerId = 'ownerId';
+  static const String membersIds = 'membersIds';
+  static const String isPublic = 'isPublic';
+  static const String title = 'title';
+}
+
 Map<String, dynamic> _$CartDtoToJson(CartDto instance) => <String, dynamic>{
       'id': instance.id,
       'ownerId': instance.ownerId,
@@ -166,7 +154,7 @@ Map<String, dynamic> _$CartDtoToJson(CartDto instance) => <String, dynamic>{
 CartItemDto _$CartItemDtoFromJson(Map<String, dynamic> json) => CartItemDto(
       id: json['id'] as String,
       productId: json['productId'] as String,
-      quantity: json['quantity'] as int,
+      quantity: (json['quantity'] as num).toInt(),
       buyers:
           IList<String>.fromJson(json['buyers'], (value) => value as String),
       ingredientsRemoved: IList<String>.fromJson(

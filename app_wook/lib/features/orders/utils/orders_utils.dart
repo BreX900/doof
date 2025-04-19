@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
-import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 
 abstract class OrdersUtils {
   static String generateMessage(IList<ProductItem> items) {

@@ -29,7 +29,7 @@ class _AdminTicketScreenState extends ConsumerState<AdminTicketsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final idIdle = ref.watchIdle(mutations: [_updateTicket]);
+    final idIdle = !ref.watchIsMutating([_updateTicket]);
 
     return Scaffold(
       appBar: AppBar(

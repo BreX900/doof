@@ -5,6 +5,7 @@ global_options:
       ignore_for_file:
         - cast_nullable_to_non_nullable
         - unnecessary_null_checks
+        - unused_field
 
 targets:
   $default:
@@ -17,17 +18,14 @@ targets:
           - '**/*_dto.dart'
           - '**/*_dvo.dart'
           - '**/*_model.dart'
-          - '**/*blocs.dart'
           - '**/*routes.dart'
 
-      mek_data_class_generator|data_class:
+      mek_data_class_generator:
         generate_for:
           - '**/*_dto.dart'
           - '**/*_dvo.dart'
           - '**/*_model.dart'
-          - '**/*blocs.dart'
         options:
-          page_width: 100
           changes_visible: false
           fields_class_visible: false
 

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   final String? organizationId;
@@ -19,74 +20,74 @@ class SignInScreen extends ConsumerStatefulWidget {
 }
 
 class _SignInScreenState extends ConsumerState<SignInScreen> {
-  final _emailFb = FieldBloc(
+  final _emailFb = FormControlTyped<String>(
     initialValue: '',
-    validator: Validation.email,
+    validators: [ValidatorsTyped.required(), ValidatorsTyped.email()],
   );
-  final _passwordFb = FieldBloc(
+  final _passwordFb = FormControlTyped<String>(
     initialValue: '',
-    validator: const TextValidation(minLength: 1),
+    validators: [ValidatorsTyped.required()],
   );
 
-  final _form = ListFieldBloc<void>();
+  late final _form = FormArray<void>([_emailFb, _passwordFb]);
 
   late final _signIn = ref.mutation((ref, arg) async {
     await UsersProviders.signIn(
       ref,
-      email: _emailFb.state.value,
-      password: _passwordFb.state.value,
+      email: _emailFb.value,
+      password: _passwordFb.value,
       organizationId: widget.organizationId,
     );
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
   });
 
   late final _sendPasswordResetEmail = ref.mutation((ref, arg) async {
-    await UsersProviders.sendPasswordResetEmail(ref, _emailFb.state.value);
+    await UsersProviders.sendPasswordResetEmail(ref, _emailFb.value);
+  }, onError: (_, error) {
+    CoreUtils.showErrorSnackBar(context, error);
   }, onSuccess: (_, __) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Sent password reset email to ${_emailFb.state.value}!'),
+      content: Text('Sent password reset email to ${_emailFb.value}!'),
     ));
   });
 
   @override
   void initState() {
     super.initState();
-    _form.addFieldBlocs([_emailFb, _passwordFb]);
 
     if (!kDebugMode) return;
-    _emailFb.changeValue('brexmaster@gmail.com');
-    _passwordFb.changeValue(r'Password123$');
+    _emailFb.updateValue('brexmaster@gmail.com');
+    _passwordFb.updateValue(r'Password123$');
   }
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = ref.watchIdle(mutations: [_signIn, _sendPasswordResetEmail]);
-    final canSubmitSignInForm = ref.watchCanSubmit(_form);
-    final canSubmitResetPasswordForm = ref.watchCanSubmit(_emailFb);
+    final isIdle = !ref.watchIsMutating([_signIn, _sendPasswordResetEmail]);
+    final signIn = _form.handleSubmit(_signIn.run);
+    final sendPasswordResetEmail = _emailFb.handleSubmit(_sendPasswordResetEmail.run);
 
     List<Widget> buildFields() {
       return [
-        FieldText(
-          fieldBloc: _emailFb,
-          converter: FieldConvert.text,
-          type: const TextFieldType.email(),
+        ReactiveTypedTextField(
+          formControl: _emailFb,
+          variant: const TextFieldVariant.email(),
           decoration: const InputDecoration(labelText: 'Email'),
         ),
-        FieldText(
-          fieldBloc: _passwordFb,
-          converter: FieldConvert.text,
-          type: const TextFieldType.password(),
+        ReactiveTypedTextField(
+          formControl: _passwordFb,
+          variant: const TextFieldVariant.password(),
           decoration: const InputDecoration(labelText: 'Password'),
         ),
         TextButton.icon(
-          onPressed:
-              isIdle && canSubmitResetPasswordForm ? () => _sendPasswordResetEmail(null) : null,
+          onPressed: isIdle ? () => sendPasswordResetEmail(null) : null,
           icon: const Icon(Icons.lock_reset_outlined),
           label: const Text('Send reset password email'),
         ),
       ];
     }
 
-    final scaffold = Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: const Text('Sign In'),
       ),
@@ -101,7 +102,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ElevatedButton.icon(
-                  onPressed: isIdle && canSubmitSignInForm ? () => _signIn(null) : null,
+                  onPressed: isIdle ? () => signIn(null) : null,
                   icon: const Icon(Icons.login),
                   label: const Text('Sign In'),
                 ),
@@ -119,11 +120,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           ],
         ),
       ),
-    );
-
-    return SkeletonForm(
-      onSubmit: isIdle ? () => _signIn(null) : null,
-      child: scaffold,
     );
   }
 }

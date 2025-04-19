@@ -14,16 +14,24 @@ enum Job {
   final double points;
 
   const Job(this.points);
+
+  String get label {
+    return switch (this) {
+      Job.garbageMan => 'Garbage Man',
+      Job.partner => 'Partner',
+      Job.driver => 'Driver',
+    };
+  }
 }
 
-@DataClass(createFieldsClass: true)
-@DtoSerializable()
-class InvoiceDto with Identifiable, _$InvoiceDto {
-  static const fields = _InvoiceDtoFields();
+typedef InvoiceDtoFields = _$InvoiceDtoJsonKeys;
 
+@DataClass()
+@DtoSerializable(createJsonKeys: true)
+class InvoiceDto with Identifiable, _$InvoiceDto {
   @override
   final String id;
-  final String orderId;
+  final String? orderId;
   final String payerId;
 
   final DateTime createdAt;

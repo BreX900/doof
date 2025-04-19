@@ -9,6 +9,7 @@ import 'package:mek_gasol/features/orders/screens/orders_screen.dart' deferred a
 import 'package:mek_gasol/features/products/screens/products_screen.dart'
     deferred as products_screen;
 import 'package:mek_gasol/features/sheet/screens/invoices_screen.dart' deferred as invoices_screen;
+import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 
 final _areaProvider = FutureProvider((ref) async {
   final userId = await ref.watch(UsersProviders.currentId.future);
@@ -36,6 +37,8 @@ class UserArea extends ConsumerStatefulWidget {
 }
 
 class _UserAreaState extends ConsumerState<UserArea> {
+  FutureProvider<bool> get _provider => _areaProvider;
+
   Widget _buildTab(UserAreaTab tab) {
     switch (tab) {
       case UserAreaTab.invoices:
@@ -57,31 +60,6 @@ class _UserAreaState extends ConsumerState<UserArea> {
         return DeferredLibraryBuilder(
           loader: carts_screen.loadLibrary,
           builder: (context) => carts_screen.CartsScreen(),
-        );
-    }
-  }
-
-  BottomNavigationBarItem _buildBottomBarItem(UserAreaTab tab) {
-    switch (tab) {
-      case UserAreaTab.invoices:
-        return const BottomNavigationBarItem(
-          icon: Icon(Icons.folder_copy_outlined),
-          label: 'Invoices',
-        );
-      case UserAreaTab.orders:
-        return const BottomNavigationBarItem(
-          icon: Icon(Icons.library_books_outlined),
-          label: 'Orders',
-        );
-      case UserAreaTab.products:
-        return const BottomNavigationBarItem(
-          icon: Icon(Icons.fastfood_outlined),
-          label: 'Menu',
-        );
-      case UserAreaTab.carts:
-        return const BottomNavigationBarItem(
-          icon: Icon(Icons.shopping_cart_outlined),
-          label: 'Cart',
         );
     }
   }
@@ -111,14 +89,6 @@ class _UserAreaState extends ConsumerState<UserArea> {
     }
   }
 
-  Widget _buildBottomNavigationBar(WidgetRef ref, UserAreaTab tab) {
-    return BottomNavigationBar(
-      currentIndex: tab.index,
-      onTap: (index) => ref.read(UserArea.tab.notifier).state = UserAreaTab.values[index],
-      items: UserAreaTab.values.map(_buildBottomBarItem).toList(),
-    );
-  }
-
   Widget _buildNavigationBar(WidgetRef ref, UserAreaTab tab) {
     return NavigationBar(
       selectedIndex: tab.index,
@@ -131,27 +101,26 @@ class _UserAreaState extends ConsumerState<UserArea> {
   @override
   Widget build(BuildContext context) {
     final tab = ref.watch(UserArea.tab);
-    final state = ref.watch(_areaProvider);
+    final state = ref.watch(_provider);
 
-    final theme = Theme.of(context);
+    return state.buildView(
+      onRefresh: () => ref.invalidateWithAncestors(_provider),
+      data: (shouldJoinInCart) {
+        if (shouldJoinInCart) {
+          return DeferredLibraryBuilder(
+            loader: cart_screen.loadLibrary,
+            builder: (context) => cart_screen.CartScreen(),
+          );
+        }
 
-    return state.buildView(data: (shouldJoinInCart) {
-      if (shouldJoinInCart) {
-        return DeferredLibraryBuilder(
-          loader: cart_screen.loadLibrary,
-          builder: (context) => cart_screen.CartScreen(),
+        return Scaffold(
+          bottomNavigationBar: _buildNavigationBar(ref, tab),
+          body: IndexedStack(
+            index: tab.index,
+            children: UserAreaTab.values.map(_buildTab).toList(),
+          ),
         );
-      }
-
-      return Scaffold(
-        bottomNavigationBar: theme.useMaterial3
-            ? _buildNavigationBar(ref, tab)
-            : _buildBottomNavigationBar(ref, tab),
-        body: IndexedStack(
-          index: tab.index,
-          children: UserAreaTab.values.map(_buildTab).toList(),
-        ),
-      );
-    });
+      },
+    );
   }
 }

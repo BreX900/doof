@@ -1,7 +1,10 @@
 global_options:
   source_gen:combining_builder:
     options:
-      ignore_for_file: [ no_literal_bool_comparisons, constant_identifier_names ]
+      ignore_for_file:
+        - no_literal_bool_comparisons
+        - constant_identifier_names
+        - unused_field
 
 targets:
   $default:

@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
 import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
-import 'package:riverbloc/riverbloc.dart';
 
 abstract class ProductsProviders {
   static final all = FutureProvider.family((ref, String organizationId) async {
@@ -25,7 +25,7 @@ abstract class ProductsProviders {
 
   /// ========== ADMIN
 
-  static final pageCursor = BlocProvider<CursorBloc, CursorState>((ref) {
+  static final pageCursor = StateNotifierProvider<CursorBloc, CursorState>((ref) {
     return CursorBloc(debugLabel: '$ProductsProviders', size: CoreUtils.tableSize);
   });
 
@@ -36,7 +36,7 @@ abstract class ProductsProviders {
     final cursor = ref.watch(pageCursor.select((state) => state.pageCursor));
 
     final page = await ProductsRepository.instance.fetchPage(organizationId, cursor);
-    ref.read(pageCursor.bloc).registerOffsets(page.ids);
+    ref.read(pageCursor.notifier).registerOffsets(page.ids);
 
     return page
         .map((e) => _modelFrom(e, categories: categories, ingredients: ingredients, levels: levels))
@@ -56,7 +56,7 @@ abstract class ProductsProviders {
   });
 
   static Future<void> upsert(
-    Ref ref,
+    MutationRef ref,
     String organizationId, {
     required String? id,
     required String categoryId,

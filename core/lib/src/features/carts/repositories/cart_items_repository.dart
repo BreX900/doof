@@ -6,7 +6,7 @@ import 'package:core/src/features/carts/repositories/carts_repository.dart';
 import 'package:core/src/shared/instances.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:pure_extensions/pure_extensions.dart';
+import 'package:mekart/mekart.dart';
 import 'package:rxdart/rxdart.dart';
 
 class CartItemsRepository {
@@ -32,7 +32,7 @@ class CartItemsRepository {
   }
 
   Future<void> upsert(String cartId, CartItemDto item) async {
-    await _ref(cartId).doc(item.id.nullIfEmpty()).set(item);
+    await _ref(cartId).doc(item.id.nullIfEmpty).set(item);
   }
 
   Future<void> remove(String cartId, String cartProductId) async {

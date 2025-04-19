@@ -1,5 +1,7 @@
 import 'package:core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mek/mek.dart';
+import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/features/sheet/dto/invoice_dto.dart';
 import 'package:mek_gasol/features/sheet/repositories/invoices_repository.dart';
 
@@ -16,25 +18,36 @@ abstract class InvoicesProviders {
   });
 
   static Future<void> create(
-    Ref ref, {
-    required OrderModel order,
+    MutationRef ref, {
+    required OrderModel? order,
     required String payerId,
     required Map<String, InvoiceItemDto> items,
   }) async {
-    final invoice = await InvoicesRepository.instance.fetch(order.id);
-    if (invoice != null) throw AlreadyExistFailure('${InvoicesRepository.collection}/${order.id}');
+    if (order != null) {
+      final invoice = await InvoicesRepository.instance.fetch(order.id);
+      if (invoice != null) {
+        throw AlreadyExistFailure('${InvoicesRepository.collection}/${order.id}');
+      }
+    }
 
     await InvoicesRepository.instance.save(InvoiceDto(
-      id: order.id,
-      orderId: order.id,
-      createdAt: order.createdAt,
+      id: order?.id ?? '',
+      orderId: order?.id,
+      createdAt: order?.createdAt ?? DateTime.now(),
       payerId: payerId,
       items: items,
     ));
+
+    if (order == null) return;
+    await OrdersRepository.instance.update(
+      Env.organizationId,
+      order.id,
+      OrderUpdateDto(status: OrderStatus.delivered),
+    );
   }
 
   static Future<void> update(
-    Ref ref, {
+    MutationRef ref, {
     required InvoiceDto invoice,
     required String payerId,
     required Map<String, InvoiceItemDto> items,

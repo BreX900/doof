@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks
+// ignore_for_file: cast_nullable_to_non_nullable, unnecessary_null_checks, unused_field
 
 part of 'ingredient_dto.dart';
 
@@ -44,28 +44,6 @@ mixin _$LevelDto {
       .toString();
 }
 
-class _LevelDtoFields {
-  // ignore: unused_element
-  const _LevelDtoFields([this._path = '']);
-
-  final String _path;
-
-  String get id => '${_path}id';
-
-  String get title => '${_path}title';
-
-  String get description => '${_path}description';
-
-  String get min => '${_path}min';
-
-  String get initial => '${_path}initial';
-
-  String get max => '${_path}max';
-
-  @override
-  String toString() => _path.isEmpty ? '_LevelDtoFields()' : _path;
-}
-
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
@@ -74,10 +52,19 @@ LevelDto _$LevelDtoFromJson(Map<String, dynamic> json) => LevelDto(
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
-      min: json['min'] as int,
-      initial: json['initial'] as int?,
-      max: json['max'] as int,
+      min: (json['min'] as num).toInt(),
+      initial: (json['initial'] as num?)?.toInt(),
+      max: (json['max'] as num).toInt(),
     );
+
+abstract final class _$LevelDtoJsonKeys {
+  static const String id = 'id';
+  static const String title = 'title';
+  static const String description = 'description';
+  static const String min = 'min';
+  static const String initial = 'initial';
+  static const String max = 'max';
+}
 
 Map<String, dynamic> _$LevelDtoToJson(LevelDto instance) => <String, dynamic>{
       'id': instance.id,

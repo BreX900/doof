@@ -7,7 +7,7 @@ import 'package:core/src/shared/data/failure.dart';
 import 'package:core/src/shared/instances.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 import 'package:rxdart/rxdart.dart';
 
 class CartsRepository {
@@ -26,25 +26,26 @@ class CartsRepository {
       .withJsonConverter(CartDto.fromJson);
 
   Stream<CartDto> watch(String organizationId, String cartId) {
-    return _ref(organizationId).doc(cartId).snapshots().map((snapshot) {
+    final ref = _ref(organizationId).doc(cartId);
+    return ref.snapshots().map((snapshot) {
       final cart = snapshot.data();
-      if (cart == null) throw TargetNotFoundFailure('$collection/$cartId');
+      if (cart == null) throw TargetNotFoundFailure(ref.path);
       return cart;
     });
   }
 
   Future<CartDto?> fetchPersonal(String organizationId, {required String userId}) async {
     final snapshot = await _ref(organizationId)
-        .where(CartDto.fields.membersIds, arrayContains: userId)
-        .where(CartDto.fields.isPublic, isEqualTo: false)
+        .where(CartDtoFields.membersIds, arrayContains: userId)
+        .where(CartDtoFields.isPublic, isEqualTo: false)
         .get();
     return snapshot.docs.oneOrNull?.data();
   }
 
   Stream<IList<CartDto>> watchAll(String organizationId, {required String userId}) {
     return _ref(organizationId)
-        .where(CartDto.fields.membersIds, arrayContains: userId)
-        .orderBy(CartDto.fields.title)
+        .where(CartDtoFields.membersIds, arrayContains: userId)
+        .orderBy(CartDtoFields.title)
         .snapshots()
         .takeUntil(_auth.userLogged)
         .map((event) => event.docs.map((e) => e.data()).toIList());
@@ -68,7 +69,7 @@ class CartsRepository {
 
   Future<void> addMember(String organizationId, String cartId, {required String userId}) async {
     await _ref(organizationId).doc(cartId).update({
-      CartDto.fields.membersIds: FieldValue.arrayUnion([userId]),
+      CartDtoFields.membersIds: FieldValue.arrayUnion([userId]),
     });
   }
 }

@@ -9,7 +9,7 @@ import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
-import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 
 final class ButtonMigrations {
   static ButtonMigrations get instance => ButtonMigrations._();

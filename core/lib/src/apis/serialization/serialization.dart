@@ -9,8 +9,9 @@ export 'package:core/src/apis/serialization/timestamp_json_converter.dart'
 export 'package:json_annotation/json_annotation.dart' show $enumDecode, $enumDecodeNullable;
 
 class DtoSerializable extends JsonSerializable {
-  const DtoSerializable()
-      : super(
+  const DtoSerializable({
+    super.createJsonKeys,
+  }) : super(
           createFactory: true,
           createToJson: true,
           converters: const [TimestampJsonConvert()],

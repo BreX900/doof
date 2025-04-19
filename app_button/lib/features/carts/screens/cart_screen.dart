@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:app_button/apis/riverpod/safe_ref.dart';
 import 'package:app_button/features/products/widgets/product_tile.dart';
 import 'package:app_button/shared/data/r.dart';
 import 'package:app_button/shared/navigation/routes.dart';
@@ -14,9 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mek/mek.dart';
 
-final _stateProvider = FutureProvider.family((unsafeRef, String organizationId) async {
-  final ref = unsafeRef.safe;
-
+final _stateProvider = FutureProvider.family((ref, String organizationId) async {
   final signStatus = await ref.watch(UsersProviders.currentStatus.future);
   final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
   final cart = await ref.watch(CartsProviders.personal(organizationId).future);
@@ -68,7 +65,7 @@ class _CartScreenState extends ConsumerState<CartScreen> with AsyncConsumerState
     required CartModel cart,
     required IList<CartItemModel> items,
   }) {
-    final isIdle = ref.watchIdle(mutations: [_removeItem]);
+    final isIdle = !ref.watchIsMutating([_removeItem]);
 
     final formats = AppFormats.of(context);
 
