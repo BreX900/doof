@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:core/core.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -29,11 +28,6 @@ class InvoicesView extends StatelessWidget {
         .take(5)
         .sortedBy<num>((e) => e.data.life * -1)
         .toIList();
-    final balance = invoices.fold(Decimal.zero, (total, e) {
-      final InvoiceDto(:amount, :payedAmount) = e;
-      if (payedAmount == null) return total;
-      return total + (amount - payedAmount);
-    });
     final userId = FirebaseAuth.instance.currentUser!.uid;
     final uncollectedInvoices = invoices.where((e) => e.payerId == userId && !e.isPayed).toIList();
     final unpaidInvoices = invoices.where((e) => !(e.items[userId]?.isPayed ?? true)).toIList();
@@ -42,15 +36,8 @@ class InvoicesView extends StatelessWidget {
       length: 3,
       child: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverToBoxAdapter(
-            child: ListTile(
-              leading: const Icon(Icons.wallet),
-              title: Text(formats.formatPrice(balance)),
-              subtitle: const Text('Vault'),
-            ),
-          ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 16.0),
+            padding: const EdgeInsets.all(16.0),
             sliver: SliverList.separated(
               itemCount: summaryLifeBars.length,
               separatorBuilder: (context, index) => const SizedBox(height: 4.0),

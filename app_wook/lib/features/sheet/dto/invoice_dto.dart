@@ -1,5 +1,7 @@
 import 'package:core/core.dart';
 import 'package:decimal/decimal.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:mek_data_class/mek_data_class.dart';
 
 part 'invoice_dto.g.dart';
@@ -37,8 +39,11 @@ class InvoiceDto with Identifiable, _$InvoiceDto {
 
   final DateTime createdAt;
 
-  final List<String> membersIds;
-  final Map<String, InvoiceItemDto> items;
+  final IMap<String, InvoiceItemDto> items;
+  @JsonKey(includeToJson: true)
+  List<String> get membersIds => items.keys.toList();
+
+  final IMap<String, Decimal>? vaultOutcomes;
 
   InvoiceDto({
     required this.id,
@@ -46,9 +51,9 @@ class InvoiceDto with Identifiable, _$InvoiceDto {
     required this.payerId,
     required this.payedAmount,
     required this.createdAt,
-    List<String>? membersIds,
     required this.items,
-  }) : membersIds = membersIds ?? items.keys.toList();
+    required this.vaultOutcomes,
+  });
 
   Decimal get amount => items.values.fold(Decimal.zero, (amount, item) => amount + item.amount);
   bool get isPayed => items.values.every((e) => e.isPayed);
@@ -62,7 +67,7 @@ class InvoiceDto with Identifiable, _$InvoiceDto {
 class InvoiceItemDto with _$InvoiceItemDto {
   final bool isPayed;
   final Decimal amount;
-  final List<Job> jobs;
+  final IList<Job> jobs;
 
   const InvoiceItemDto({
     required this.isPayed,

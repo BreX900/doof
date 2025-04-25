@@ -1,5 +1,6 @@
 import 'package:core/core.dart';
 import 'package:decimal/decimal.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
@@ -23,7 +24,8 @@ abstract class InvoicesProviders {
     required OrderModel? order,
     required String payerId,
     required Decimal? payedAmount,
-    required Map<String, InvoiceItemDto> items,
+    required IMap<String, InvoiceItemDto> items,
+    required IMap<String, Decimal>? vaultOutcomes,
   }) async {
     if (order != null) {
       final invoice = await InvoicesRepository.instance.fetch(order.id);
@@ -39,6 +41,7 @@ abstract class InvoicesProviders {
       payerId: payerId,
       payedAmount: payedAmount,
       items: items,
+      vaultOutcomes: vaultOutcomes,
     ));
 
     if (order == null) return;
@@ -53,8 +56,8 @@ abstract class InvoicesProviders {
     MutationRef ref, {
     required InvoiceDto invoice,
     required String payerId,
-    required Map<String, InvoiceItemDto> items,
     Decimal? payedAmount,
+    required IMap<String, InvoiceItemDto> items,
   }) async {
     await InvoicesRepository.instance.save(InvoiceDto(
       id: invoice.id,
@@ -63,6 +66,7 @@ abstract class InvoicesProviders {
       payerId: payerId,
       payedAmount: payedAmount,
       items: items,
+      vaultOutcomes: invoice.vaultOutcomes,
     ));
   }
 }

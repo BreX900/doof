@@ -5,7 +5,7 @@ import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/navigation/routes/routes.dart';
 
 Widget buildUserApp() {
-  final homeLocation = const UserAreaRoute().location;
+  final homeLocation = const ProductsRoute().location;
 
   return DoofApp(
     initialLocation: homeLocation,

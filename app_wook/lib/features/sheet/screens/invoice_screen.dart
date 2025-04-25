@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:core/core.dart';
 import 'package:decimal/decimal.dart';
@@ -9,49 +11,96 @@ import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/features/sheet/dto/invoice_dto.dart';
 import 'package:mek_gasol/features/sheet/invoices_providers.dart';
+import 'package:mek_gasol/features/sheet/invoices_utils.dart';
 import 'package:mek_gasol/features/sheet/screens/invoice_item_dialog.dart';
 import 'package:mek_gasol/shared/widgets/field_padding.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
+/// Left: Create
+/// Right: Update
 typedef _Args = Either<String?, String>;
 
+sealed class _Data with EquatableAndDescribable {
+  final IList<UserDto> users;
+  final IList<InvoiceDto> invoices;
+
+  _Data({required this.users, required this.invoices});
+
+  @override
+  Map<String, Object?> get props => {'users': users, 'invoices': invoices};
+}
+
+class _CreateData extends _Data {
+  final OrderModel? order;
+  final IList<OrderItemModel>? orderItems;
+
+  _CreateData({
+    required super.users,
+    required super.invoices,
+    required this.order,
+    required this.orderItems,
+  });
+
+  @override
+  Map<String, Object?> get props => super.props
+    ..['order'] = order
+    ..['orderItems'] = orderItems;
+}
+
+class _UpdateData extends _Data {
+  final InvoiceDto invoice;
+
+  _UpdateData({
+    required super.users,
+    required super.invoices,
+    required this.invoice,
+  });
+
+  @override
+  Map<String, Object?> get props => super.props..['invoice'] = invoice;
+}
+
 final _screenProvider = FutureProvider.autoDispose.family((ref, _Args args) async {
-  return await args.whenAsync((orderId) async {
+  final invoices = await ref.read(InvoicesProviders.all.future);
+  final users = await ref.watch(UsersProviders.all.future);
+
+  return await args.when((orderId) async {
     final order = orderId != null
         ? await ref.watch(OrdersProviders.single((Env.organizationId, orderId)).future)
         : null;
-    final users = await ref.watch(UsersProviders.all.future);
 
-    return (
+    return _CreateData(
+      users: users,
+      invoices: invoices,
       order: order,
-      items: orderId != null
+      orderItems: orderId != null
           ? await ref.watch(OrderItemsProviders.all((Env.organizationId, orderId)).future)
           : null,
-      users: order?.members ?? users,
     );
   }, (invoiceId) async {
     final invoice = await ref.watch(InvoicesProviders.single(invoiceId).future);
-    final allUsers = await ref.watch(UsersProviders.all.future);
 
-    final users = invoice.items.keys.map(allUsers.firstWhereId).toIList();
-
-    return (invoice: invoice, users: users);
+    return _UpdateData(
+      users: users,
+      invoices: invoices,
+      invoice: invoice,
+    );
   });
 });
 
 class InvoiceScreen extends ConsumerStatefulWidget {
   final _Args _args;
 
-  const InvoiceScreen({super.key}) : _args = const Either.left(null);
+  const InvoiceScreen.create({super.key}) : _args = const Either.left(null);
 
   InvoiceScreen.update({
     super.key,
     required String invoiceId,
   }) : _args = Either.right(invoiceId);
 
-  InvoiceScreen.fromOrder({
+  InvoiceScreen.createFromOrder({
     super.key,
     required String orderId,
   }) : _args = Either.left(orderId);
@@ -61,10 +110,7 @@ class InvoiceScreen extends ConsumerStatefulWidget {
 }
 
 class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
-  AutoDisposeFutureProvider<
-      Either<({IList<OrderItemModel>? items, OrderModel? order, IList<UserDto> users}),
-          ({InvoiceDto invoice, IList<UserDto> users})>> get _provider =>
-      _screenProvider(widget._args);
+  AutoDisposeFutureProvider<_Data> get _provider => _screenProvider(widget._args);
 
   final _payerFb = FormControlTypedOptional<UserDto>(
     validators: [ValidatorsTyped.required()],
@@ -75,52 +121,19 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
     validators: [ValidatorsTyped.iterable(minLength: 1)],
   );
 
-  late final _form = FormArray<void>([_payerFb, _payedAmountControl, _itemsFb]);
+  final _isVaultUsedControl = FormControlTyped<bool>(
+    initialValue: false,
+  );
+  final _vaultOutcomesControl = FormMap<FormControlTypedOptional<Decimal>, Decimal>({});
+
+  late final _form = FormArray<void>(
+      [_payerFb, _payedAmountControl, _itemsFb, _isVaultUsedControl, _vaultOutcomesControl]);
 
   @override
   void initState() {
     super.initState();
 
-    ref.listenManual(_provider, (previous, next) {
-      next.whenOrNull(data: (data) {
-        _itemsFb.clear(emitEvent: false, updateParent: false);
-        data.when((items) {
-          final orderItems = items.items;
-
-          final amounts = orderItems?.fold(<UserDto, Decimal>{}, (amounts, item) {
-            return {
-              ...amounts,
-              for (final buyer in item.buyers)
-                buyer: (amounts[buyer] ?? Decimal.zero) + item.individualCost,
-            };
-          });
-          _itemsFb.addAll((amounts ?? {}).entries.mapTo((user, amount) {
-            return _ItemFieldBloc(
-              user: user,
-              value: InvoiceItemDto(
-                amount: amount,
-                isPayed: false,
-                jobs: [],
-              ),
-            );
-          }).toList());
-        }, (items) {
-          final invoice = items.invoice;
-          final users = items.users;
-
-          _payerFb.updateValue(users.firstWhereIdOrNull(invoice.payerId));
-          _payedAmountControl.updateValue(invoice.payedAmount);
-
-          _itemsFb.addAll(invoice.items.mapTo((userId, value) {
-            return _ItemFieldBloc(
-              disabled: Instances.auth.currentUser?.uid != invoice.payerId,
-              user: users.firstWhereId(userId),
-              value: value,
-            );
-          }).toList());
-        });
-      });
-    });
+    _init();
   }
 
   @override
@@ -129,13 +142,103 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
     super.dispose();
   }
 
+  Future<void> _init() async {
+    final data = await ref.read(_provider.futureOfData);
+    final _Data(:invoices) = data;
+    final vault = InvoicesUtils.calculateVault(invoices);
+
+    _itemsFb.clear(emitEvent: false, updateParent: false);
+
+    switch (data) {
+      case _CreateData(:final orderItems):
+        final amounts = orderItems?.fold(<UserDto, Decimal>{}, (amounts, item) {
+          return {
+            ...amounts,
+            for (final buyer in item.buyers)
+              buyer: (amounts[buyer] ?? Decimal.zero) + item.individualCost,
+          };
+        });
+        _itemsFb.addAll((amounts ?? {}).entries.mapTo((user, amount) {
+          return _ItemFieldBloc(
+            userId: user.id,
+            value: InvoiceItemDto(
+              amount: amount,
+              isPayed: false,
+              jobs: const IList.empty(),
+              // vaultUsedAmount: null,
+            ),
+          );
+        }).toList());
+
+      case _UpdateData(:final users, :final invoice):
+        final isCurrentUserThePayer = Instances.auth.currentUser?.uid == invoice.payerId;
+
+        _payerFb.updateValue(users.firstWhereIdOrNull(invoice.payerId));
+        _payedAmountControl.updateValue(invoice.payedAmount);
+        _isVaultUsedControl.updateValue(invoice.vaultOutcomes != null);
+        _vaultOutcomesControl.updateValue(invoice.vaultOutcomes?.unlockView);
+
+        _itemsFb.addAll(invoice.items.mapTo((userId, value) {
+          return _ItemFieldBloc(
+            disabled: !isCurrentUserThePayer,
+            userId: userId,
+            value: value,
+          );
+        }).toList());
+    }
+
+    ref.listenManual(fireImmediately: true, _isVaultUsedControl.provider.value, (_, isVaultUsed) {
+      if (isVaultUsed ?? false) {
+        _vaultOutcomesControl.addAll(vault.keys.map((userId) {
+          return MapEntry(userId, FormControlTypedOptional<Decimal>());
+        }).toMap());
+      } else {
+        _vaultOutcomesControl.controls.keys.forEach(_vaultOutcomesControl.removeControl);
+      }
+    });
+  }
+
+  // Future<void> _init() async {
+  //   final invoices = await ref.read(InvoicesProviders.all.future);
+  //   final vault = InvoicesUtils.calculateVault(invoices);
+  //   final vaultAmount = vault.values.sum;
+  //
+  //   ref.listenManual(_payedAmountControl.provider.value, (_, payedAmount) async {
+  //     if (payedAmount == null) return;
+  //     final canUseVault = vaultAmount > payedAmount;
+  //
+  //     if (!canUseVault) _isVaultUsedControl.updateValue(false);
+  //     _isVaultUsedControl.markAs(disabled: !canUseVault);
+  //   });
+  //   ref.listenManual(_isVaultUsedControl.provider.value, (_, isVaultUsed) async {
+  //     var payedAmount = _payedAmountControl.value ?? Decimal.zero;
+  //     if (payedAmount <= Decimal.zero) return;
+  //
+  //     if (isVaultUsed ?? false) {
+  //       for (final control in _itemsFb.controls) {
+  //         final vaultAmount = vault[control.userId] ?? Decimal.zero;
+  //         final usedAmount = minDecimal(payedAmount, vaultAmount);
+  //         payedAmount -= usedAmount;
+  //
+  //         control.vaultUsedAmountControl.updateValue(usedAmount);
+  //       }
+  //       if (payedAmount > Decimal.zero) throw StateError('Cant apply a vault!');
+  //     } else {
+  //       for (final control in _itemsFb.controls) {
+  //         control.vaultUsedAmountControl.updateValue(null);
+  //       }
+  //     }
+  //   });
+  // }
+
   late final _createInvoice = ref.mutation((ref, OrderModel? order) async {
     await InvoicesProviders.create(
       ref,
       order: order,
       payerId: _payerFb.value!.id,
       payedAmount: _payedAmountControl.value,
-      items: _itemsFb.controls.map((e) => MapEntry(e.user.id, e.toValue())).toMap(),
+      vaultOutcomes: _isVaultUsedControl.value ? IMap() : null,
+      items: _itemsFb.controls.map((e) => MapEntry(e.userId, e.toValue())).toIMap(),
     );
   }, onError: (_, error) {
     CoreUtils.showErrorSnackBar(context, error);
@@ -149,7 +252,7 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
       invoice: invoice,
       payerId: _payerFb.value!.id,
       payedAmount: _payedAmountControl.value,
-      items: _itemsFb.controls.map((e) => MapEntry(e.user.id, e.toValue())).toMap(),
+      items: _itemsFb.controls.map((e) => MapEntry(e.userId, e.toValue())).toIMap(),
     );
   }, onError: (_, error) {
     CoreUtils.showErrorSnackBar(context, error);
@@ -157,23 +260,31 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
     context.pop();
   });
 
-  Future<void> _showUserAddDialog() async {
+  Future<void> _showItemUpsertDialog([_ItemFieldBloc? formControl]) async {
     final result = await showDialog<InvoiceItemDialogResult>(
       context: context,
-      builder: (context) => const InvoiceItemDialog(),
+      builder: (context) => InvoiceItemDialog(
+        userId: formControl?.userId,
+        amount: formControl?.amountControl.value,
+      ),
     );
     if (result == null) return;
-    _itemsFb.add(_ItemFieldBloc(
-      user: result.user,
-      value: InvoiceItemDto(
-        amount: result.amount,
-        isPayed: false,
-        jobs: [],
-      ),
-    ));
+
+    if (formControl != null) {
+      formControl.amountControl.updateValue(result.amount);
+    } else {
+      _itemsFb.add(_ItemFieldBloc(
+        userId: result.userId,
+        value: InvoiceItemDto(
+          amount: result.amount,
+          isPayed: false,
+          jobs: const IList.empty(),
+        ),
+      ));
+    }
   }
 
-  Widget _buildBody({required IList<UserDto> users}) {
+  Widget _buildBody({required IList<InvoiceDto> invoices, required IList<UserDto> users}) {
     final formats = AppFormats.of(context);
     final ThemeData(:colorScheme) = Theme.of(context);
 
@@ -210,28 +321,28 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
       )),
       const Divider(height: 24.0),
       ...itemsFb
-          .sortedBy((e) => e.user.displayName!)
-          .expandIndexed<Widget>((index, itemFieldBloc) sync* {
+          .map((formControl) => (formControl, users.firstWhere((e) => e.id == formControl.userId)))
+          .sortedBy((e) => e.$2.displayName!)
+          .expandIndexed<Widget>((index, __) sync* {
+        final (formControl, user) = __;
+
         if (index > 0) yield const Divider(indent: 16.0, endIndent: 16.0);
-        final isEnabled = ref.watch(itemFieldBloc.isPayedFb.provider.status.enabled);
+
         yield Dismissible(
-          key: ValueKey(itemFieldBloc),
-          onDismissed: (_) => _itemsFb.remove(itemFieldBloc),
+          key: ValueKey(formControl),
+          onDismissed: (_) => _itemsFb.remove(formControl),
           child: Column(
             children: [
               ListTile(
-                onTap: isEnabled
-                    ? () => itemFieldBloc.isPayedFb.updateValue(!itemFieldBloc.isPayedFb.value)
-                    : null,
-                title: Text(itemFieldBloc.user.displayName!),
-                subtitle:
-                    Text('Did he pay? ${formats.formatPrice(itemFieldBloc.toValue().amount)}'),
+                onTap: () async => _showItemUpsertDialog(formControl),
+                title: Text(user.displayName!),
+                subtitle: Text('Did he pay? ${formats.formatPrice(formControl.toValue().amount)}'),
                 trailing: ReactiveSwitch(
-                  formControl: itemFieldBloc.isPayedFb,
+                  formControl: formControl.isPayedFb,
                 ),
               ),
               FieldPadding(ReactiveSegmentedButton<Job>.multi(
-                formControl: itemFieldBloc.jobsFb,
+                formControl: formControl.jobsFb,
                 emptySelectionAllowed: true,
                 showSelectedIcon: false,
                 segments: Job.values.reversed.map((e) {
@@ -250,7 +361,7 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
         children: [
           Expanded(
             child: TextButton.icon(
-              onPressed: _showUserAddDialog,
+              onPressed: _showItemUpsertDialog,
               icon: const Icon(Icons.people),
               label: const Text('Add User'),
             ),
@@ -259,10 +370,53 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
       ),
     ];
 
-    return HarmonicSingleChildScrollView(
+    final vault = InvoicesUtils.calculateVault(invoices);
+    final vaultOutcomesControls = ref.watch(_vaultOutcomesControl.provider.controls);
+
+    final vaultView = HarmonicSingleChildScrollView(
       child: Column(
-        children: children,
+        children: [
+          ReactiveSwitchListTile(
+            formControl: _isVaultUsedControl,
+            secondary: const Icon(Icons.token),
+            title: const Text('Open the vault to pay?'),
+            subtitle: Text('In the vault you have ${formats.formatCaps(vault.values.sum)}'),
+          ),
+          ...vaultOutcomesControls.mapTo((userId, control) {
+            final hasValue = ref.watch(control.provider.hasValue);
+            final user = users.firstWhereOrNull((e) => e.id == userId);
+            final vaultAmount = vault[userId] ?? Decimal.zero;
+
+            return FieldPadding(ReactiveTypedTextField(
+              formControl: control,
+              valueAccessor: MekAccessors.decimalToString(formats.decimal),
+              variant: const TextFieldVariant.decimal(),
+              decoration: InputDecoration(
+                labelText: user?.displayName,
+                prefixIcon: const Icon(Icons.catching_pokemon),
+                suffixIcon: !hasValue
+                    ? TextButton(
+                        onPressed: () => control.updateValue(vaultAmount),
+                        child: const Text('Auto-Fill'),
+                      )
+                    : const ReactiveClearButton(),
+                helperText: 'Vault availability ${formats.formatCaps(vaultAmount)}',
+              ),
+            ));
+          }),
+        ],
       ),
+    );
+
+    return TabBarView(
+      children: [
+        HarmonicSingleChildScrollView(
+          child: Column(
+            children: children,
+          ),
+        ),
+        vaultView,
+      ],
     );
   }
 
@@ -276,33 +430,41 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
 
     final formats = AppFormats.of(context);
 
-    final invoiceLabel = data?.when((_) {
-          return '';
-        }, (items) {
-          return ': ${formats.formatDate(items.invoice.createdAt)} - ${formats.formatPrice(items.invoice.amount)}';
-        }) ??
-        '...';
+    final invoiceLabel = switch (data) {
+      null => '...',
+      _CreateData() => '',
+      _UpdateData(:final invoice) =>
+        ': ${formats.formatDate(invoice.createdAt)} - ${formats.formatPrice(invoice.amount)}',
+    };
 
-    return HarmonicScaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text('Invoice$invoiceLabel'),
-      ),
-      floatingActionButton: FixedFloatingActionButton.extended(
-        onPressed: isIdle
-            ? data?.when((items) {
-                return () => createInvoice(items.order);
-              }, (items) {
-                return () => updateInvoice(items.invoice);
-              })
-            : null,
-        icon: widget._args.when((_) => const Icon(Icons.add), (_) => const Icon(Icons.edit)),
-        label: Text(widget._args.when((_) => 'Create', (_) => 'Update')),
-      ),
-      body: state.buildView(
-        onRefresh: () => ref.invalidateWithAncestors(_provider),
-        data: (data) => _buildBody(
-          users: data.when((items) => items.users, (items) => items.users),
+    return DefaultTabController(
+      length: 2,
+      child: HarmonicScaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: Text('Invoice$invoiceLabel'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(icon: Icon(Icons.receipt_long)),
+              Tab(icon: Icon(Icons.token)),
+            ],
+          ),
+        ),
+        floatingActionButton: FixedFloatingActionButton.extended(
+          onPressed: switch (isIdle ? data : null) {
+            null => null,
+            _CreateData(:final order) => () => createInvoice(order),
+            _UpdateData(:final invoice) => () => updateInvoice(invoice),
+          },
+          icon: widget._args.when((_) => const Icon(Icons.add), (_) => const Icon(Icons.edit)),
+          label: Text(widget._args.when((_) => 'Create', (_) => 'Update')),
+        ),
+        body: state.buildView(
+          onRefresh: () => ref.invalidateWithAncestors(_provider),
+          data: (data) => _buildBody(
+            invoices: data.invoices,
+            users: data.users,
+          ),
         ),
       ),
     );
@@ -310,31 +472,33 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
 }
 
 class _ItemFieldBloc extends FormArray<void> {
-  final UserDto user;
-  late InvoiceItemDto _value;
+  final String userId;
 
+  final amountControl = FormControlTyped(initialValue: Decimal.zero);
   final isPayedFb = FormControlTyped(initialValue: false);
   final jobsFb = FormControlTyped<ISet<Job>>(initialValue: const ISet.empty());
 
-  _ItemFieldBloc({required this.user, required InvoiceItemDto value, bool disabled = false})
-      : super([]) {
+  _ItemFieldBloc({
+    required this.userId,
+    required InvoiceItemDto value,
+    bool disabled = false,
+  }) : super([]) {
     updateValueByDto(value);
     addAll([isPayedFb, jobsFb]);
     if (disabled) markAsDisabled(emitEvent: false);
   }
 
   void updateValueByDto(InvoiceItemDto data) {
-    _value = data;
-
+    amountControl.updateValue(data.amount);
     isPayedFb.updateValue(data.isPayed);
     jobsFb.updateValue(data.jobs.toISet());
   }
 
   InvoiceItemDto toValue() {
     return InvoiceItemDto(
-      amount: _value.amount,
+      amount: amountControl.value,
       isPayed: isPayedFb.value,
-      jobs: jobsFb.value.toList(),
+      jobs: jobsFb.value.toIList(),
     );
   }
 }

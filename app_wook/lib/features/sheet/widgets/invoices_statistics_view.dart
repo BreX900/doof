@@ -20,7 +20,7 @@ class InvoicesStatisticsView extends StatelessWidget {
       const Text('Username'),
       const Text('Life'),
       const Text('Presence'),
-      ...Job.values.map((job) => Text(job.label)),
+      ...Job.values.reversed.map((job) => Text(job.label)),
     ];
     final rows = lifeBars.map((lifeBar) {
       final life = lifeBar.data;
@@ -28,7 +28,7 @@ class InvoicesStatisticsView extends StatelessWidget {
         Text('${lifeBar.user.displayName}'),
         Text(formats.formatPercent(lifeBar.data.life)),
         Text('${life.presenceCount}'),
-        ...Job.values.map((job) {
+        ...Job.values.reversed.map((job) {
           final count = life.jobs[job];
           return Text('${count ?? 0}');
         }),

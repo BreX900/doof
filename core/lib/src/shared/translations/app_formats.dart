@@ -24,6 +24,8 @@ class AppFormats {
     )).format(price);
   }
 
+  String formatCaps(Decimal price) => '${DecimalFormatter(decimal).format(price)} caps';
+
   String formatDouble(double value) =>
       NumberFormat.decimalPatternDigits(locale: _locale, decimalDigits: 2).format(value);
 

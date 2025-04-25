@@ -2,39 +2,82 @@ import 'package:core/core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
-import 'package:mek_gasol/features/carts/screens/cart_screen.dart' deferred as cart_screen;
+import 'package:mek_gasol/features/carts/screens/carts_screen.dart' deferred as carts_screen;
 import 'package:mek_gasol/features/orders/screens/order_checkout_screen.dart'
     deferred as order_checkout_screen;
 import 'package:mek_gasol/features/orders/screens/order_screen.dart' deferred as order_screen;
+import 'package:mek_gasol/features/orders/screens/orders_screen.dart' deferred as orders_screen;
 import 'package:mek_gasol/features/orders/screens/stats_screen.dart' deferred as stat_screen;
 import 'package:mek_gasol/features/products/screens/product_screen.dart' deferred as product_screen;
+import 'package:mek_gasol/features/products/screens/products_screen.dart'
+    deferred as products_screen;
 import 'package:mek_gasol/features/sheet/screens/invoice_screen.dart' deferred as invoice_screen;
 import 'package:mek_gasol/features/sheet/screens/invoices_screen.dart' deferred as invoices_screen;
 import 'package:mek_gasol/shared/navigation/areas/user_area.dart' deferred as user_area;
 
 part 'app_routes.g.dart';
 
-@TypedGoRoute<UserAreaRoute>(path: '/', routes: [
-  TypedGoRoute<ProductRoute>(path: 'products/:productId'),
-  TypedGoRoute<OrderRoute>(path: 'orders/:orderId', routes: [
-    TypedGoRoute<OrderStatRoute>(path: 'stat'),
-    TypedGoRoute<OrderInvoiceRoute>(path: 'invoice'),
+@TypedStatefulShellRoute<UserAreaRoute>(branches: [
+  TypedStatefulShellBranch(routes: [
+    TypedGoRoute<InvoicesRoute>(path: '/invoices', routes: [
+      TypedGoRoute<InvoiceCreateRoute>(path: 'create'),
+      TypedGoRoute<InvoiceRoute>(path: ':invoiceId'),
+    ]),
   ]),
-  TypedGoRoute<CartRoute>(path: 'cart'),
-  TypedGoRoute<CartStatsRoute>(path: 'cart/stat'),
-  TypedGoRoute<OrderCheckoutRoute>(path: 'carts/checkout'),
-  TypedGoRoute<CartItemRoute>(path: 'carts/items/:cartItemId'),
-  TypedGoRoute<InvoiceCreateRoute>(path: 'invoices/create'),
-  TypedGoRoute<InvoiceRoute>(path: 'invoices/:invoiceId'),
+  TypedStatefulShellBranch(routes: [
+    TypedGoRoute<OrdersRoute>(path: '/orders', routes: [
+      TypedGoRoute<OrderRoute>(path: ':orderId', routes: [
+        TypedGoRoute<OrderStatRoute>(path: 'stat'),
+        TypedGoRoute<OrderInvoiceRoute>(path: 'invoice'),
+      ]),
+    ]),
+  ]),
+  TypedStatefulShellBranch(routes: [
+    TypedGoRoute<CartsRoute>(path: '/cart', routes: [
+      TypedGoRoute<OrderCheckoutRoute>(path: 'checkout'),
+      TypedGoRoute<CartStatsRoute>(path: 'stats'),
+      TypedGoRoute<CartItemRoute>(path: 'items/:cartItemId'),
+    ]),
+  ]),
+  TypedStatefulShellBranch(routes: [
+    TypedGoRoute<ProductsRoute>(path: '/products', routes: [
+      TypedGoRoute<ProductRoute>(path: ':productId'),
+    ]),
+  ]),
 ])
-class UserAreaRoute extends GoRouteData {
+class UserAreaRoute extends StatefulShellRouteData {
   const UserAreaRoute();
+
+  @override
+  Widget builder(
+    BuildContext context,
+    GoRouterState state,
+    StatefulNavigationShell navigationShell,
+  ) {
+    return DeferredLibraryBuilder(
+      loader: user_area.loadLibrary,
+      builder: (context) => user_area.UserArea(
+        destinationIndex: navigationShell.currentIndex,
+        onTapDestination: (index) => navigationShell.goBranch(
+          index,
+          initialLocation: navigationShell.currentIndex == index,
+        ),
+        child: navigationShell,
+      ),
+    );
+  }
+}
+
+/// ==================== PRODUCTS
+
+class ProductsRoute extends GoRouteData {
+  const ProductsRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
-      loader: user_area.loadLibrary,
-      builder: (context) => user_area.UserArea(),
+      loader: products_screen.loadLibrary,
+      builder: (context) => products_screen.ProductsScreen(),
     );
   }
 }
@@ -61,17 +104,29 @@ class ProductRoute extends GoRouteData {
 
 /// ==================== CART
 
-class CartRoute extends GoRouteData {
-  const CartRoute();
+class CartsRoute extends GoRouteData {
+  const CartsRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
-      loader: cart_screen.loadLibrary,
-      builder: (context) => cart_screen.CartScreen(),
+      loader: carts_screen.loadLibrary,
+      builder: (context) => carts_screen.CartsScreen(),
     );
   }
 }
+
+// class CartRoute extends GoRouteData {
+//   const CartRoute();
+//
+//   @override
+//   Widget build(BuildContext context, GoRouterState state) {
+//     return DeferredLibraryBuilder(
+//       loader: cart_screen.loadLibrary,
+//       builder: (context) => cart_screen.CartScreen(),
+//     );
+//   }
+// }
 
 class CartItemRoute extends GoRouteData {
   final String cartItemId;
@@ -100,6 +155,18 @@ class CartStatsRoute extends GoRouteData {
 }
 
 /// ==================== ORDER
+
+class OrdersRoute extends GoRouteData {
+  const OrdersRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return DeferredLibraryBuilder(
+      loader: orders_screen.loadLibrary,
+      builder: (context) => orders_screen.OrdersScreen(),
+    );
+  }
+}
 
 class OrderCheckoutRoute extends GoRouteData {
   const OrderCheckoutRoute();
@@ -177,7 +244,7 @@ class InvoiceCreateRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: invoice_screen.loadLibrary,
-      builder: (context) => invoice_screen.InvoiceScreen(),
+      builder: (context) => invoice_screen.InvoiceScreen.create(),
     );
   }
 }
@@ -191,7 +258,7 @@ class OrderInvoiceRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: invoice_screen.loadLibrary,
-      builder: (context) => invoice_screen.InvoiceScreen.fromOrder(orderId: orderId),
+      builder: (context) => invoice_screen.InvoiceScreen.createFromOrder(orderId: orderId),
     );
   }
 }

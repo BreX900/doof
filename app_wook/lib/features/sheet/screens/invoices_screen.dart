@@ -11,6 +11,7 @@ import 'package:mek_gasol/features/sheet/widgets/invoices_expenses_view.dart'
     deferred as invoices_expenses_view;
 import 'package:mek_gasol/features/sheet/widgets/invoices_statistics_view.dart'
     deferred as invoices_statistics_view;
+import 'package:mek_gasol/features/sheet/widgets/invoices_vault_view.dart';
 import 'package:mek_gasol/features/sheet/widgets/invoices_view.dart' deferred as invoices_view;
 import 'package:mek_gasol/shared/navigation/areas/user_area.dart';
 import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
@@ -63,6 +64,7 @@ class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
           loader: invoices_view.loadLibrary,
           builder: (context) => invoices_view.InvoicesView(invoices: invoices, lifeBars: lifeBars),
         ),
+        InvoicesVaultView(users: users, invoices: invoices),
         DeferredLibraryBuilder(
           loader: invoices_statistics_view.loadLibrary,
           builder: (context) => invoices_statistics_view.InvoicesStatisticsView(lifeBars: lifeBars),
@@ -83,7 +85,7 @@ class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
     final orders = ref.watch(_provider);
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Invoices'),
@@ -95,9 +97,10 @@ class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
           ],
           bottom: const TabBar(
             tabs: [
-              Tab(text: 'Records'),
-              Tab(text: 'Statistics'),
-              Tab(text: 'Expenses'),
+              Tab(icon: Icon(Icons.dashboard)),
+              Tab(icon: Icon(Icons.token)),
+              Tab(icon: Icon(Icons.pets)),
+              Tab(icon: Icon(Icons.money_off)),
             ],
           ),
         ),
@@ -131,7 +134,7 @@ IList<LifeBar> _calculate(IList<UserDto> users, IList<InvoiceDto> invoices) {
             }),
           ),
         );
-      }),
+      }).unlockView,
     };
   }).toIMap();
 

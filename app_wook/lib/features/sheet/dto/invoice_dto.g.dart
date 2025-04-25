@@ -20,8 +20,8 @@ mixin _$InvoiceDto {
           _self.payerId == other.payerId &&
           _self.payedAmount == other.payedAmount &&
           _self.createdAt == other.createdAt &&
-          $listEquality.equals(_self.membersIds, other.membersIds) &&
-          $mapEquality.equals(_self.items, other.items);
+          _self.items == other.items &&
+          _self.vaultOutcomes == other.vaultOutcomes;
   @override
   int get hashCode {
     var hashCode = 0;
@@ -30,8 +30,8 @@ mixin _$InvoiceDto {
     hashCode = $hashCombine(hashCode, _self.payerId.hashCode);
     hashCode = $hashCombine(hashCode, _self.payedAmount.hashCode);
     hashCode = $hashCombine(hashCode, _self.createdAt.hashCode);
-    hashCode = $hashCombine(hashCode, $listEquality.hash(_self.membersIds));
-    hashCode = $hashCombine(hashCode, $mapEquality.hash(_self.items));
+    hashCode = $hashCombine(hashCode, _self.items.hashCode);
+    hashCode = $hashCombine(hashCode, _self.vaultOutcomes.hashCode);
     return $hashFinish(hashCode);
   }
 
@@ -42,8 +42,8 @@ mixin _$InvoiceDto {
         ..add('payerId', _self.payerId)
         ..add('payedAmount', _self.payedAmount)
         ..add('createdAt', _self.createdAt)
-        ..add('membersIds', _self.membersIds)
-        ..add('items', _self.items))
+        ..add('items', _self.items)
+        ..add('vaultOutcomes', _self.vaultOutcomes))
       .toString();
 }
 
@@ -56,13 +56,13 @@ mixin _$InvoiceItemDto {
           runtimeType == other.runtimeType &&
           _self.isPayed == other.isPayed &&
           _self.amount == other.amount &&
-          $listEquality.equals(_self.jobs, other.jobs);
+          _self.jobs == other.jobs;
   @override
   int get hashCode {
     var hashCode = 0;
     hashCode = $hashCombine(hashCode, _self.isPayed.hashCode);
     hashCode = $hashCombine(hashCode, _self.amount.hashCode);
-    hashCode = $hashCombine(hashCode, $listEquality.hash(_self.jobs));
+    hashCode = $hashCombine(hashCode, _self.jobs.hashCode);
     return $hashFinish(hashCode);
   }
 
@@ -87,13 +87,16 @@ InvoiceDto _$InvoiceDtoFromJson(Map<String, dynamic> json) => InvoiceDto(
           : Decimal.fromJson(json['payedAmount'] as String),
       createdAt:
           const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
-      membersIds: (json['membersIds'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-      items: (json['items'] as Map<String, dynamic>).map(
-        (k, e) =>
-            MapEntry(k, InvoiceItemDto.fromJson(e as Map<String, dynamic>)),
-      ),
+      items: IMap<String, InvoiceItemDto>.fromJson(
+          json['items'] as Map<String, dynamic>,
+          (value) => value as String,
+          (value) => InvoiceItemDto.fromJson(value as Map<String, dynamic>)),
+      vaultOutcomes: json['vaultOutcomes'] == null
+          ? null
+          : IMap<String, Decimal>.fromJson(
+              json['vaultOutcomes'] as Map<String, dynamic>,
+              (value) => value as String,
+              (value) => Decimal.fromJson(value as String)),
     );
 
 abstract final class _$InvoiceDtoJsonKeys {
@@ -102,8 +105,9 @@ abstract final class _$InvoiceDtoJsonKeys {
   static const String payerId = 'payerId';
   static const String payedAmount = 'payedAmount';
   static const String createdAt = 'createdAt';
-  static const String membersIds = 'membersIds';
   static const String items = 'items';
+  static const String membersIds = 'membersIds';
+  static const String vaultOutcomes = 'vaultOutcomes';
 }
 
 Map<String, dynamic> _$InvoiceDtoToJson(InvoiceDto instance) =>
@@ -113,24 +117,32 @@ Map<String, dynamic> _$InvoiceDtoToJson(InvoiceDto instance) =>
       'payerId': instance.payerId,
       'payedAmount': instance.payedAmount?.toJson(),
       'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
+      'items': instance.items.toJson(
+        (value) => value,
+        (value) => value.toJson(),
+      ),
       'membersIds': instance.membersIds,
-      'items': instance.items.map((k, e) => MapEntry(k, e.toJson())),
+      'vaultOutcomes': instance.vaultOutcomes?.toJson(
+        (value) => value,
+        (value) => value.toJson(),
+      ),
     };
 
 InvoiceItemDto _$InvoiceItemDtoFromJson(Map<String, dynamic> json) =>
     InvoiceItemDto(
       isPayed: json['isPayed'] as bool,
       amount: Decimal.fromJson(json['amount'] as String),
-      jobs: (json['jobs'] as List<dynamic>)
-          .map((e) => $enumDecode(_$JobEnumMap, e))
-          .toList(),
+      jobs: IList<Job>.fromJson(
+          json['jobs'], (value) => $enumDecode(_$JobEnumMap, value)),
     );
 
 Map<String, dynamic> _$InvoiceItemDtoToJson(InvoiceItemDto instance) =>
     <String, dynamic>{
       'isPayed': instance.isPayed,
       'amount': instance.amount.toJson(),
-      'jobs': instance.jobs.map((e) => _$JobEnumMap[e]!).toList(),
+      'jobs': instance.jobs.toJson(
+        (value) => _$JobEnumMap[value]!,
+      ),
     };
 
 const _$JobEnumMap = {

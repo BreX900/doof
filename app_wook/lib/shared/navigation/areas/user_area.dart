@@ -4,11 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/features/carts/screens/cart_screen.dart' deferred as cart_screen;
-import 'package:mek_gasol/features/carts/screens/carts_screen.dart' deferred as carts_screen;
-import 'package:mek_gasol/features/orders/screens/orders_screen.dart' deferred as orders_screen;
-import 'package:mek_gasol/features/products/screens/products_screen.dart'
-    deferred as products_screen;
-import 'package:mek_gasol/features/sheet/screens/invoices_screen.dart' deferred as invoices_screen;
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 
 final _areaProvider = FutureProvider((ref) async {
@@ -26,7 +21,16 @@ final _areaProvider = FutureProvider((ref) async {
 enum UserAreaTab { invoices, orders, carts, products }
 
 class UserArea extends ConsumerStatefulWidget {
-  const UserArea({super.key});
+  final ValueChanged<int> onTapDestination;
+  final int destinationIndex;
+  final Widget child;
+
+  const UserArea({
+    super.key,
+    required this.onTapDestination,
+    required this.destinationIndex,
+    required this.child,
+  });
 
   static final tab = StateProvider((ref) {
     return UserAreaTab.products;
@@ -39,36 +43,11 @@ class UserArea extends ConsumerStatefulWidget {
 class _UserAreaState extends ConsumerState<UserArea> {
   FutureProvider<bool> get _provider => _areaProvider;
 
-  Widget _buildTab(UserAreaTab tab) {
-    switch (tab) {
-      case UserAreaTab.invoices:
-        return DeferredLibraryBuilder(
-          loader: invoices_screen.loadLibrary,
-          builder: (context) => invoices_screen.InvoicesScreen(),
-        );
-      case UserAreaTab.orders:
-        return DeferredLibraryBuilder(
-          loader: orders_screen.loadLibrary,
-          builder: (context) => orders_screen.OrdersScreen(),
-        );
-      case UserAreaTab.products:
-        return DeferredLibraryBuilder(
-          loader: products_screen.loadLibrary,
-          builder: (context) => products_screen.ProductsScreen(),
-        );
-      case UserAreaTab.carts:
-        return DeferredLibraryBuilder(
-          loader: carts_screen.loadLibrary,
-          builder: (context) => carts_screen.CartsScreen(),
-        );
-    }
-  }
-
   Widget _buildNavigationBarItem(UserAreaTab tab) {
     switch (tab) {
       case UserAreaTab.invoices:
         return const NavigationDestination(
-          icon: Icon(Icons.folder_copy_outlined),
+          icon: Icon(Icons.receipt_long),
           label: 'Invoices',
         );
       case UserAreaTab.orders:
@@ -91,9 +70,8 @@ class _UserAreaState extends ConsumerState<UserArea> {
 
   Widget _buildNavigationBar(WidgetRef ref, UserAreaTab tab) {
     return NavigationBar(
-      selectedIndex: tab.index,
-      onDestinationSelected: (index) =>
-          ref.read(UserArea.tab.notifier).state = UserAreaTab.values[index],
+      selectedIndex: widget.destinationIndex,
+      onDestinationSelected: widget.onTapDestination,
       destinations: UserAreaTab.values.map(_buildNavigationBarItem).toList(),
     );
   }
@@ -114,11 +92,9 @@ class _UserAreaState extends ConsumerState<UserArea> {
         }
 
         return Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: widget.child,
           bottomNavigationBar: _buildNavigationBar(ref, tab),
-          body: IndexedStack(
-            index: tab.index,
-            children: UserAreaTab.values.map(_buildTab).toList(),
-          ),
         );
       },
     );
