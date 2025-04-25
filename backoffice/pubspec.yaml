@@ -14,7 +14,7 @@ scripts:
     flutterfire configure --yes --out=liwb/apis/firebase/firebase_options.dart
 
   # To generate .g files:
-  runner:watch: dart run build_runner watch --delete-conflicting-outputs
+  backoffice:generate-code: dart run build_runner watch --delete-conflicting-outputs
 
   # Integration tools
   integration: rps check-format && rps analyze

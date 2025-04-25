@@ -69,12 +69,13 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
   final _payerFb = FormControlTypedOptional<UserDto>(
     validators: [ValidatorsTyped.required()],
   );
+  final _payedAmountControl = FormControlTypedOptional<Decimal>();
   final _itemsFb = FormList<_ItemFieldBloc, void>(
     [],
     validators: [ValidatorsTyped.iterable(minLength: 1)],
   );
 
-  late final _form = FormArray<void>([_payerFb, _itemsFb]);
+  late final _form = FormArray<void>([_payerFb, _payedAmountControl, _itemsFb]);
 
   @override
   void initState() {
@@ -108,9 +109,14 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
           final users = items.users;
 
           _payerFb.updateValue(users.firstWhereIdOrNull(invoice.payerId));
+          _payedAmountControl.updateValue(invoice.payedAmount);
 
-          _itemsFb.addAll(invoice.items.mapTo((key, value) {
-            return _ItemFieldBloc(user: users.firstWhereId(key), value: value);
+          _itemsFb.addAll(invoice.items.mapTo((userId, value) {
+            return _ItemFieldBloc(
+              disabled: Instances.auth.currentUser?.uid != invoice.payerId,
+              user: users.firstWhereId(userId),
+              value: value,
+            );
           }).toList());
         });
       });
@@ -128,6 +134,7 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
       ref,
       order: order,
       payerId: _payerFb.value!.id,
+      payedAmount: _payedAmountControl.value,
       items: _itemsFb.controls.map((e) => MapEntry(e.user.id, e.toValue())).toMap(),
     );
   }, onError: (_, error) {
@@ -141,6 +148,7 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
       ref,
       invoice: invoice,
       payerId: _payerFb.value!.id,
+      payedAmount: _payedAmountControl.value,
       items: _itemsFb.controls.map((e) => MapEntry(e.user.id, e.toValue())).toMap(),
     );
   }, onError: (_, error) {
@@ -149,7 +157,7 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
     context.pop();
   });
 
-  Future<void> _addUser() async {
+  Future<void> _showUserAddDialog() async {
     final result = await showDialog<InvoiceItemDialogResult>(
       context: context,
       builder: (context) => const InvoiceItemDialog(),
@@ -173,39 +181,61 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
     final itemsError = ref.watch(_itemsFb.provider.error);
 
     final children = <Widget>[
-      FieldPadding(ReactiveDropdownField<UserDto>(
-        formControl: _payerFb,
-        decoration: const InputDecoration(labelText: 'Payer'),
-        items: users.map((e) {
-          return DropdownMenuItem(
-            value: e,
-            child: Text(e.displayName!),
-          );
-        }).toList(),
+      FieldPadding(Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: ReactiveDropdownField<UserDto>(
+              formControl: _payerFb,
+              decoration: const InputDecoration(labelText: 'Payer'),
+              items: users.map((e) {
+                return DropdownMenuItem(
+                  value: e,
+                  child: Text(e.displayName!),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(width: 16.0),
+          Expanded(
+            flex: 2,
+            child: ReactiveTypedTextField(
+              formControl: _payedAmountControl,
+              variant: const TextFieldVariant.decimal(),
+              valueAccessor: MekAccessors.decimalToString(formats.decimal),
+              decoration: const InputDecoration(prefixText: '€ ', labelText: 'Payed amount'),
+            ),
+          ),
+        ],
       )),
       const Divider(height: 24.0),
       ...itemsFb
           .sortedBy((e) => e.user.displayName!)
           .expandIndexed<Widget>((index, itemFieldBloc) sync* {
         if (index > 0) yield const Divider(indent: 16.0, endIndent: 16.0);
+        final isEnabled = ref.watch(itemFieldBloc.isPayedFb.provider.status.enabled);
         yield Dismissible(
           key: ValueKey(itemFieldBloc),
           onDismissed: (_) => _itemsFb.remove(itemFieldBloc),
           child: Column(
             children: [
-              ReactiveSwitchListTile(
-                formControl: itemFieldBloc.isPayedFb,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+              ListTile(
+                onTap: isEnabled
+                    ? () => itemFieldBloc.isPayedFb.updateValue(!itemFieldBloc.isPayedFb.value)
+                    : null,
                 title: Text(itemFieldBloc.user.displayName!),
                 subtitle:
                     Text('Did he pay? ${formats.formatPrice(itemFieldBloc.toValue().amount)}'),
+                trailing: ReactiveSwitch(
+                  formControl: itemFieldBloc.isPayedFb,
+                ),
               ),
               FieldPadding(ReactiveSegmentedButton<Job>.multi(
                 formControl: itemFieldBloc.jobsFb,
                 emptySelectionAllowed: true,
                 showSelectedIcon: false,
-                segments: Job.values.map((e) {
-                  return ButtonSegment(value: e, label: Text(e.name));
+                segments: Job.values.reversed.map((e) {
+                  return ButtonSegment(value: e, label: Text(e.label));
                 }).toList(),
               )),
             ],
@@ -215,10 +245,17 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
       if (itemsError != null)
         Text(ReactiveFormConfig.of(context).buildErrorText(itemsError),
             style: TextStyle(color: colorScheme.error), textAlign: TextAlign.center),
-      TextButton.icon(
-        onPressed: _addUser,
-        icon: const Icon(Icons.add),
-        label: const Text('Add User'),
+      const Divider(),
+      BottomButtonBar(
+        children: [
+          Expanded(
+            child: TextButton.icon(
+              onPressed: _showUserAddDialog,
+              icon: const Icon(Icons.people),
+              label: const Text('Add User'),
+            ),
+          ),
+        ],
       ),
     ];
 
@@ -239,17 +276,17 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
 
     final formats = AppFormats.of(context);
 
-    final invoiceId = data?.when((_) {
+    final invoiceLabel = data?.when((_) {
           return '';
         }, (items) {
-          return ': ${formats.formatDate(items.invoice.createdAt)}';
+          return ': ${formats.formatDate(items.invoice.createdAt)} - ${formats.formatPrice(items.invoice.amount)}';
         }) ??
         '...';
 
     return HarmonicScaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text('Invoice$invoiceId'),
+        title: Text('Invoice$invoiceLabel'),
       ),
       floatingActionButton: FixedFloatingActionButton.extended(
         onPressed: isIdle
@@ -279,9 +316,11 @@ class _ItemFieldBloc extends FormArray<void> {
   final isPayedFb = FormControlTyped(initialValue: false);
   final jobsFb = FormControlTyped<ISet<Job>>(initialValue: const ISet.empty());
 
-  _ItemFieldBloc({required this.user, required InvoiceItemDto value}) : super([]) {
+  _ItemFieldBloc({required this.user, required InvoiceItemDto value, bool disabled = false})
+      : super([]) {
     updateValueByDto(value);
     addAll([isPayedFb, jobsFb]);
+    if (disabled) markAsDisabled(emitEvent: false);
   }
 
   void updateValueByDto(InvoiceItemDto data) {

@@ -7,11 +7,15 @@ import 'package:mek/mek.dart';
 import 'package:mek_gasol/features/sheet/dto/invoice_dto.dart';
 import 'package:mek_gasol/features/sheet/invoices_providers.dart';
 import 'package:mek_gasol/features/sheet/models/heart_model.dart';
+import 'package:mek_gasol/features/sheet/widgets/invoices_expenses_view.dart'
+    deferred as invoices_expenses_view;
+import 'package:mek_gasol/features/sheet/widgets/invoices_statistics_view.dart'
+    deferred as invoices_statistics_view;
+import 'package:mek_gasol/features/sheet/widgets/invoices_view.dart' deferred as invoices_view;
 import 'package:mek_gasol/shared/navigation/areas/user_area.dart';
 import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
-import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 
 final _screenProvider = FutureProvider.autoDispose((ref) async {
   final results = await (
@@ -51,160 +55,26 @@ class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
         );
       });
     }
-    final summaryLifeBars = lifeBars
-        .sortedBy<num>((e) => e.data.presenceCount * -1)
-        .take(5)
-        .sortedBy<num>((e) => e.data.life * -1)
-        .toIList();
 
-    final formats = AppFormats.of(context);
-    final ThemeData(:colorScheme, :textTheme) = Theme.of(context);
-
-    final records = CustomScrollView(
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.all(16.0),
-          sliver: SliverList.separated(
-            itemCount: summaryLifeBars.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 4.0),
-            itemBuilder: (context, index) {
-              final lifeBar = summaryLifeBars[index];
-              final user = lifeBar.user;
-              final data = lifeBar.data;
-
-              // print('\'${user.id}\', // ${user.displayName} ');
-
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  SizedBox(
-                    width: 128.0,
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Text('♥ ${formats.formatDouble(data.life)}',
-                                style: textTheme.labelSmall),
-                            const Spacer(),
-                            Text('🐶 ${formats.formatDouble(data.pointsCount)}',
-                                style: textTheme.labelSmall),
-                          ],
-                        ),
-                        LinearProgressIndicator(
-                          value: data.life,
-                          backgroundColor: colorScheme.primary.withValues(alpha: 0.2),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8.0),
-                  Text(user.displayName!, overflow: TextOverflow.ellipsis),
-                  const SizedBox(width: 8.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      if (lifeBar.hasManyPresences) const Text('🐶'),
-                      if (lifeBar.hasMorePoints) const Text('👑'),
-                      if (lifeBar.hasLessPoints) const Text('👻'),
-                      ...lifeBar.kingJobs.map((e) {
-                        return switch (e) {
-                          Job.garbageMan => const Text('💩'),
-                          Job.partner => const Text('👰🏼‍'),
-                          Job.driver => const Text('🚑'),
-                        };
-                      }),
-                    ].expandIndexed((index, child) sync* {
-                      if (index > 0) yield const SizedBox(width: 4.0);
-                      yield child;
-                    }).toList(),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-        SliverList.builder(
-          itemCount: invoices.length,
-          itemBuilder: (context, index) {
-            final invoice = invoices[index];
-
-            return ListTile(
-              onTap: () => InvoiceRoute(invoice.id).go(context),
-              title: Text(formats.formatDateTime(invoice.createdAt)),
-              subtitle: Text('Total: ${formats.formatPrice(invoice.amount)}'),
-            );
-          },
-        ),
-      ],
-    );
-    final columns = [
-      const Text('Username'),
-      const Text('Life'),
-      const Text('Presence'),
-      ...Job.values.map((job) => Text(job.label)),
-    ];
-    final rows = lifeBars.map((lifeBar) {
-      final life = lifeBar.data;
-      return [
-        Text('${lifeBar.user.displayName}'),
-        Text(formats.formatPercent(lifeBar.data.life)),
-        Text('${life.presenceCount}'),
-        ...Job.values.map((job) {
-          final count = life.jobs[job];
-          return Text('${count ?? 0}');
-        }),
-      ];
-    }).toList();
-    final textStyle = DefaultTextStyle.of(context);
-    final statistics = TableView.builder(
-      diagonalDragBehavior: DiagonalDragBehavior.free,
-      verticalDetails: const ScrollableDetails.vertical(
-        physics: ClampingScrollPhysics(),
-      ),
-      horizontalDetails: const ScrollableDetails.horizontal(
-        physics: ClampingScrollPhysics(),
-      ),
-      columnCount: columns.length,
-      rowCount: rows.length,
-      pinnedColumnCount: 1,
-      pinnedRowCount: 1,
-      columnBuilder: (index) => TableSpan(
-        extent: index == 0 ? const FixedSpanExtent(128.0) : const FixedSpanExtent(64.0),
-        padding: const SpanPadding.all(8.0),
-        backgroundDecoration: SpanDecoration(
-          border: SpanBorder(
-            trailing: BorderSide(color: colorScheme.onSurface.withValues(alpha: 0.1)),
-          ),
-        ),
-      ),
-      rowBuilder: (index) => TableSpan(
-        extent: const FixedSpanExtent(48.0),
-        backgroundDecoration: SpanDecoration(
-          color: index.isEven ? null : colorScheme.surfaceContainer,
-        ),
-      ),
-      cellBuilder: (context, vicinity) {
-        Widget child;
-        if (vicinity.row == 0) {
-          child = columns[vicinity.column];
-        } else {
-          child = rows[vicinity.row][vicinity.column];
-        }
-        return TableViewCell(
-          child: Align(
-            alignment: vicinity.column == 0 ? Alignment.centerLeft : Alignment.center,
-            child: DefaultTextStyle(
-              style: textStyle.style,
-              textAlign: TextAlign.center,
-              child: child,
-            ),
-          ),
-        );
-      },
-    );
     return TabBarView(
       physics: const NeverScrollableScrollPhysics(),
-      children: [records, statistics],
+      children: [
+        DeferredLibraryBuilder(
+          loader: invoices_view.loadLibrary,
+          builder: (context) => invoices_view.InvoicesView(invoices: invoices, lifeBars: lifeBars),
+        ),
+        DeferredLibraryBuilder(
+          loader: invoices_statistics_view.loadLibrary,
+          builder: (context) => invoices_statistics_view.InvoicesStatisticsView(lifeBars: lifeBars),
+        ),
+        DeferredLibraryBuilder(
+          loader: invoices_expenses_view.loadLibrary,
+          builder: (context) => invoices_expenses_view.InvoiceExpensesView(
+            users: users,
+            invoices: invoices,
+          ),
+        ),
+      ],
     );
   }
 
@@ -213,7 +83,7 @@ class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
     final orders = ref.watch(_provider);
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Invoices'),
@@ -227,6 +97,7 @@ class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
             tabs: [
               Tab(text: 'Records'),
               Tab(text: 'Statistics'),
+              Tab(text: 'Expenses'),
             ],
           ),
         ),

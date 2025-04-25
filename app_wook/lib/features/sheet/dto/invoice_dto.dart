@@ -33,6 +33,7 @@ class InvoiceDto with Identifiable, _$InvoiceDto {
   final String id;
   final String? orderId;
   final String payerId;
+  final Decimal? payedAmount;
 
   final DateTime createdAt;
 
@@ -43,12 +44,14 @@ class InvoiceDto with Identifiable, _$InvoiceDto {
     required this.id,
     required this.orderId,
     required this.payerId,
+    required this.payedAmount,
     required this.createdAt,
     List<String>? membersIds,
     required this.items,
   }) : membersIds = membersIds ?? items.keys.toList();
 
   Decimal get amount => items.values.fold(Decimal.zero, (amount, item) => amount + item.amount);
+  bool get isPayed => items.values.every((e) => e.isPayed);
 
   factory InvoiceDto.fromJson(Map<String, dynamic> map) => _$InvoiceDtoFromJson(map);
   Map<String, dynamic> toJson() => _$InvoiceDtoToJson(this);

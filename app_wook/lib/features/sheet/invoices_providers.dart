@@ -1,4 +1,5 @@
 import 'package:core/core.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
@@ -21,6 +22,7 @@ abstract class InvoicesProviders {
     MutationRef ref, {
     required OrderModel? order,
     required String payerId,
+    required Decimal? payedAmount,
     required Map<String, InvoiceItemDto> items,
   }) async {
     if (order != null) {
@@ -35,6 +37,7 @@ abstract class InvoicesProviders {
       orderId: order?.id,
       createdAt: order?.createdAt ?? DateTime.now(),
       payerId: payerId,
+      payedAmount: payedAmount,
       items: items,
     ));
 
@@ -51,12 +54,14 @@ abstract class InvoicesProviders {
     required InvoiceDto invoice,
     required String payerId,
     required Map<String, InvoiceItemDto> items,
+    Decimal? payedAmount,
   }) async {
     await InvoicesRepository.instance.save(InvoiceDto(
       id: invoice.id,
       orderId: invoice.orderId,
       createdAt: invoice.createdAt,
       payerId: payerId,
+      payedAmount: payedAmount,
       items: items,
     ));
   }

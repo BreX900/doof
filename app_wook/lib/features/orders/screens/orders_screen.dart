@@ -45,12 +45,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       appBar: AppBar(
         leading: const SignOutIconButton(),
         title: const Text('Orders'),
-        // actions: [
-        // IconButton(
-        //   onPressed: () => context.nav.push(const MatchQueueScreen()),
-        //   icon: const Icon(Icons.sports_football_outlined),
-        // ),
-        // ],
       ),
       body: orders.buildView(
         onRefresh: () => ref.invalidateWithAncestors(_provider),
@@ -77,6 +71,13 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       itemBuilder: (context, index) {
         final order = orders[index];
 
+        final tile = ListTile(
+          onTap: () => OrderRoute(order.id).go(context),
+          title: Text('${formats.formatDateTime(order.createdAt)}  Status: ${order.status.name}'),
+          subtitle: Text('Total: ${formats.formatPrice(order.payedAmount)}'),
+        );
+        if (order.status != OrderStatus.accepting) return tile;
+
         return Dismissible(
           key: ValueKey(order.id),
           onDismissed: isMutating
@@ -95,11 +96,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             secondary: Icon(Icons.delete),
             title: Text('Delete'),
           ),
-          child: ListTile(
-            onTap: () => OrderRoute(order.id).go(context),
-            title: Text('${formats.formatDateTime(order.createdAt)}  Status: ${order.status.name}'),
-            subtitle: Text('Total: ${formats.formatPrice(order.payedAmount)}'),
-          ),
+          child: tile,
         );
       },
     );

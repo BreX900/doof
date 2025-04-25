@@ -15,6 +15,8 @@ class AppFormats {
 
   static AppFormats of(BuildContext context) => Localizations.of(context, AppFormats)!;
 
+  NumberFormat get decimal => NumberFormat.decimalPatternDigits(locale: _locale, decimalDigits: 2);
+
   String formatPrice(Decimal price) {
     return DecimalFormatter(NumberFormat.compactSimpleCurrency(
       locale: _locale,
@@ -30,6 +32,8 @@ class AppFormats {
   String formatDate(DateTime date) => DateFormat.yMd(_locale).format(date);
 
   String formatDateTime(DateTime date) => DateFormat.yMd(_locale).add_Hm().format(date);
+
+  String formatMonth(DateTime date) => DateFormat('MMM', _locale).format(date).toUpperCase();
 }
 
 class _DoofTranslationsDelegate extends LocalizationsDelegate<AppFormats> {

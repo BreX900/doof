@@ -18,6 +18,7 @@ mixin _$InvoiceDto {
           _self.id == other.id &&
           _self.orderId == other.orderId &&
           _self.payerId == other.payerId &&
+          _self.payedAmount == other.payedAmount &&
           _self.createdAt == other.createdAt &&
           $listEquality.equals(_self.membersIds, other.membersIds) &&
           $mapEquality.equals(_self.items, other.items);
@@ -27,6 +28,7 @@ mixin _$InvoiceDto {
     hashCode = $hashCombine(hashCode, _self.id.hashCode);
     hashCode = $hashCombine(hashCode, _self.orderId.hashCode);
     hashCode = $hashCombine(hashCode, _self.payerId.hashCode);
+    hashCode = $hashCombine(hashCode, _self.payedAmount.hashCode);
     hashCode = $hashCombine(hashCode, _self.createdAt.hashCode);
     hashCode = $hashCombine(hashCode, $listEquality.hash(_self.membersIds));
     hashCode = $hashCombine(hashCode, $mapEquality.hash(_self.items));
@@ -38,6 +40,7 @@ mixin _$InvoiceDto {
         ..add('id', _self.id)
         ..add('orderId', _self.orderId)
         ..add('payerId', _self.payerId)
+        ..add('payedAmount', _self.payedAmount)
         ..add('createdAt', _self.createdAt)
         ..add('membersIds', _self.membersIds)
         ..add('items', _self.items))
@@ -79,6 +82,9 @@ InvoiceDto _$InvoiceDtoFromJson(Map<String, dynamic> json) => InvoiceDto(
       id: json['id'] as String,
       orderId: json['orderId'] as String?,
       payerId: json['payerId'] as String,
+      payedAmount: json['payedAmount'] == null
+          ? null
+          : Decimal.fromJson(json['payedAmount'] as String),
       createdAt:
           const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
       membersIds: (json['membersIds'] as List<dynamic>?)
@@ -94,6 +100,7 @@ abstract final class _$InvoiceDtoJsonKeys {
   static const String id = 'id';
   static const String orderId = 'orderId';
   static const String payerId = 'payerId';
+  static const String payedAmount = 'payedAmount';
   static const String createdAt = 'createdAt';
   static const String membersIds = 'membersIds';
   static const String items = 'items';
@@ -104,6 +111,7 @@ Map<String, dynamic> _$InvoiceDtoToJson(InvoiceDto instance) =>
       'id': instance.id,
       'orderId': instance.orderId,
       'payerId': instance.payerId,
+      'payedAmount': instance.payedAmount?.toJson(),
       'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
       'membersIds': instance.membersIds,
       'items': instance.items.map((k, e) => MapEntry(k, e.toJson())),
