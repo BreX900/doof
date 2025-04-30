@@ -7,6 +7,7 @@ import 'package:mek/mek.dart';
 import 'package:mek_gasol/features/sheet/dto/invoice_dto.dart';
 import 'package:mek_gasol/features/sheet/models/heart_model.dart';
 import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
+import 'package:mekart/mekart.dart';
 
 class InvoicesView extends StatelessWidget {
   final IList<InvoiceDto> invoices;
@@ -18,6 +19,26 @@ class InvoicesView extends StatelessWidget {
     required this.lifeBars,
   });
 
+  Widget _buildIcon(String userId, InvoiceDto invoice) {
+    if (!(invoice.items[userId]?.isPayed ?? true)) {
+      return const Icon(Icons.warning, color: Colors.yellow);
+    }
+
+    final payedAmount = invoice.payedAmount;
+    final vaultOutcome = invoice.vaultOutcomes?.values.sum;
+
+    if (payedAmount != null && vaultOutcome != null) {
+      if (payedAmount == invoice.vaultOutcomes?.values.sum) {
+        return const Icon(Icons.token, color: Colors.yellow);
+      } else {
+        return const Icon(Icons.token, color: Colors.green);
+      }
+    }
+
+    if (!invoice.isPayed) return const Icon(Icons.check_circle, color: Colors.yellow);
+    return const Icon(Icons.check_circle, color: Colors.green);
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData(:colorScheme, :textTheme) = Theme.of(context);
@@ -28,12 +49,14 @@ class InvoicesView extends StatelessWidget {
         .take(5)
         .sortedBy<num>((e) => e.data.life * -1)
         .toIList();
+
     final userId = FirebaseAuth.instance.currentUser!.uid;
+    final pendingInvoices = invoices.where((e) => !e.isPayed).toIList();
     final uncollectedInvoices = invoices.where((e) => e.payerId == userId && !e.isPayed).toIList();
     final unpaidInvoices = invoices.where((e) => !(e.items[userId]?.isPayed ?? true)).toIList();
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverPadding(
@@ -104,21 +127,26 @@ class InvoicesView extends StatelessWidget {
               forceElevated: innerBoxIsScrolled,
               child: TabBar.secondary(
                 tabs: [
-                  const Tab(text: 'All'),
+                  const Tab(icon: Icon(Icons.clear_all)),
                   Tab(
                     child: Badge(
                       isLabelVisible: uncollectedInvoices.isNotEmpty,
-                      offset: const Offset(16.0, -8.0),
                       label: Text('${uncollectedInvoices.length}'),
-                      child: const Text('Uncollected'),
+                      child: const Icon(Icons.search),
                     ),
                   ),
                   Tab(
                     child: Badge(
                       isLabelVisible: unpaidInvoices.isNotEmpty,
-                      offset: const Offset(16.0, -8.0),
                       label: Text('${unpaidInvoices.length}'),
-                      child: const Text('Unpaid'),
+                      child: const Icon(Icons.attach_money),
+                    ),
+                  ),
+                  Tab(
+                    child: Badge(
+                      isLabelVisible: pendingInvoices.isNotEmpty,
+                      label: Text('${pendingInvoices.length}'),
+                      child: const Icon(Icons.question_mark),
                     ),
                   ),
                 ],
@@ -126,37 +154,45 @@ class InvoicesView extends StatelessWidget {
             ),
           ),
         ],
-        body: Builder(builder: (context) {
-          return TabBarView(
-            children: [invoices, uncollectedInvoices, unpaidInvoices].map((invoices) {
-              if (invoices.isEmpty) return const InfoView(title: Text('No results!'));
+        body: TabBarView(
+          children:
+              [invoices, uncollectedInvoices, unpaidInvoices, pendingInvoices].map((invoices) {
+            if (invoices.isEmpty) return const InfoView(title: Text('No results!'));
 
-              return CustomScrollView(
-                slivers: [
-                  SliverOverlapInjector(
+            return CustomScrollView(
+              slivers: [
+                Builder(builder: (context) {
+                  return SliverOverlapInjector(
                     handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-                  ),
-                  SliverList.builder(
-                    itemCount: invoices.length,
-                    itemBuilder: (context, index) {
-                      final invoice = invoices[index];
-                      final isPayed = invoice.isPayed;
+                  );
+                }),
+                SliverList.builder(
+                  itemCount: invoices.length,
+                  itemBuilder: (context, index) {
+                    final invoice = invoices[index];
+                    final InvoiceDto(:payedAmount, :vaultOutcomes) = invoice;
 
-                      return ListTile(
-                        onTap: () => InvoiceRoute(invoice.id).go(context),
-                        leading: isPayed
-                            ? const Icon(Icons.check_circle, color: Colors.green)
-                            : const Icon(Icons.warning, color: Colors.yellow),
-                        title: Text(formats.formatDateTime(invoice.createdAt)),
-                        subtitle: Text('Total: ${formats.formatPrice(invoice.amount)}'),
-                      );
-                    },
-                  ),
-                ],
-              );
-            }).toList(),
-          );
-        }),
+                    var text = 'Total: ${formats.formatPrice(invoice.amount)}';
+                    if (payedAmount != null) {
+                      if (vaultOutcomes != null) {
+                        text += ' • Vault: -${vaultOutcomes.values.sum}';
+                      } else {
+                        text += ' • Vault: +${formats.formatCaps(invoice.amount - payedAmount)}';
+                      }
+                    }
+
+                    return ListTile(
+                      onTap: () => InvoiceRoute(invoice.id).go(context),
+                      leading: _buildIcon(userId, invoice),
+                      title: Text(formats.formatDateTime(invoice.createdAt)),
+                      subtitle: Text(text),
+                    );
+                  },
+                ),
+              ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }

@@ -18,8 +18,6 @@ final _areaProvider = FutureProvider((ref) async {
   return cart.members.every((e) => e.id != userId);
 });
 
-enum UserAreaTab { invoices, orders, carts, products }
-
 class UserArea extends ConsumerStatefulWidget {
   final ValueChanged<int> onTapDestination;
   final int destinationIndex;
@@ -32,10 +30,6 @@ class UserArea extends ConsumerStatefulWidget {
     required this.child,
   });
 
-  static final tab = StateProvider((ref) {
-    return UserAreaTab.products;
-  });
-
   @override
   ConsumerState<UserArea> createState() => _UserAreaState();
 }
@@ -43,42 +37,8 @@ class UserArea extends ConsumerStatefulWidget {
 class _UserAreaState extends ConsumerState<UserArea> {
   FutureProvider<bool> get _provider => _areaProvider;
 
-  Widget _buildNavigationBarItem(UserAreaTab tab) {
-    switch (tab) {
-      case UserAreaTab.invoices:
-        return const NavigationDestination(
-          icon: Icon(Icons.receipt_long),
-          label: 'Invoices',
-        );
-      case UserAreaTab.orders:
-        return const NavigationDestination(
-          icon: Icon(Icons.library_books_outlined),
-          label: 'Orders',
-        );
-      case UserAreaTab.products:
-        return const NavigationDestination(
-          icon: Icon(Icons.fastfood_outlined),
-          label: 'Menu',
-        );
-      case UserAreaTab.carts:
-        return const NavigationDestination(
-          icon: Icon(Icons.shopping_cart_outlined),
-          label: 'Cart',
-        );
-    }
-  }
-
-  Widget _buildNavigationBar(WidgetRef ref, UserAreaTab tab) {
-    return NavigationBar(
-      selectedIndex: widget.destinationIndex,
-      onDestinationSelected: widget.onTapDestination,
-      destinations: UserAreaTab.values.map(_buildNavigationBarItem).toList(),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final tab = ref.watch(UserArea.tab);
     final state = ref.watch(_provider);
 
     return state.buildView(
@@ -94,7 +54,28 @@ class _UserAreaState extends ConsumerState<UserArea> {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           body: widget.child,
-          bottomNavigationBar: _buildNavigationBar(ref, tab),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: widget.destinationIndex,
+            onDestinationSelected: widget.onTapDestination,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.receipt_long),
+                label: 'Invoices',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.library_books_outlined),
+                label: 'Orders',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.shopping_cart_outlined),
+                label: 'Cart',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.fastfood_outlined),
+                label: 'Menu',
+              ),
+            ],
+          ),
         );
       },
     );

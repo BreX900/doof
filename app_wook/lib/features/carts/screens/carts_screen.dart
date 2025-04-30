@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/features/products/utils/purchasable_products_utils.dart';
-import 'package:mek_gasol/shared/navigation/areas/user_area.dart';
 import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 
@@ -108,7 +107,7 @@ class _CartsBody extends ConsumerWidget {
 
     if (items.isEmpty) {
       return InfoView(
-        onTap: () => ref.read(UserArea.tab.notifier).state = UserAreaTab.products,
+        onTap: () => const ProductsRoute().go(context),
         title: const Text('😱 Non ci sono prodotti nel carrello! 😱\n🍾 Vai al menu! 🥙'),
       );
     }
@@ -131,7 +130,7 @@ class _CartsBody extends ConsumerWidget {
 
     final itemsInLists = ProductItemListTile.buildLists(
       userId: userId,
-      items: items,
+      items: items.unlockView,
       builder: (context, item) => Dismissible(
         key: ValueKey(item),
         onDismissed: !isMutating ? (_) => state._removeItem((cart, item)) : null,
@@ -147,10 +146,15 @@ class _CartsBody extends ConsumerWidget {
         SliverToBoxAdapter(
           child: header,
         ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 32.0),
-          sliver: SliverToBoxAdapter(
-            child: buttons,
+        SliverPersistentSizeHeader(
+          pinned: true,
+          floating: true,
+          height: 56.0,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: buttons,
+            ),
           ),
         ),
         ...itemsInLists,

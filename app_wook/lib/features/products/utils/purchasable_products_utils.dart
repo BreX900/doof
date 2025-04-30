@@ -51,7 +51,7 @@ class ProductItemListTile extends StatelessWidget {
 
   static Iterable<Widget> buildLists<T extends ProductItem>({
     required String? userId,
-    required Iterable<T> items,
+    required List<T> items,
     required ItemWidgetBuilder<T> builder,
   }) sync* {
     if (userId == null) {
@@ -91,12 +91,10 @@ class ProductItemListTile extends StatelessWidget {
     });
   }
 
-  static Widget _buildItems<T>(Iterable<T> items, ItemWidgetBuilder<T> builder) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        childCount: items.length,
-        (context, index) => builder(context, items.elementAt(index)),
-      ),
+  static Widget _buildItems<T>(List<T> items, ItemWidgetBuilder<T> builder) {
+    return SliverList.builder(
+      itemCount: items.length,
+      itemBuilder: (context, index) => builder(context, items.elementAt(index)),
     );
   }
 }

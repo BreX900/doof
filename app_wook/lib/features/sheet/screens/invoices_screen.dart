@@ -13,7 +13,6 @@ import 'package:mek_gasol/features/sheet/widgets/invoices_statistics_view.dart'
     deferred as invoices_statistics_view;
 import 'package:mek_gasol/features/sheet/widgets/invoices_vault_view.dart';
 import 'package:mek_gasol/features/sheet/widgets/invoices_view.dart' deferred as invoices_view;
-import 'package:mek_gasol/shared/navigation/areas/user_area.dart';
 import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
@@ -49,12 +48,10 @@ class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
     required IList<LifeBar> lifeBars,
   }) {
     if (invoices.isEmpty) {
-      return Consumer(builder: (context, ref, _) {
-        return InfoView(
-          onTap: () => ref.read(UserArea.tab.notifier).state = UserAreaTab.carts,
-          title: const Text('😰 Non hai ancora fatto nessun ordine! 😰\n🛒 Vai al carrello! 🛒'),
-        );
-      });
+      return InfoView(
+        onTap: () => const CartsRoute().go(context),
+        title: const Text('😰 Non hai ancora fatto nessun ordine! 😰\n🛒 Vai al carrello! 🛒'),
+      );
     }
 
     return TabBarView(

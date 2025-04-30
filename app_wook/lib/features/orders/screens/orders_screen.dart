@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
-import 'package:mek_gasol/shared/navigation/areas/user_area.dart';
 import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mek_gasol/shared/widgets/sign_out_icon_button.dart';
@@ -22,45 +21,36 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         whereNotStatusIn: const [],
       ));
 
+  final _removedOrderIds = <String>{};
+
   late final _cancelOrder = ref.mutation((ref, OrderModel order) async {
     final items = await ref.read(OrderItemsProviders.all((Env.organizationId, order.id)).future);
     await CartItemsProviders.upsertFromOrder(ref, Env.organizationId, Env.cartId, items);
-
     await OrdersProviders.delete(ref, Env.organizationId, order);
+  }, onStart: (OrderModel order) {
+    _removedOrderIds.add(order.id);
   }, onError: (_, error) {
     CoreUtils.showErrorSnackBar(context, error);
+  }, onFinish: (order, _, __) {
+    _removedOrderIds.remove(order.id);
   });
 
   late final _deleteOrder = ref.mutation((ref, OrderModel order) async {
     await OrdersProviders.delete(ref, Env.organizationId, order);
+  }, onStart: (OrderModel order) {
+    _removedOrderIds.add(order.id);
   }, onError: (_, error) {
     CoreUtils.showErrorSnackBar(context, error);
+  }, onFinish: (order, _, __) {
+    _removedOrderIds.remove(order.id);
   });
-
-  @override
-  Widget build(BuildContext context) {
-    final orders = ref.watch(_provider);
-
-    return Scaffold(
-      appBar: AppBar(
-        leading: const SignOutIconButton(),
-        title: const Text('Orders'),
-      ),
-      body: orders.buildView(
-        onRefresh: () => ref.invalidateWithAncestors(_provider),
-        data: _buildBody,
-      ),
-    );
-  }
 
   Widget _buildBody(IList<OrderModel> orders) {
     if (orders.isEmpty) {
-      return Consumer(builder: (context, ref, _) {
-        return InfoView(
-          onTap: () => ref.read(UserArea.tab.notifier).state = UserAreaTab.carts,
-          title: const Text('😰 Non hai ancora fatto nessun ordine! 😰\n🛒 Vai al carrello! 🛒'),
-        );
-      });
+      return InfoView(
+        onTap: () => const CartsRoute().go(context),
+        title: const Text('😰 Non hai ancora fatto nessun ordine! 😰\n🛒 Vai al carrello! 🛒'),
+      );
     }
 
     final isMutating = ref.watchIsMutating([_deleteOrder]);
@@ -80,11 +70,12 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
         return Dismissible(
           key: ValueKey(order.id),
-          onDismissed: isMutating
+          confirmDismiss: (direction) async => !isMutating,
+          onDismissed: !isMutating
               ? (direction) => switch (direction) {
                     DismissDirection.startToEnd => _cancelOrder(order),
                     DismissDirection.endToStart => _deleteOrder(order),
-                    _ => null,
+                    _ => throw UnsupportedError('$direction'),
                   }
               : null,
           background: const DismissingTile.left(
@@ -99,6 +90,23 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           child: tile,
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final orders = ref.watch(_provider);
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: const SignOutIconButton(),
+        title: const Text('Orders'),
+      ),
+      body: orders.buildView(
+        onRefresh: () => ref.invalidateWithAncestors(_provider),
+        data: (orders) =>
+            _buildBody(orders.where((e) => !_removedOrderIds.contains(e.id)).toIList()),
+      ),
     );
   }
 }

@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
-import 'package:mek_gasol/shared/navigation/areas/user_area.dart';
+import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/field_padding.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
@@ -152,12 +152,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   }, onError: (_, error) {
     CoreUtils.showErrorSnackBar(context, error);
   }, onSuccess: (product, __) {
-    final tabBloc = ref.read(UserArea.tab.notifier);
-
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('${product.title} has been added to your shopping cart!'),
       action: SnackBarAction(
-        onPressed: () => tabBloc.state = UserAreaTab.carts,
+        onPressed: () => const CartsRoute().go(context),
         label: 'Cart',
       ),
     ));

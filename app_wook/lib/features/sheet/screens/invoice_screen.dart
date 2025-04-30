@@ -133,7 +133,7 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
   void initState() {
     super.initState();
 
-    _init();
+    unawaited(_init());
   }
 
   @override
@@ -237,7 +237,8 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
       order: order,
       payerId: _payerFb.value!.id,
       payedAmount: _payedAmountControl.value,
-      vaultOutcomes: _isVaultUsedControl.value ? IMap() : null,
+      vaultOutcomes:
+          _isVaultUsedControl.value ? _vaultOutcomesControl.value.lockUnsafe.nonNullValues : null,
       items: _itemsFb.controls.map((e) => MapEntry(e.userId, e.toValue())).toIMap(),
     );
   }, onError: (_, error) {
@@ -284,7 +285,10 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
     }
   }
 
-  Widget _buildBody({required IList<InvoiceDto> invoices, required IList<UserDto> users}) {
+  Widget _buildBody({
+    required IList<InvoiceDto> invoices,
+    required IList<UserDto> users,
+  }) {
     final formats = AppFormats.of(context);
     final ThemeData(:colorScheme) = Theme.of(context);
 
@@ -333,12 +337,14 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
           onDismissed: (_) => _itemsFb.remove(formControl),
           child: Column(
             children: [
-              ListTile(
-                onTap: () async => _showItemUpsertDialog(formControl),
+              ReactiveSwitchListTile(
+                formControl: formControl.isPayedFb,
+                controlAffinity: ListTileControlAffinity.leading,
                 title: Text(user.displayName!),
                 subtitle: Text('Did he pay? ${formats.formatPrice(formControl.toValue().amount)}'),
-                trailing: ReactiveSwitch(
-                  formControl: formControl.isPayedFb,
+                secondary: IconButton(
+                  onPressed: () async => _showItemUpsertDialog(formControl),
+                  icon: const Icon(Icons.edit),
                 ),
               ),
               FieldPadding(ReactiveSegmentedButton<Job>.multi(
@@ -373,14 +379,26 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
     final vault = InvoicesUtils.calculateVault(invoices);
     final vaultOutcomesControls = ref.watch(_vaultOutcomesControl.provider.controls);
 
+    final isVaultUsed = ref.watch(_isVaultUsedControl.provider.value) ?? false;
+    final usedAmount = ref.watch(_vaultOutcomesControl.provider.value.select((entries) {
+      return entries.values.nonNulls.sum;
+    }));
+    final payedAmount = ref.watch(_payedAmountControl.provider.value) ?? Decimal.zero;
+    final missingAmount = maxDecimal(payedAmount - usedAmount, Decimal.zero);
+    final isVaultOutcomesValid = missingAmount == Decimal.zero;
+
     final vaultView = HarmonicSingleChildScrollView(
       child: Column(
         children: [
           ReactiveSwitchListTile(
             formControl: _isVaultUsedControl,
-            secondary: const Icon(Icons.token),
+            secondary: Icon(Icons.token,
+                size: 48.0,
+                color: !isVaultUsed ? null : (isVaultOutcomesValid ? Colors.green : Colors.red)),
             title: const Text('Open the vault to pay?'),
-            subtitle: Text('In the vault you have ${formats.formatCaps(vault.values.sum)}'),
+            subtitle: Text('The vault has ${formats.formatCaps(vault.values.sum)}.\n'
+                'Payed ${formats.formatPrice(payedAmount)}\n'
+                'Withdrawal ${formats.formatCaps(usedAmount)}'),
           ),
           ...vaultOutcomesControls.mapTo((userId, control) {
             final hasValue = ref.watch(control.provider.hasValue);
@@ -396,7 +414,8 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
                 prefixIcon: const Icon(Icons.catching_pokemon),
                 suffixIcon: !hasValue
                     ? TextButton(
-                        onPressed: () => control.updateValue(vaultAmount),
+                        onPressed: () =>
+                            control.updateValue(minDecimal(vaultAmount, missingAmount)),
                         child: const Text('Auto-Fill'),
                       )
                     : const ReactiveClearButton(),

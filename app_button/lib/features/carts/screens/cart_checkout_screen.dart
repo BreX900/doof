@@ -22,10 +22,7 @@ final _stateProvider = FutureProvider.autoDispose.family((ref, (String organizai
 class CartCheckoutScreen extends ConsumerStatefulWidget {
   final String organizationId;
 
-  CartCheckoutScreen({
-    super.key,
-    required this.organizationId,
-  });
+  CartCheckoutScreen({super.key, required this.organizationId});
 
   late final stateProvider = _stateProvider((organizationId,));
 
@@ -44,8 +41,10 @@ class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
     super.dispose();
   }
 
-  late final _checkout =
-      ref.mutation((ref, ({CartModel cart, IList<CartItemModel> cartItems}) arg) async {
+  late final _checkout = ref.mutation((
+    ref,
+    ({CartModel cart, IList<CartItemModel> cartItems}) arg,
+  ) async {
     await CartsProviders.sendOrder(
       ref,
       widget.organizationId,
@@ -110,9 +109,7 @@ class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
     final state = ref.watch(widget.stateProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Checkout'),
-      ),
+      appBar: AppBar(title: const Text('Checkout')),
       body: state.buildView(
         data: (data) => _buildBody(user: data.user, cart: data.cart, cartItems: data.cartItems),
       ),

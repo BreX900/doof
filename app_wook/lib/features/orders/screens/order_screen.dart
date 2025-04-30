@@ -182,7 +182,7 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
 
     final itemsInLists = ProductItemListTile.buildLists(
       userId: userId,
-      items: items,
+      items: items.unlockView,
       builder: (context, item) {
         // ignore: avoid_positional_boolean_parameters
         void toggleItem(IList<OrderItemModel> selection, bool shouldSelected) {

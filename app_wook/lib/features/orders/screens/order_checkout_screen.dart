@@ -80,6 +80,7 @@ class _OrderCheckoutScreenState extends ConsumerState<OrderCheckoutScreen> {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Text('Order sent!'),
     ));
+    Navigator.pop(context);
     OrderRoute(orderId, isNew: true).go(context);
   });
 

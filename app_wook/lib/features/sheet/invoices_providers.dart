@@ -41,7 +41,7 @@ abstract class InvoicesProviders {
       payerId: payerId,
       payedAmount: payedAmount,
       items: items,
-      vaultOutcomes: vaultOutcomes,
+      vaultOutcomes: vaultOutcomes?.where((_, value) => value > Decimal.zero),
     ));
 
     if (order == null) return;
