@@ -1,6 +1,6 @@
 name: mek_gasol
 description: A new Flutter project.
-version: 2.5.7+20
+version: 2.5.8+21
 publish_to: "none"
 
 environment:
@@ -81,6 +81,8 @@ dev_dependencies:
   mek_data_class_generator: ^2.0.3
   json_serializable: ^6.9.5
   go_router_builder: ^2.8.2
+
+  teledart: ^0.6.1
 
 flutter:
   uses-material-design: true

@@ -152,10 +152,11 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   }, onError: (_, error) {
     CoreUtils.showErrorSnackBar(context, error);
   }, onSuccess: (product, __) {
+    final router = GoRouter.of(context);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('${product.title} has been added to your shopping cart!'),
       action: SnackBarAction(
-        onPressed: () => const CartsRoute().go(context),
+        onPressed: () => router.go(const CartsRoute().location),
         label: 'Cart',
       ),
     ));

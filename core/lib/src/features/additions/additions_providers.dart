@@ -33,7 +33,7 @@ abstract class IngredientsProviders {
   });
 
   static Future<void> upsert(
-    MutationRef<void> ref, {
+    MutationRef ref, {
     required String organizationId,
     required String? ingredientId,
     required String title,

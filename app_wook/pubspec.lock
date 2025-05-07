@@ -1031,6 +1031,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.5"
+  teledart:
+    dependency: "direct dev"
+    description:
+      name: teledart
+      sha256: e542336801a0366441f5019e30e00cc0e49aabfcd5675590d30a00a8a4a54c3f
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.1"
   term_glyph:
     dependency: transitive
     description:

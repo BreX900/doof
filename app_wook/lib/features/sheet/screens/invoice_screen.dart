@@ -459,7 +459,6 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
     return DefaultTabController(
       length: 2,
       child: HarmonicScaffold(
-        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Text('Invoice$invoiceLabel'),
           bottom: const TabBar(
