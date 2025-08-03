@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_button/apis/riverpod/riverpod_utils.dart';
 import 'package:app_button/features/products/widgets/product_tile.dart';
 import 'package:app_button/shared/data/r.dart';
 import 'package:app_button/shared/navigation/routes.dart';
@@ -22,26 +23,31 @@ final _stateProvider = FutureProvider.family((ref, String organizationId) async 
   return (signStatus: signStatus, organization: organization, cart: cart, items: items);
 });
 
-class CartScreen extends ConsumerStatefulWidget with AsyncConsumerStatefulWidget {
+class CartScreen extends ConsumerStatefulWidget {
   final String organizationId;
 
-  CartScreen({
-    super.key,
-    required this.organizationId,
-  });
-
-  late final stateProvider = _stateProvider(organizationId);
-
-  @override
-  ProviderBase<Object?> get asyncProvider => stateProvider;
+  const CartScreen({super.key, required this.organizationId});
 
   @override
   ConsumerState<CartScreen> createState() => _CartScreenState();
 }
 
-class _CartScreenState extends ConsumerState<CartScreen> with AsyncConsumerState {
-  late final _removeItem = ref.mutation((ref, (String cartId, String itemId) args) async =>
-      CartItemsProviders.remove(ref, args.$1, args.$2));
+class _CartScreenState extends ConsumerState<CartScreen> {
+  FutureProvider<
+    ({
+      CartModel cart,
+      IList<CartItemModel> items,
+      OrganizationDto organization,
+      SignStatus signStatus,
+    })
+  >
+  get _provider => _stateProvider(widget.organizationId);
+
+  late final _removeItem = ref.mutation(
+    (ref, (String cartId, String itemId) args) async =>
+        CartItemsProviders.remove(ref, args.$1, args.$2),
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+  );
 
   Future<void> _checkout({required SignStatus signStatus}) async {
     switch (signStatus) {
@@ -123,36 +129,23 @@ class _CartScreenState extends ConsumerState<CartScreen> with AsyncConsumerState
 
     return CustomScrollView(
       slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.all(16.0),
-          sliver: itemsView,
-        ),
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: AppButtonBar(
-            child: checkoutButton,
-          ),
-        ),
+        SliverPadding(padding: const EdgeInsets.all(16.0), sliver: itemsView),
+        SliverFillRemaining(hasScrollBody: false, child: AppButtonBar(child: checkoutButton)),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(widget.stateProvider);
+    final state = ref.watch(_provider);
     final data = state.valueOrNull;
 
     return Scaffold(
       drawer: StoreDrawer(organizationId: widget.organizationId),
-      appBar: AppBar(
-        title: DotsText.or(data?.organization.name ?? '...'),
-      ),
+      appBar: AppBar(title: DotsText.or(data?.organization.name ?? '...')),
       body: state.buildView(
-        data: (data) => _buildBody(
-          signStatus: data.signStatus,
-          cart: data.cart,
-          items: data.items,
-        ),
+        onRefresh: () {},
+        data: (data) => _buildBody(signStatus: data.signStatus, cart: data.cart, items: data.items),
       ),
     );
   }

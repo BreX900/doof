@@ -1,9 +1,11 @@
+import 'package:app_button/apis/riverpod/riverpod_utils.dart';
 import 'package:app_button/features/products/widgets/product_tile.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:app_button/shared/widgets/sliver_order_status_bar.dart';
 import 'package:app_button/shared/widgets/store_drawer.dart';
 import 'package:core/core.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
@@ -16,10 +18,9 @@ final _stateProvider = FutureProvider.family((ref, String organizationId) async 
 
   IList<OrderModel> pendingOrders;
   try {
-    pendingOrders = await ref.watch(OrdersProviders.all((
-      organizationId,
-      whereNotStatusIn: [OrderStatus.delivered],
-    )).future);
+    pendingOrders = await ref.watch(
+      OrdersProviders.all((organizationId, whereNotStatusIn: [OrderStatus.delivered])).future,
+    );
   } on MissingCredentialsFailure {
     pendingOrders = const IListConst([]);
   }
@@ -35,24 +36,26 @@ final _stateProvider = FutureProvider.family((ref, String organizationId) async 
   );
 });
 
-class ProductsScreen extends ConsumerStatefulWidget with AsyncConsumerStatefulWidget {
+class ProductsScreen extends ConsumerStatefulWidget {
   final String organizationId;
 
-  ProductsScreen({
-    super.key,
-    required this.organizationId,
-  });
-
-  late final stateProvider = _stateProvider(organizationId);
-
-  @override
-  ProviderBase<Object?> get asyncProvider => stateProvider;
+  const ProductsScreen({super.key, required this.organizationId});
 
   @override
   ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
 }
 
 class _ProductsScreenState extends ConsumerState<ProductsScreen> {
+  FutureProvider<
+    ({
+      IMap<CategoryDto, IList<ProductModel>> categorizedProducts,
+      OrganizationDto organization,
+      IList<OrderModel> pendingOrders,
+      User? user,
+    })
+  >
+  get _provider => _stateProvider(widget.organizationId);
+
   int _tabIndex = 0;
 
   void _updateTab(int index) => setState(() => _tabIndex = index);
@@ -65,11 +68,13 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       children: categorizedProducts.values.map((e) {
         return CustomScrollView(
           slivers: [
-            Builder(builder: (context) {
-              return SliverOverlapInjector(
-                handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-              );
-            }),
+            Builder(
+              builder: (context) {
+                return SliverOverlapInjector(
+                  handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+                );
+              },
+            ),
             SliverPadding(
               padding: const EdgeInsets.all(16.0),
               sliver: SliverList.separated(
@@ -105,7 +110,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(widget.stateProvider);
+    final state = ref.watch(_provider);
     final data = state.valueOrNull;
     final organization = data?.organization;
     final categories = data?.categorizedProducts.keys.toList() ?? const [];
@@ -119,9 +124,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       labelColor: colors.onBackground,
       onTap: _updateTab,
       tabs: categories.map((category) {
-        return Tab(
-          text: category.title,
-        );
+        return Tab(text: category.title);
       }).toList(),
     );
     final bottomHeight = tabBar.preferredSize.height;
@@ -149,9 +152,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 preferredSize: tabBar.preferredSize,
                 child: SizedBox.fromSize(
                   size: tabBar.preferredSize,
-                  child: Material(
-                    child: categories.isEmpty ? null : tabBar,
-                  ),
+                  child: Material(child: categories.isEmpty ? null : tabBar),
                 ),
               ),
             ),
@@ -159,18 +160,14 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
         ];
       },
       body: state.buildView(
-        data: (data) => _buildBody(
-          categorizedProducts: data.categorizedProducts,
-        ),
+        onRefresh: () {},
+        data: (data) => _buildBody(categorizedProducts: data.categorizedProducts),
       ),
     );
 
     return Scaffold(
       drawer: StoreDrawer(organizationId: widget.organizationId),
-      body: DefaultTabController(
-        length: categories.length,
-        child: child,
-      ),
+      body: DefaultTabController(length: categories.length, child: child),
     );
   }
 }

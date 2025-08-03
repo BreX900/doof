@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_button/apis/flutter_svg/svg_icon.dart';
+import 'package:app_button/apis/riverpod/riverpod_utils.dart';
 import 'package:app_button/shared/data/r.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:core/core.dart';
@@ -11,16 +12,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final _stateProvider = FutureProvider.family((ref, String organizationId) async {
   final user = await ref.watch(UsersProviders.currentAuth.future);
 
-  return (user: user,);
+  return (user: user);
 });
 
 class StoreDrawer extends ConsumerStatefulWidget {
   final String organizationId;
 
-  const StoreDrawer({
-    super.key,
-    required this.organizationId,
-  });
+  const StoreDrawer({super.key, required this.organizationId});
 
   @override
   ConsumerState<StoreDrawer> createState() => _StoreDrawerState();
@@ -48,10 +46,12 @@ class _StoreDrawerState extends ConsumerState<StoreDrawer> {
           ListTile(
             onTap: () {
               Scaffold.of(context).closeDrawer();
-              unawaited(SignInPhoneNumberRoute(
-                organizationId: widget.organizationId,
-                shouldPop: true,
-              ).push(context));
+              unawaited(
+                SignInPhoneNumberRoute(
+                  organizationId: widget.organizationId,
+                  shouldPop: true,
+                ).push(context),
+              );
             },
             leading: const Icon(Icons.login),
             title: const Text('Login'),
@@ -77,6 +77,7 @@ class _StoreDrawerState extends ConsumerState<StoreDrawer> {
     return Drawer(
       child: SafeArea(
         child: state.buildView(
+          onRefresh: () {},
           data: (data) => _buildDrawer(user: data.user),
         ),
       ),

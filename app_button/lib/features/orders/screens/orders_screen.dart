@@ -1,3 +1,4 @@
+import 'package:app_button/apis/riverpod/riverpod_utils.dart';
 import 'package:app_button/shared/data/r.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:app_button/shared/widgets/app_info_view.dart';
@@ -13,8 +14,9 @@ final _stateProvider = FutureProvider.family((ref, (String organizationId,) arg)
   final (organizationId,) = arg;
 
   final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
-  final orders =
-      await ref.watch(OrdersProviders.all((organizationId, whereNotStatusIn: [])).future);
+  final orders = await ref.watch(
+    OrdersProviders.all((organizationId, whereNotStatusIn: [])).future,
+  );
 
   return (organization: organization, orders: orders);
 });
@@ -22,10 +24,7 @@ final _stateProvider = FutureProvider.family((ref, (String organizationId,) arg)
 class OrdersScreen extends ConsumerStatefulWidget {
   final String organizationId;
 
-  OrdersScreen({
-    super.key,
-    required this.organizationId,
-  });
+  OrdersScreen({super.key, required this.organizationId});
 
   late final stateProvider = _stateProvider((organizationId,));
 
@@ -71,10 +70,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
     return Scaffold(
       drawer: StoreDrawer(organizationId: widget.organizationId),
-      appBar: AppBar(
-        title: DotsText.or(data?.organization.name),
-      ),
+      appBar: AppBar(title: DotsText.or(data?.organization.name)),
       body: state.buildView(
+        onRefresh: () {},
         data: (data) => _buildBody(orders: data.orders),
       ),
     );

@@ -2,19 +2,18 @@ import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:mek/mek.dart';
 
+class LoadingView extends StatelessWidget {
+  const LoadingView({super.key});
+
+  @override
+  Widget build(BuildContext context) => const AsyncHandler().buildLoadingView();
+}
+
 class ErrorView extends StatelessWidget {
   final Object error;
   final VoidCallback? onTap;
 
-  const ErrorView({
-    super.key,
-    required this.error,
-    this.onTap,
-  });
-
-  static Widget buildByData(BuildContext context, ErrorData data) {
-    return ErrorView(error: data.error, onTap: data.onTap);
-  }
+  const ErrorView({super.key, required this.error, this.onTap});
 
   Widget _buildTitle(Object error) {
     return Text(CoreUtils.translateError(error, fallback: '🤖 My n_m_ _s r_b_t! 🤖'));
@@ -51,6 +50,6 @@ class ErrorView extends StatelessWidget {
       title: _buildTitle(error),
       actions: _buildActions(context, error),
     );
-    return buildWithMaterial(context, child);
+    return Material(child: child);
   }
 }

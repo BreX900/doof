@@ -63,6 +63,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
         final tile = ListTile(
           onTap: () => OrderRoute(order.id).go(context),
+          leading: switch (order.status) {
+            OrderStatus.notAccepted => const Icon(Icons.cancel),
+            OrderStatus.delivered => const Icon(Icons.check_circle),
+            _ => const Icon(Icons.pending),
+          },
           title: Text('${formats.formatDateTime(order.createdAt)}  Status: ${order.status.name}'),
           subtitle: Text('Total: ${formats.formatPrice(order.payedAmount)}'),
         );

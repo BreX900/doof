@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_button/apis/riverpod/riverpod_utils.dart';
 import 'package:app_button/features/products/widgets/product_tile.dart';
 import 'package:app_button/shared/widgets/app_button_bar.dart';
 import 'package:core/core.dart';
@@ -12,55 +13,50 @@ import 'package:mek/mek.dart';
 import 'package:mekart/mekart.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
-final _stateProvider = FutureProvider.autoDispose
-    .family((ref, (String organizationId, Either<String, String> id) args) async {
+final _stateProvider = FutureProvider.autoDispose.family((
+  ref,
+  (String organizationId, Either<String, String> id) args,
+) async {
   final (organizationId, id) = args;
 
   final cart = await ref.watch(CartsProviders.personal(organizationId).future);
 
-  final vls = await id.when((productId) async {
-    return (
-      product: await ref.watch(ProductsProviders.single((organizationId, productId)).future),
-      cartItem: null,
-    );
-  }, (itemId) async {
-    final cartItem =
-        await ref.watch(CartItemsProviders.first((organizationId, cart.id, itemId)).future);
-    return (
-      product: cartItem.product,
-      cartItem: cartItem,
-    );
-  });
+  final vls = await id.when(
+    (productId) async {
+      return (
+        product: await ref.watch(ProductsProviders.single((organizationId, productId)).future),
+        cartItem: null,
+      );
+    },
+    (itemId) async {
+      final cartItem = await ref.watch(
+        CartItemsProviders.first((organizationId, cart.id, itemId)).future,
+      );
+      return (product: cartItem.product, cartItem: cartItem);
+    },
+  );
 
   return (cart: cart, product: vls.product, cartItem: vls.cartItem);
 });
 
-class ProductScreen extends ConsumerStatefulWidget with AsyncConsumerStatefulWidget {
+class ProductScreen extends ConsumerStatefulWidget {
   final String organizationId;
   final Either<String, String> id;
 
-  ProductScreen({
-    super.key,
-    required this.organizationId,
-    required String productId,
-  }) : id = Either.left(productId);
+  ProductScreen({super.key, required this.organizationId, required String productId})
+    : id = Either.left(productId);
 
-  ProductScreen.fromCart({
-    super.key,
-    required this.organizationId,
-    required String itemId,
-  }) : id = Either.right(itemId);
-
-  late final stateProvider = _stateProvider((organizationId, id));
-
-  @override
-  ProviderBase<Object?> get asyncProvider => stateProvider;
+  ProductScreen.fromCart({super.key, required this.organizationId, required String itemId})
+    : id = Either.right(itemId);
 
   @override
   ConsumerState<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsumerState {
+class _ProductScreenState extends ConsumerState<ProductScreen> {
+  AutoDisposeFutureProvider<({CartModel cart, CartItemModel? cartItem, ProductModel product})>
+  get _provider => _stateProvider((widget.organizationId, widget.id));
+
   final _quantityFb = FormControlTyped<int>(
     initialValue: 1,
     validators: [ValidatorsTyped.comparable(greaterOrEqualThan: 1)],
@@ -72,25 +68,25 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
     initialValue: const IListConst([]),
   );
 
-  late final _form = FormArray([
-    _quantityFb,
-    _removableIngredientsFb,
-    _addableIngredientsFb,
-  ]);
+  late final _form = FormArray([_quantityFb, _removableIngredientsFb, _addableIngredientsFb]);
 
-  late final _upsertProduct = ref.mutation((ref, ({String cartId, String productId}) args) async {
-    return await CartItemsProviders.upsert(
-      ref,
-      widget.organizationId,
-      args.cartId,
-      productId: args.productId,
-      quantity: _quantityFb.value,
-      ingredientsRemoved: _removableIngredientsFb.value,
-      ingredientsAdded: _addableIngredientsFb.value,
-    );
-  }, onSuccess: (_, __) {
-    context.pop();
-  });
+  late final _upsertProduct = ref.mutation(
+    (ref, ({String cartId, String productId}) args) async {
+      return await CartItemsProviders.upsert(
+        ref,
+        widget.organizationId,
+        args.cartId,
+        productId: args.productId,
+        quantity: _quantityFb.value,
+        ingredientsRemoved: _removableIngredientsFb.value,
+        ingredientsAdded: _addableIngredientsFb.value,
+      );
+    },
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+    onSuccess: (_, __) {
+      context.pop();
+    },
+  );
 
   @override
   void initState() {
@@ -105,7 +101,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
   }
 
   Future<void> _init() async {
-    final (cart: _, product: _, :cartItem) = await ref.read(widget.stateProvider.futureOfData);
+    final (cart: _, product: _, :cartItem) = await ref.read(_provider.futureOfData);
 
     if (cartItem == null) return;
 
@@ -131,13 +127,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
         formControl: _quantityFb,
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         decoration: const InputDecoration(labelText: 'Quantity'),
-        items: [
-          for (var i = 1; i <= 8; i++)
-            DropdownMenuItem(
-              value: i,
-              child: Text('$i'),
-            ),
-        ],
+        items: [for (var i = 1; i <= 8; i++) DropdownMenuItem(value: i, child: Text('$i'))],
       );
     }
 
@@ -216,14 +206,16 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
           child: AppButtonBar(
             child: Row(
               children: [
-                Consumer(builder: (context, ref, child) {
-                  final quantity = Decimal.fromInt(ref.watch(_quantityFb.provider.value) ?? 0);
-                  final extras =
-                      ref.watch(_addableIngredientsFb.provider.value)?.map((e) => e.price) ?? [];
-                  final total = (product.price + extras.sum) * quantity;
+                Consumer(
+                  builder: (context, ref, child) {
+                    final quantity = Decimal.fromInt(ref.watch(_quantityFb.provider.value) ?? 0);
+                    final extras =
+                        ref.watch(_addableIngredientsFb.provider.value)?.map((e) => e.price) ?? [];
+                    final total = (product.price + extras.sum) * quantity;
 
-                  return Text(formats.formatPrice(total), style: textTheme.labelLarge);
-                }),
+                    return Text(formats.formatPrice(total), style: textTheme.labelLarge);
+                  },
+                ),
                 const SizedBox(width: 12.0),
                 Expanded(
                   child: ElevatedButton(
@@ -236,26 +228,21 @@ class _ProductScreenState extends ConsumerState<ProductScreen> with AsyncConsume
               ],
             ),
           ),
-        )
+        ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(widget.stateProvider);
+    final state = ref.watch(_provider);
     final product = state.valueOrNull?.product;
 
     return Scaffold(
-      appBar: AppBar(
-        title: DotsText.or(product?.title),
-      ),
+      appBar: AppBar(title: DotsText.or(product?.title)),
       body: state.buildView(
-        data: (data) => _buildBody(
-          product: data.product,
-          cart: data.cart,
-          cartItem: data.cartItem,
-        ),
+        onRefresh: () {},
+        data: (data) => _buildBody(product: data.product, cart: data.cart, cartItem: data.cartItem),
       ),
     );
   }

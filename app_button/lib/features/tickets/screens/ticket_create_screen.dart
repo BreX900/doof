@@ -16,10 +16,7 @@ final _stateProvider = FutureProvider.autoDispose.family((ref, String organizati
 class TicketCreateScreen extends ConsumerStatefulWidget {
   final String organizationId;
 
-  TicketCreateScreen({
-    super.key,
-    required this.organizationId,
-  });
+  TicketCreateScreen({super.key, required this.organizationId});
 
   late final stateProvider = _stateProvider(organizationId);
 
@@ -33,14 +30,18 @@ class _TicketCreateScreenState extends ConsumerState<TicketCreateScreen> {
     validators: [ValidatorsTyped.required()],
   );
 
-  late final _createTicket = ref.mutation((ref, arg) async {
-    return await TicketsProviders.create(
-      organizationId: widget.organizationId,
-      place: _placeFb.value,
-    );
-  }, onSuccess: (_, __) {
-    TicketCreatedRoute(widget.organizationId).go(context);
-  });
+  late final _createTicket = ref.mutation(
+    (ref, arg) async {
+      return await TicketsProviders.create(
+        organizationId: widget.organizationId,
+        place: _placeFb.value,
+      );
+    },
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+    onSuccess: (_, __) {
+      TicketCreatedRoute(widget.organizationId).go(context);
+    },
+  );
 
   @override
   void dispose() {
@@ -95,13 +96,8 @@ class _TicketCreateScreenState extends ConsumerState<TicketCreateScreen> {
     final data = state.valueOrNull;
 
     return Scaffold(
-      appBar: AppBar(
-        title: DotsText.or(data?.organization.name),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 64.0),
-        child: _buildBody(),
-      ),
+      appBar: AppBar(title: DotsText.or(data?.organization.name)),
+      body: Padding(padding: const EdgeInsets.symmetric(horizontal: 64.0), child: _buildBody()),
     );
   }
 }

@@ -34,6 +34,13 @@ abstract class InvoicesProviders {
       }
     }
 
+    if (vaultOutcomes != null) {
+      items = items.map((userId, item) {
+        final newItem = InvoiceItemDto(isPayed: true, amount: item.amount, jobs: item.jobs);
+        return MapEntry(userId, newItem);
+      });
+    }
+
     await InvoicesRepository.instance.save(InvoiceDto(
       id: order?.id ?? '',
       orderId: order?.id,
@@ -58,7 +65,15 @@ abstract class InvoicesProviders {
     required String payerId,
     Decimal? payedAmount,
     required IMap<String, InvoiceItemDto> items,
+    required IMap<String, Decimal>? vaultOutcomes,
   }) async {
+    if (vaultOutcomes != null) {
+      items = items.map((userId, item) {
+        final newItem = InvoiceItemDto(isPayed: true, amount: item.amount, jobs: item.jobs);
+        return MapEntry(userId, newItem);
+      });
+    }
+
     await InvoicesRepository.instance.save(InvoiceDto(
       id: invoice.id,
       orderId: invoice.orderId,
@@ -66,7 +81,7 @@ abstract class InvoicesProviders {
       payerId: payerId,
       payedAmount: payedAmount,
       items: items,
-      vaultOutcomes: invoice.vaultOutcomes,
+      vaultOutcomes: vaultOutcomes?.where((_, value) => value > Decimal.zero),
     ));
   }
 }

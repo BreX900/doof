@@ -28,7 +28,7 @@ class InvoicesView extends StatelessWidget {
     final vaultOutcome = invoice.vaultOutcomes?.values.sum;
 
     if (payedAmount != null && vaultOutcome != null) {
-      if (payedAmount == invoice.vaultOutcomes?.values.sum) {
+      if (payedAmount != invoice.vaultOutcomes?.values.sum) {
         return const Icon(Icons.token, color: Colors.yellow);
       } else {
         return const Icon(Icons.token, color: Colors.green);
@@ -155,9 +155,13 @@ class InvoicesView extends StatelessWidget {
           ),
         ],
         body: TabBarView(
-          children:
-              [invoices, uncollectedInvoices, unpaidInvoices, pendingInvoices].map((invoices) {
-            if (invoices.isEmpty) return const InfoView(title: Text('No results!'));
+          children: [
+            (const ParagraphTile(title: Text('All Invoices')), invoices),
+            (const ParagraphTile(title: Text('Your Uncollected Invoices')), uncollectedInvoices),
+            (const ParagraphTile(title: Text('Your Unpaid Invoices')), unpaidInvoices),
+            (const ParagraphTile(title: Text('All Unresolved Invoices')), pendingInvoices)
+          ].map((__) {
+            final (title, invoices) = __;
 
             return CustomScrollView(
               slivers: [
@@ -166,29 +170,38 @@ class InvoicesView extends StatelessWidget {
                     handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
                   );
                 }),
-                SliverList.builder(
-                  itemCount: invoices.length,
-                  itemBuilder: (context, index) {
-                    final invoice = invoices[index];
-                    final InvoiceDto(:payedAmount, :vaultOutcomes) = invoice;
-
-                    var text = 'Total: ${formats.formatPrice(invoice.amount)}';
-                    if (payedAmount != null) {
-                      if (vaultOutcomes != null) {
-                        text += ' • Vault: -${vaultOutcomes.values.sum}';
-                      } else {
-                        text += ' • Vault: +${formats.formatCaps(invoice.amount - payedAmount)}';
-                      }
-                    }
-
-                    return ListTile(
-                      onTap: () => InvoiceRoute(invoice.id).go(context),
-                      leading: _buildIcon(userId, invoice),
-                      title: Text(formats.formatDateTime(invoice.createdAt)),
-                      subtitle: Text(text),
-                    );
-                  },
+                SliverToBoxAdapter(
+                  child: title,
                 ),
+                if (invoices.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: InfoView(title: Text('No results!')),
+                  )
+                else
+                  SliverList.builder(
+                    itemCount: invoices.length,
+                    itemBuilder: (context, index) {
+                      final invoice = invoices[index];
+                      final InvoiceDto(:payedAmount, :vaultOutcomes) = invoice;
+
+                      var text = 'Total: ${formats.formatPrice(invoice.amount)}';
+                      if (payedAmount != null) {
+                        if (vaultOutcomes != null) {
+                          text += ' • Vault: -${vaultOutcomes.values.sum}';
+                        } else {
+                          text += ' • Vault: +${formats.formatCaps(invoice.amount - payedAmount)}';
+                        }
+                      }
+
+                      return ListTile(
+                        onTap: () => InvoiceRoute(invoice.id).go(context),
+                        leading: _buildIcon(userId, invoice),
+                        title: Text(formats.formatDateTime(invoice.createdAt)),
+                        subtitle: Text(text),
+                      );
+                    },
+                  ),
               ],
             );
           }).toList(),

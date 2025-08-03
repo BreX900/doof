@@ -149,6 +149,10 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
 
     _itemsFb.clear(emitEvent: false, updateParent: false);
 
+    _vaultOutcomesControl.addAll(vault.keys.map((userId) {
+      return MapEntry(userId, FormControlTypedOptional<Decimal>());
+    }).toMap());
+
     switch (data) {
       case _CreateData(:final orderItems):
         final amounts = orderItems?.fold(<UserDto, Decimal>{}, (amounts, item) {
@@ -186,59 +190,16 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
           );
         }).toList());
     }
-
-    ref.listenManual(fireImmediately: true, _isVaultUsedControl.provider.value, (_, isVaultUsed) {
-      if (isVaultUsed ?? false) {
-        _vaultOutcomesControl.addAll(vault.keys.map((userId) {
-          return MapEntry(userId, FormControlTypedOptional<Decimal>());
-        }).toMap());
-      } else {
-        _vaultOutcomesControl.controls.keys.forEach(_vaultOutcomesControl.removeControl);
-      }
-    });
   }
 
-  // Future<void> _init() async {
-  //   final invoices = await ref.read(InvoicesProviders.all.future);
-  //   final vault = InvoicesUtils.calculateVault(invoices);
-  //   final vaultAmount = vault.values.sum;
-  //
-  //   ref.listenManual(_payedAmountControl.provider.value, (_, payedAmount) async {
-  //     if (payedAmount == null) return;
-  //     final canUseVault = vaultAmount > payedAmount;
-  //
-  //     if (!canUseVault) _isVaultUsedControl.updateValue(false);
-  //     _isVaultUsedControl.markAs(disabled: !canUseVault);
-  //   });
-  //   ref.listenManual(_isVaultUsedControl.provider.value, (_, isVaultUsed) async {
-  //     var payedAmount = _payedAmountControl.value ?? Decimal.zero;
-  //     if (payedAmount <= Decimal.zero) return;
-  //
-  //     if (isVaultUsed ?? false) {
-  //       for (final control in _itemsFb.controls) {
-  //         final vaultAmount = vault[control.userId] ?? Decimal.zero;
-  //         final usedAmount = minDecimal(payedAmount, vaultAmount);
-  //         payedAmount -= usedAmount;
-  //
-  //         control.vaultUsedAmountControl.updateValue(usedAmount);
-  //       }
-  //       if (payedAmount > Decimal.zero) throw StateError('Cant apply a vault!');
-  //     } else {
-  //       for (final control in _itemsFb.controls) {
-  //         control.vaultUsedAmountControl.updateValue(null);
-  //       }
-  //     }
-  //   });
-  // }
-
   late final _createInvoice = ref.mutation((ref, OrderModel? order) async {
+    final isVaultUsed = _isVaultUsedControl.value;
     await InvoicesProviders.create(
       ref,
       order: order,
       payerId: _payerFb.value!.id,
       payedAmount: _payedAmountControl.value,
-      vaultOutcomes:
-          _isVaultUsedControl.value ? _vaultOutcomesControl.value.lockUnsafe.nonNullValues : null,
+      vaultOutcomes: isVaultUsed ? _vaultOutcomesControl.value.lockUnsafe.nonNullValues : null,
       items: _itemsFb.controls.map((e) => MapEntry(e.userId, e.toValue())).toIMap(),
     );
   }, onError: (_, error) {
@@ -248,11 +209,13 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
   });
 
   late final _updateInvoice = ref.mutation((ref, InvoiceDto invoice) async {
+    final isVaultUsed = _isVaultUsedControl.value;
     await InvoicesProviders.update(
       ref,
       invoice: invoice,
       payerId: _payerFb.value!.id,
       payedAmount: _payedAmountControl.value,
+      vaultOutcomes: isVaultUsed ? _vaultOutcomesControl.value.lockUnsafe.nonNullValues : null,
       items: _itemsFb.controls.map((e) => MapEntry(e.userId, e.toValue())).toIMap(),
     );
   }, onError: (_, error) {
@@ -374,6 +337,7 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
           ),
         ],
       ),
+      const FloatingActionButtonInjector(),
     ];
 
     final vault = InvoicesUtils.calculateVault(invoices);
@@ -387,7 +351,7 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
     final missingAmount = maxDecimal(payedAmount - usedAmount, Decimal.zero);
     final isVaultOutcomesValid = missingAmount == Decimal.zero;
 
-    final vaultView = HarmonicSingleChildScrollView(
+    final vaultView = SingleChildScrollView(
       child: Column(
         children: [
           ReactiveSwitchListTile(
@@ -400,29 +364,31 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
                 'Payed ${formats.formatPrice(payedAmount)}\n'
                 'Withdrawal ${formats.formatCaps(usedAmount)}'),
           ),
-          ...vaultOutcomesControls.mapTo((userId, control) {
-            final hasValue = ref.watch(control.provider.hasValue);
-            final user = users.firstWhereOrNull((e) => e.id == userId);
-            final vaultAmount = vault[userId] ?? Decimal.zero;
+          if (isVaultUsed)
+            ...vaultOutcomesControls.mapTo((userId, control) {
+              final hasValue = ref.watch(control.provider.hasValue);
+              final user = users.firstWhereOrNull((e) => e.id == userId);
+              final vaultAmount = vault[userId] ?? Decimal.zero;
 
-            return FieldPadding(ReactiveTypedTextField(
-              formControl: control,
-              valueAccessor: MekAccessors.decimalToString(formats.decimal),
-              variant: const TextFieldVariant.decimal(),
-              decoration: InputDecoration(
-                labelText: user?.displayName,
-                prefixIcon: const Icon(Icons.catching_pokemon),
-                suffixIcon: !hasValue
-                    ? TextButton(
-                        onPressed: () =>
-                            control.updateValue(minDecimal(vaultAmount, missingAmount)),
-                        child: const Text('Auto-Fill'),
-                      )
-                    : const ReactiveClearButton(),
-                helperText: 'Vault availability ${formats.formatCaps(vaultAmount)}',
-              ),
-            ));
-          }),
+              return FieldPadding(ReactiveTypedTextField(
+                formControl: control,
+                valueAccessor: MekAccessors.decimalToString(formats.decimal),
+                variant: const TextFieldVariant.decimal(),
+                decoration: InputDecoration(
+                  labelText: user?.displayName,
+                  prefixIcon: const Icon(Icons.catching_pokemon),
+                  suffixIcon: !hasValue
+                      ? TextButton(
+                          onPressed: () =>
+                              control.updateValue(minDecimal(vaultAmount, missingAmount)),
+                          child: const Text('Auto-Fill'),
+                        )
+                      : const ReactiveClearButton(),
+                  helperText: 'Vault availability ${formats.formatCaps(vaultAmount)}',
+                ),
+              ));
+            }),
+          const FloatingActionButtonInjector(),
         ],
       ),
     );
@@ -458,7 +424,7 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
 
     return DefaultTabController(
       length: 2,
-      child: HarmonicScaffold(
+      child: Scaffold(
         appBar: AppBar(
           title: Text('Invoice$invoiceLabel'),
           bottom: const TabBar(

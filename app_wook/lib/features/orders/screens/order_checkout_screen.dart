@@ -146,6 +146,7 @@ class _OrderCheckoutScreenState extends ConsumerState<OrderCheckoutScreen> {
             item: item,
           );
         }),
+        const FloatingActionButtonInjector(),
       ],
     );
 

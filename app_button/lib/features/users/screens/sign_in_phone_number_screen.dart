@@ -42,33 +42,41 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
     validators: [ValidatorsTyped.required(), ValidatorsTyped.text(minLength: 6)],
   );
 
-  late final _signIn = ref.mutation((ref, Nil _) async {
-    final phoneNumber = _phoneNumberFb.value!;
-    return UsersProviders.signInWithPhoneNumber(ref, phoneNumber.international);
-  }, onSuccess: (_, verificationId) {
-    SignInPhoneNumberRoute(
-      organizationId: widget.organizationId,
-      verificationId: verificationId,
-      shouldPop: widget.shouldPop,
-    ).pushReplacement(context);
-  });
-  late final _confirmVerification = ref.mutation((ref, String verificationId) async {
-    return UsersProviders.confirmPhoneNumberVerification(
-      ref,
-      verificationId,
-      organizationId: widget.organizationId,
-      code: _sentCodeFb.value,
-    );
-  }, onSuccess: (_, __) {
-    final organizationId = widget.organizationId;
-    if (widget.shouldPop) {
-      context.pop(true);
-    } else if (organizationId != null) {
-      ServicesRoute(organizationId).go(context);
-    } else {
-      const QrCodeRoute().go(context);
-    }
-  });
+  late final _signIn = ref.mutation(
+    (ref, None _) async {
+      final phoneNumber = _phoneNumberFb.value!;
+      return UsersProviders.signInWithPhoneNumber(ref, phoneNumber.international);
+    },
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+    onSuccess: (_, verificationId) {
+      SignInPhoneNumberRoute(
+        organizationId: widget.organizationId,
+        verificationId: verificationId,
+        shouldPop: widget.shouldPop,
+      ).pushReplacement(context);
+    },
+  );
+  late final _confirmVerification = ref.mutation(
+    (ref, String verificationId) async {
+      return UsersProviders.confirmPhoneNumberVerification(
+        ref,
+        verificationId,
+        organizationId: widget.organizationId,
+        code: _sentCodeFb.value,
+      );
+    },
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+    onSuccess: (_, __) {
+      final organizationId = widget.organizationId;
+      if (widget.shouldPop) {
+        context.pop(true);
+      } else if (organizationId != null) {
+        ServicesRoute(organizationId).go(context);
+      } else {
+        const QrCodeRoute().go(context);
+      }
+    },
+  );
 
   @override
   void dispose() {
@@ -76,11 +84,7 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
     super.dispose();
   }
 
-  Widget _buildContent({
-    required Widget title,
-    required Widget field,
-    required Widget action,
-  }) {
+  Widget _buildContent({required Widget title, required Widget field, required Widget action}) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
@@ -97,9 +101,7 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
         const Spacer(),
         Row(
           children: [
-            Expanded(
-              child: field,
-            ),
+            Expanded(child: field),
             action,
           ],
         ),
@@ -131,7 +133,7 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
             ),
           ),
           action: OutlinedButton(
-            onPressed: isIdle ? () => signIn(nil) : null,
+            onPressed: isIdle ? () => signIn(none) : null,
             child: const Text('SEND'),
           ),
         );
@@ -161,13 +163,8 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PhoneNumber Verification'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: _buildBody(),
-      ),
+      appBar: AppBar(title: const Text('PhoneNumber Verification')),
+      body: Padding(padding: const EdgeInsets.symmetric(horizontal: 32.0), child: _buildBody()),
     );
   }
 }

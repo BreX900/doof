@@ -148,8 +148,7 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
       body: state.buildView(
         onRefresh: () => ref.invalidateWithAncestors(_provider),
         data: (items) => _buildBody(
-          context,
-          ref,
+          hasFloatingActionButton: floatingActionButton != null,
           userId: items.userId,
           order: items.order,
           items: items.orderItems,
@@ -158,9 +157,8 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
     );
   }
 
-  Widget _buildBody(
-    BuildContext context,
-    WidgetRef ref, {
+  Widget _buildBody({
+    required bool hasFloatingActionButton,
     required String userId,
     required OrderModel order,
     required IList<OrderItemModel> items,
@@ -175,9 +173,10 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
 
     final header = ListTile(
       onTap: () => OrderStatRoute(order.id).go(context),
+      leading: const Icon(Icons.attach_money),
       title: Text('Your total: ${formats.formatPrice(userTotal)}'),
       subtitle: Text('Cart total: ${formats.formatPrice(cartTotal)}'),
-      trailing: const Icon(Icons.attach_money),
+      trailing: const Icon(Icons.read_more),
     );
 
     final itemsInLists = ProductItemListTile.buildLists(
@@ -215,6 +214,7 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
         ),
         const SliverToBoxAdapter(child: Divider()),
         ...itemsInLists,
+        if (hasFloatingActionButton) const FloatingActionButtonInjector(),
       ],
     );
   }

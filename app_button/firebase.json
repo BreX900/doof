@@ -1,17 +1,1 @@
-{
-  "hosting": {
-    "site": "doof-button",
-    "public": "build/web",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
-}
+{"hosting":{"site":"doof-button","public":"build/web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"flutter":{"platforms":{"android":{"default":{"projectId":"doof-button","appId":"1:633619205468:android:ecf664eeb97793aba70599","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"doof-button","appId":"1:633619205468:ios:6ecfc75b30d1493ea70599","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"doof-button","appId":"1:633619205468:ios:6ecfc75b30d1493ea70599","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/apis/firebase/firebase_options.dart":{"projectId":"doof-button","configurations":{"android":"1:633619205468:android:ecf664eeb97793aba70599","ios":"1:633619205468:ios:6ecfc75b30d1493ea70599","macos":"1:633619205468:ios:6ecfc75b30d1493ea70599","web":"1:633619205468:web:127ccd09389a6977a70599"}}}}}}

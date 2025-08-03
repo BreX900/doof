@@ -169,7 +169,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     final items = state.valueOrNull;
     final isIdle = !ref.watchIsMutating([_upsertProduct]);
 
-    return HarmonicScaffold(
+    return Scaffold(
       appBar: AppBar(
         title: Text(state.valueOrNull?.product.title ?? 'Product...'),
       ),
@@ -181,7 +181,6 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       body: state.buildView(
         onRefresh: () => ref.invalidateWithAncestors(_provider),
         data: (items) => _buildBody(
-          context,
           items.product.addableIngredients,
           items.product.levels,
           items.carts,
@@ -191,7 +190,6 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   }
 
   Widget _buildBody(
-    BuildContext context,
     IList<IngredientDto> addableIngredients,
     IList<LevelDto> levels,
     IList<CartModel> carts,
@@ -278,7 +276,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       ));
     }
 
-    return HarmonicSingleChildScrollView(
+    return SingleChildScrollView(
       child: Column(
         children: [
           if (carts.length > 1) buildCartField(),
@@ -293,6 +291,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
             return buildLevelsFields(fieldBlocs.cast());
           }),
           buildIngredientsField(),
+          const FloatingActionButtonInjector(),
         ],
       ),
     );

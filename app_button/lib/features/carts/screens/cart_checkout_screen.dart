@@ -1,3 +1,4 @@
+import 'package:app_button/apis/riverpod/riverpod_utils.dart';
 import 'package:app_button/shared/widgets/app_button_bar.dart';
 import 'package:app_button/shared/widgets/paragraph.dart';
 import 'package:core/core.dart';
@@ -52,7 +53,7 @@ class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
       items: arg.cartItems,
       place: _placeFb.value,
     );
-  });
+  }, onError: (_, error) => CoreUtils.showErrorSnackBar(context, error));
 
   Widget _buildBody({
     required User? user,
@@ -111,6 +112,7 @@ class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
       body: state.buildView(
+        onRefresh: () {},
         data: (data) => _buildBody(user: data.user, cart: data.cart, cartItems: data.cartItems),
       ),
     );

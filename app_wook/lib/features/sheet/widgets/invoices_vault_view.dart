@@ -19,7 +19,7 @@ class InvoicesVaultView extends StatelessWidget {
   Widget build(BuildContext context) {
     final formats = AppFormats.of(context);
 
-    final vault = InvoicesUtils.calculateVault(invoices);
+    final vault = InvoicesUtils.calculateVault(invoices, returnsZero: false);
     final vaultList = vault.entries.toIList();
 
     return CustomScrollView(

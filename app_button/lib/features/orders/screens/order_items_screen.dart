@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_button/apis/riverpod/riverpod_utils.dart';
 import 'package:app_button/features/products/widgets/product_tile.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:core/core.dart';
@@ -8,8 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 
-final _stateProvider =
-    FutureProvider.autoDispose.family((ref, (String organizationId, String orderId) args) async {
+final _stateProvider = FutureProvider.autoDispose.family((
+  ref,
+  (String organizationId, String orderId) args,
+) async {
   final (organizationId, orderId) = args;
 
   final order = await ref.watch(OrdersProviders.single((organizationId, orderId)).future);
@@ -22,11 +25,7 @@ class OrderItemsScreen extends ConsumerStatefulWidget {
   final String organizationId;
   final String orderId;
 
-  OrderItemsScreen({
-    super.key,
-    required this.organizationId,
-    required this.orderId,
-  });
+  OrderItemsScreen({super.key, required this.organizationId, required this.orderId});
 
   late final stateProvider = _stateProvider((organizationId, orderId));
 
@@ -82,6 +81,7 @@ class _OrderItemsScreenState extends ConsumerState<OrderItemsScreen> {
         title: data != null ? Text(formats.formatDateTime(data.order.createdAt)) : const DotsText(),
       ),
       body: state.buildView(
+        onRefresh: () {},
         data: (data) => _buildBody(orderItems: data.orderItems),
       ),
     );
