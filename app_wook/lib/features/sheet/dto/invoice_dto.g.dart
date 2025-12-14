@@ -10,6 +10,7 @@ part of 'invoice_dto.dart';
 
 mixin _$InvoiceDto {
   InvoiceDto get _self => this as InvoiceDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -22,6 +23,7 @@ mixin _$InvoiceDto {
           _self.createdAt == other.createdAt &&
           _self.items == other.items &&
           _self.vaultOutcomes == other.vaultOutcomes;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -36,19 +38,21 @@ mixin _$InvoiceDto {
   }
 
   @override
-  String toString() => (ClassToString('InvoiceDto')
-        ..add('id', _self.id)
-        ..add('orderId', _self.orderId)
-        ..add('payerId', _self.payerId)
-        ..add('payedAmount', _self.payedAmount)
-        ..add('createdAt', _self.createdAt)
-        ..add('items', _self.items)
-        ..add('vaultOutcomes', _self.vaultOutcomes))
-      .toString();
+  String toString() =>
+      (ClassToString('InvoiceDto')
+            ..add('id', _self.id)
+            ..add('orderId', _self.orderId)
+            ..add('payerId', _self.payerId)
+            ..add('payedAmount', _self.payedAmount)
+            ..add('createdAt', _self.createdAt)
+            ..add('items', _self.items)
+            ..add('vaultOutcomes', _self.vaultOutcomes))
+          .toString();
 }
 
 mixin _$InvoiceItemDto {
   InvoiceItemDto get _self => this as InvoiceItemDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -57,6 +61,7 @@ mixin _$InvoiceItemDto {
           _self.isPayed == other.isPayed &&
           _self.amount == other.amount &&
           _self.jobs == other.jobs;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -67,11 +72,12 @@ mixin _$InvoiceItemDto {
   }
 
   @override
-  String toString() => (ClassToString('InvoiceItemDto')
-        ..add('isPayed', _self.isPayed)
-        ..add('amount', _self.amount)
-        ..add('jobs', _self.jobs))
-      .toString();
+  String toString() =>
+      (ClassToString('InvoiceItemDto')
+            ..add('isPayed', _self.isPayed)
+            ..add('amount', _self.amount)
+            ..add('jobs', _self.jobs))
+          .toString();
 }
 
 // **************************************************************************
@@ -79,25 +85,24 @@ mixin _$InvoiceItemDto {
 // **************************************************************************
 
 InvoiceDto _$InvoiceDtoFromJson(Map<String, dynamic> json) => InvoiceDto(
-      id: json['id'] as String,
-      orderId: json['orderId'] as String?,
-      payerId: json['payerId'] as String,
-      payedAmount: json['payedAmount'] == null
-          ? null
-          : Decimal.fromJson(json['payedAmount'] as String),
-      createdAt:
-          const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
-      items: IMap<String, InvoiceItemDto>.fromJson(
-          json['items'] as Map<String, dynamic>,
+  id: json['id'] as String,
+  orderId: json['orderId'] as String?,
+  payerId: json['payerId'] as String,
+  payedAmount: json['payedAmount'] == null ? null : Fixed.fromJson(json['payedAmount'] as String),
+  createdAt: const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
+  items: IMap<String, InvoiceItemDto>.fromJson(
+    json['items'] as Map<String, dynamic>,
+    (value) => value as String,
+    (value) => InvoiceItemDto.fromJson(value as Map<String, dynamic>),
+  ),
+  vaultOutcomes: json['vaultOutcomes'] == null
+      ? null
+      : IMap<String, Fixed>.fromJson(
+          json['vaultOutcomes'] as Map<String, dynamic>,
           (value) => value as String,
-          (value) => InvoiceItemDto.fromJson(value as Map<String, dynamic>)),
-      vaultOutcomes: json['vaultOutcomes'] == null
-          ? null
-          : IMap<String, Decimal>.fromJson(
-              json['vaultOutcomes'] as Map<String, dynamic>,
-              (value) => value as String,
-              (value) => Decimal.fromJson(value as String)),
-    );
+          (value) => Fixed.fromJson(value as String),
+        ),
+);
 
 abstract final class _$InvoiceDtoJsonKeys {
   static const String id = 'id';
@@ -110,43 +115,27 @@ abstract final class _$InvoiceDtoJsonKeys {
   static const String vaultOutcomes = 'vaultOutcomes';
 }
 
-Map<String, dynamic> _$InvoiceDtoToJson(InvoiceDto instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'orderId': instance.orderId,
-      'payerId': instance.payerId,
-      'payedAmount': instance.payedAmount?.toJson(),
-      'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
-      'items': instance.items.toJson(
-        (value) => value,
-        (value) => value.toJson(),
-      ),
-      'membersIds': instance.membersIds,
-      'vaultOutcomes': instance.vaultOutcomes?.toJson(
-        (value) => value,
-        (value) => value.toJson(),
-      ),
-    };
-
-InvoiceItemDto _$InvoiceItemDtoFromJson(Map<String, dynamic> json) =>
-    InvoiceItemDto(
-      isPayed: json['isPayed'] as bool,
-      amount: Decimal.fromJson(json['amount'] as String),
-      jobs: IList<Job>.fromJson(
-          json['jobs'], (value) => $enumDecode(_$JobEnumMap, value)),
-    );
-
-Map<String, dynamic> _$InvoiceItemDtoToJson(InvoiceItemDto instance) =>
-    <String, dynamic>{
-      'isPayed': instance.isPayed,
-      'amount': instance.amount.toJson(),
-      'jobs': instance.jobs.toJson(
-        (value) => _$JobEnumMap[value]!,
-      ),
-    };
-
-const _$JobEnumMap = {
-  Job.garbageMan: 'garbageMan',
-  Job.partner: 'partner',
-  Job.driver: 'driver',
+Map<String, dynamic> _$InvoiceDtoToJson(InvoiceDto instance) => <String, dynamic>{
+  'id': instance.id,
+  'orderId': instance.orderId,
+  'payerId': instance.payerId,
+  'payedAmount': instance.payedAmount?.toJson(),
+  'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
+  'items': instance.items.toJson((value) => value, (value) => value.toJson()),
+  'membersIds': instance.membersIds,
+  'vaultOutcomes': instance.vaultOutcomes?.toJson((value) => value, (value) => value.toJson()),
 };
+
+InvoiceItemDto _$InvoiceItemDtoFromJson(Map<String, dynamic> json) => InvoiceItemDto(
+  isPayed: json['isPayed'] as bool,
+  amount: Fixed.fromJson(json['amount'] as String),
+  jobs: IList<Job>.fromJson(json['jobs'], (value) => $enumDecode(_$JobEnumMap, value)),
+);
+
+Map<String, dynamic> _$InvoiceItemDtoToJson(InvoiceItemDto instance) => <String, dynamic>{
+  'isPayed': instance.isPayed,
+  'amount': instance.amount.toJson(),
+  'jobs': instance.jobs.toJson((value) => _$JobEnumMap[value]!),
+};
+
+const _$JobEnumMap = {Job.garbageMan: 'garbageMan', Job.partner: 'partner', Job.driver: 'driver'};

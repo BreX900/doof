@@ -66,7 +66,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(widget.stateProvider);
-    final data = state.valueOrNull;
+    final data = state.value;
 
     return Scaffold(
       drawer: StoreDrawer(organizationId: widget.organizationId),

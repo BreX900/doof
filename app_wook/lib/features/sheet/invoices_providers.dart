@@ -1,11 +1,11 @@
 import 'package:core/core.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/features/sheet/dto/invoice_dto.dart';
 import 'package:mek_gasol/features/sheet/repositories/invoices_repository.dart';
+import 'package:mekart/mekart.dart';
 
 abstract class InvoicesProviders {
   static final all = StreamProvider((ref) {
@@ -19,13 +19,12 @@ abstract class InvoicesProviders {
     return invoice;
   });
 
-  static Future<void> create(
-    MutationRef ref, {
+  static Future<void> create(MutationRef ref, {
     required OrderModel? order,
     required String payerId,
-    required Decimal? payedAmount,
+    required Fixed? payedAmount,
     required IMap<String, InvoiceItemDto> items,
-    required IMap<String, Decimal>? vaultOutcomes,
+    required IMap<String, Fixed>? vaultOutcomes,
   }) async {
     if (order != null) {
       final invoice = await InvoicesRepository.instance.fetch(order.id);
@@ -41,15 +40,17 @@ abstract class InvoicesProviders {
       });
     }
 
-    await InvoicesRepository.instance.save(InvoiceDto(
-      id: order?.id ?? '',
-      orderId: order?.id,
-      createdAt: order?.createdAt ?? DateTime.now(),
-      payerId: payerId,
-      payedAmount: payedAmount,
-      items: items,
-      vaultOutcomes: vaultOutcomes?.where((_, value) => value > Decimal.zero),
-    ));
+    await InvoicesRepository.instance.save(
+      InvoiceDto(
+        id: order?.id ?? '',
+        orderId: order?.id,
+        createdAt: order?.createdAt ?? DateTime.now(),
+        payerId: payerId,
+        payedAmount: payedAmount,
+        items: items,
+        vaultOutcomes: vaultOutcomes?.where((_, value) => value > Fixed.zero),
+      ),
+    );
 
     if (order == null) return;
     await OrdersRepository.instance.update(
@@ -59,13 +60,12 @@ abstract class InvoicesProviders {
     );
   }
 
-  static Future<void> update(
-    MutationRef ref, {
+  static Future<void> update(MutationRef ref, {
     required InvoiceDto invoice,
     required String payerId,
-    Decimal? payedAmount,
+    Fixed? payedAmount,
     required IMap<String, InvoiceItemDto> items,
-    required IMap<String, Decimal>? vaultOutcomes,
+    required IMap<String, Fixed>? vaultOutcomes,
   }) async {
     if (vaultOutcomes != null) {
       items = items.map((userId, item) {
@@ -74,14 +74,16 @@ abstract class InvoicesProviders {
       });
     }
 
-    await InvoicesRepository.instance.save(InvoiceDto(
-      id: invoice.id,
-      orderId: invoice.orderId,
-      createdAt: invoice.createdAt,
-      payerId: payerId,
-      payedAmount: payedAmount,
-      items: items,
-      vaultOutcomes: vaultOutcomes?.where((_, value) => value > Decimal.zero),
-    ));
+    await InvoicesRepository.instance.save(
+      InvoiceDto(
+        id: invoice.id,
+        orderId: invoice.orderId,
+        createdAt: invoice.createdAt,
+        payerId: payerId,
+        payedAmount: payedAmount,
+        items: items,
+        vaultOutcomes: vaultOutcomes?.where((_, value) => value > Fixed.zero),
+      ),
+    );
   }
 }

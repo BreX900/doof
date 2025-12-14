@@ -23,16 +23,16 @@ final _stateProvider = FutureProvider.family((ref, String organizationId) async 
   return (signStatus: signStatus, organization: organization, cart: cart, items: items);
 });
 
-class CartScreen extends ConsumerStatefulWidget {
+class CartScreen extends SourceConsumerStatefulWidget {
   final String organizationId;
 
   const CartScreen({super.key, required this.organizationId});
 
   @override
-  ConsumerState<CartScreen> createState() => _CartScreenState();
+  SourceConsumerState<CartScreen> createState() => _CartScreenState();
 }
 
-class _CartScreenState extends ConsumerState<CartScreen> {
+class _CartScreenState extends SourceConsumerState<CartScreen> {
   FutureProvider<
     ({
       CartModel cart,
@@ -138,7 +138,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
-    final data = state.valueOrNull;
+    final data = state.value;
 
     return Scaffold(
       drawer: StoreDrawer(organizationId: widget.organizationId),

@@ -1,17 +1,18 @@
 import 'package:core/core.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
+import 'package:mekart/mekart.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
 final _dialogProvider = UsersProviders.all;
 
 class InvoiceItemDialogResult {
   final String userId;
-  final Decimal amount;
+  final Fixed amount;
+
   // final Decimal? payedAmount;
 
   const InvoiceItemDialogResult({
@@ -23,7 +24,8 @@ class InvoiceItemDialogResult {
 
 class InvoiceItemDialog extends ConsumerStatefulWidget {
   final String? userId;
-  final Decimal? amount;
+  final Fixed? amount;
+
   // final Decimal? vaultPayedAmount;
 
   const InvoiceItemDialog({
@@ -43,9 +45,8 @@ class _InvoiceItemDialogState extends ConsumerState<InvoiceItemDialog> {
     validators: [Validators.required],
     value: widget.userId,
   );
-  late final _amountControl = FormControl<Decimal>(
-    value: widget.amount,
-  );
+  late final _amountControl = FormControl<Fixed>(value: widget.amount);
+
   // late final _payedAmountControl = FormControl<Decimal>(
   //   value: widget.vaultPayedAmount,
   // );
@@ -57,12 +58,14 @@ class _InvoiceItemDialogState extends ConsumerState<InvoiceItemDialog> {
     super.dispose();
   }
 
-  Future<void> _submit(None _) async {
-    Navigator.of(context).pop(InvoiceItemDialogResult(
-      userId: _userControl.value!,
-      amount: _amountControl.value ?? Decimal.zero,
-      // payedAmount: _payedAmountControl.value,
-    ));
+  Future<void> _submit() async {
+    Navigator.of(context).pop(
+      InvoiceItemDialogResult(
+        userId: _userControl.value!,
+        amount: _amountControl.value ?? Fixed.zero,
+        // payedAmount: _payedAmountControl.value,
+      ),
+    );
   }
 
   Widget _buildContent({required IList<UserDto> users}) {
@@ -75,10 +78,7 @@ class _InvoiceItemDialogState extends ConsumerState<InvoiceItemDialog> {
           formControl: _userControl,
           decoration: const InputDecoration(labelText: 'User'),
           items: users.map((e) {
-            return DropdownMenuItem(
-              value: e.id,
-              child: Text(e.displayName!),
-            );
+            return DropdownMenuItem(value: e.id, child: Text(e.displayName!));
           }).toList(),
         ),
         ReactiveTypedTextField(
@@ -109,14 +109,8 @@ class _InvoiceItemDialogState extends ConsumerState<InvoiceItemDialog> {
         data: (data) => _buildContent(users: data),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () => submit(none),
-          child: const Text('Add'),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        FilledButton(onPressed: submit, child: const Text('Add')),
       ],
     );
   }

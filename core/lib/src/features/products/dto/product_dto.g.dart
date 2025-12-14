@@ -10,6 +10,7 @@ part of 'product_dto.dart';
 
 mixin _$ProductDto {
   ProductDto get _self => this as ProductDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -25,6 +26,7 @@ mixin _$ProductDto {
           _self.removableIngredients == other.removableIngredients &&
           _self.addableIngredients == other.addableIngredients &&
           _self.levels == other.levels;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -42,18 +44,19 @@ mixin _$ProductDto {
   }
 
   @override
-  String toString() => (ClassToString('ProductDto')
-        ..add('id', _self.id)
-        ..add('categoryId', _self.categoryId)
-        ..add('imageUrl', _self.imageUrl)
-        ..add('title', _self.title)
-        ..add('description', _self.description)
-        ..add('price', _self.price)
-        ..add('ingredients', _self.ingredients)
-        ..add('removableIngredients', _self.removableIngredients)
-        ..add('addableIngredients', _self.addableIngredients)
-        ..add('levels', _self.levels))
-      .toString();
+  String toString() =>
+      (ClassToString('ProductDto')
+            ..add('id', _self.id)
+            ..add('categoryId', _self.categoryId)
+            ..add('imageUrl', _self.imageUrl)
+            ..add('title', _self.title)
+            ..add('description', _self.description)
+            ..add('price', _self.price)
+            ..add('ingredients', _self.ingredients)
+            ..add('removableIngredients', _self.removableIngredients)
+            ..add('addableIngredients', _self.addableIngredients)
+            ..add('levels', _self.levels))
+          .toString();
 }
 
 class ProductDtoFields {
@@ -90,40 +93,33 @@ class ProductDtoFields {
 // **************************************************************************
 
 ProductDto _$ProductDtoFromJson(Map<String, dynamic> json) => ProductDto(
-      id: json['id'] as String,
-      categoryId: json['categoryId'] as String,
-      imageUrl: json['imageUrl'] as String?,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      price: Decimal.fromJson(json['price'] as String),
-      ingredients: IList<String>.fromJson(
-          json['ingredients'], (value) => value as String),
-      removableIngredients: IList<String>.fromJson(
-          json['removableIngredients'], (value) => value as String),
-      addableIngredients: IList<String>.fromJson(
-          json['addableIngredients'], (value) => value as String),
-      levels:
-          IList<String>.fromJson(json['levels'], (value) => value as String),
-    );
+  id: json['id'] as String,
+  categoryId: json['categoryId'] as String,
+  imageUrl: json['imageUrl'] as String?,
+  title: json['title'] as String,
+  description: json['description'] as String,
+  price: Fixed.fromJson(json['price'] as String),
+  ingredients: IList<String>.fromJson(json['ingredients'], (value) => value as String),
+  removableIngredients: IList<String>.fromJson(
+    json['removableIngredients'],
+    (value) => value as String,
+  ),
+  addableIngredients: IList<String>.fromJson(
+    json['addableIngredients'],
+    (value) => value as String,
+  ),
+  levels: IList<String>.fromJson(json['levels'], (value) => value as String),
+);
 
-Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'categoryId': instance.categoryId,
-      'imageUrl': instance.imageUrl,
-      'title': instance.title,
-      'description': instance.description,
-      'price': instance.price.toJson(),
-      'ingredients': instance.ingredients.toJson(
-        (value) => value,
-      ),
-      'removableIngredients': instance.removableIngredients.toJson(
-        (value) => value,
-      ),
-      'addableIngredients': instance.addableIngredients.toJson(
-        (value) => value,
-      ),
-      'levels': instance.levels.toJson(
-        (value) => value,
-      ),
-    };
+Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) => <String, dynamic>{
+  'id': instance.id,
+  'categoryId': instance.categoryId,
+  'imageUrl': instance.imageUrl,
+  'title': instance.title,
+  'description': instance.description,
+  'price': instance.price.toJson(),
+  'ingredients': instance.ingredients.toJson((value) => value),
+  'removableIngredients': instance.removableIngredients.toJson((value) => value),
+  'addableIngredients': instance.addableIngredients.toJson((value) => value),
+  'levels': instance.levels.toJson((value) => value),
+};

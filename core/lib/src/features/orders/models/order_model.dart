@@ -5,9 +5,9 @@ import 'package:core/src/features/products/models/item_model.dart';
 import 'package:core/src/features/products/models/product_model.dart';
 import 'package:core/src/features/users/dto/user_dto.dart';
 import 'package:core/src/shared/data/identifiable.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:mek_data_class/mek_data_class.dart';
+import 'package:mekart/mekart.dart';
 
 part 'order_model.g.dart';
 
@@ -23,7 +23,7 @@ class OrderModel with Identifiable, _$OrderModel {
   final bool shippable;
   final OrderStatus status;
   final String? place;
-  final Decimal payedAmount;
+  final Fixed payedAmount;
 
   const OrderModel({
     required this.id,
@@ -56,7 +56,7 @@ class OrderItemModel extends ProductItem with Identifiable, _$OrderItemModel {
   @override
   final IMap<LevelDto, double> levels;
 
-  final Decimal payedAmount;
+  final Fixed payedAmount;
 
   OrderItemModel({
     required this.id,
@@ -70,5 +70,5 @@ class OrderItemModel extends ProductItem with Identifiable, _$OrderItemModel {
   });
 
   @override
-  Decimal get totalCost => payedAmount;
+  Fixed get totalCost => payedAmount;
 }

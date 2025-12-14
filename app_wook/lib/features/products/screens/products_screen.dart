@@ -24,30 +24,25 @@ class ProductsScreen extends ConsumerStatefulWidget {
 }
 
 class _ProductsScreenState extends ConsumerState<ProductsScreen> {
-  AutoDisposeFutureProvider<Map<CategoryDto, List<ProductModel>>> get _provider => _screenProvider;
+  FutureProvider<Map<CategoryDto, List<ProductModel>>> get _provider => _screenProvider;
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
-    final items = state.valueOrNull;
+    final items = state.value;
 
     PreferredSizeWidget? tabBar;
     if (items != null) {
       tabBar = TabBar(
         isScrollable: items.length > 3,
         tabs: items.keys.map((e) {
-          return Tab(
-            text: e.title,
-          );
+          return Tab(text: e.title);
         }).toList(),
       );
     }
 
     Widget child = Scaffold(
-      appBar: AppBar(
-        title: const Text('Menu'),
-        bottom: tabBar,
-      ),
+      appBar: AppBar(title: const Text('Menu'), bottom: tabBar),
       body: state.buildView(
         onRefresh: () => ref.invalidateWithAncestors(_provider),
         data: _buildBody,
@@ -55,10 +50,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     );
 
     if (items != null) {
-      child = DefaultTabController(
-        length: items.length,
-        child: child,
-      );
+      child = DefaultTabController(length: items.length, child: child);
     }
     return child;
   }
@@ -66,9 +58,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   Widget _buildBody(Map<CategoryDto, List<ProductModel>> categorizedProducts) {
     return TabBarView(
       children: categorizedProducts.values.map((products) {
-        return ProductsList(
-          products: products,
-        );
+        return ProductsList(products: products);
       }).toList(),
     );
   }

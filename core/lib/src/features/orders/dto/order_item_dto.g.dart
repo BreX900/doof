@@ -10,6 +10,7 @@ part of 'order_item_dto.dart';
 
 mixin _$OrderItemDto {
   OrderItemDto get _self => this as OrderItemDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -23,6 +24,7 @@ mixin _$OrderItemDto {
           _self.ingredients == other.ingredients &&
           _self.levels == other.levels &&
           _self.payedAmount == other.payedAmount;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -38,16 +40,17 @@ mixin _$OrderItemDto {
   }
 
   @override
-  String toString() => (ClassToString('OrderItemDto')
-        ..add('id', _self.id)
-        ..add('createdAt', _self.createdAt)
-        ..add('buyers', _self.buyers)
-        ..add('product', _self.product)
-        ..add('quantity', _self.quantity)
-        ..add('ingredients', _self.ingredients)
-        ..add('levels', _self.levels)
-        ..add('payedAmount', _self.payedAmount))
-      .toString();
+  String toString() =>
+      (ClassToString('OrderItemDto')
+            ..add('id', _self.id)
+            ..add('createdAt', _self.createdAt)
+            ..add('buyers', _self.buyers)
+            ..add('product', _self.product)
+            ..add('quantity', _self.quantity)
+            ..add('ingredients', _self.ingredients)
+            ..add('levels', _self.levels)
+            ..add('payedAmount', _self.payedAmount))
+          .toString();
 }
 
 // **************************************************************************
@@ -55,21 +58,21 @@ mixin _$OrderItemDto {
 // **************************************************************************
 
 OrderItemDto _$OrderItemDtoFromJson(Map<String, dynamic> json) => OrderItemDto(
-      id: json['id'] as String,
-      createdAt:
-          const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
-      buyers:
-          IList<String>.fromJson(json['buyers'], (value) => value as String),
-      product: ProductDto.fromJson(json['product'] as Map<String, dynamic>),
-      quantity: (json['quantity'] as num).toInt(),
-      ingredients: IList<OrderIngredientDto>.fromJson(
-          json['ingredients'],
-          (value) =>
-              OrderIngredientDto.fromJson(value as Map<String, dynamic>)),
-      levels: IList<OrderLevelDto>.fromJson(json['levels'],
-          (value) => OrderLevelDto.fromJson(value as Map<String, dynamic>)),
-      payedAmount: Decimal.fromJson(json['payedAmount'] as String),
-    );
+  id: json['id'] as String,
+  createdAt: const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
+  buyers: IList<String>.fromJson(json['buyers'], (value) => value as String),
+  product: ProductDto.fromJson(json['product'] as Map<String, dynamic>),
+  quantity: (json['quantity'] as num).toInt(),
+  ingredients: IList<OrderIngredientDto>.fromJson(
+    json['ingredients'],
+    (value) => OrderIngredientDto.fromJson(value as Map<String, dynamic>),
+  ),
+  levels: IList<OrderLevelDto>.fromJson(
+    json['levels'],
+    (value) => OrderLevelDto.fromJson(value as Map<String, dynamic>),
+  ),
+  payedAmount: Fixed.fromJson(json['payedAmount'] as String),
+);
 
 abstract final class _$OrderItemDtoJsonKeys {
   static const String id = 'id';
@@ -82,20 +85,13 @@ abstract final class _$OrderItemDtoJsonKeys {
   static const String payedAmount = 'payedAmount';
 }
 
-Map<String, dynamic> _$OrderItemDtoToJson(OrderItemDto instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
-      'buyers': instance.buyers.toJson(
-        (value) => value,
-      ),
-      'product': instance.product.toJson(),
-      'quantity': instance.quantity,
-      'ingredients': instance.ingredients.toJson(
-        (value) => value.toJson(),
-      ),
-      'levels': instance.levels.toJson(
-        (value) => value.toJson(),
-      ),
-      'payedAmount': instance.payedAmount.toJson(),
-    };
+Map<String, dynamic> _$OrderItemDtoToJson(OrderItemDto instance) => <String, dynamic>{
+  'id': instance.id,
+  'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
+  'buyers': instance.buyers.toJson((value) => value),
+  'product': instance.product.toJson(),
+  'quantity': instance.quantity,
+  'ingredients': instance.ingredients.toJson((value) => value.toJson()),
+  'levels': instance.levels.toJson((value) => value.toJson()),
+  'payedAmount': instance.payedAmount.toJson(),
+};

@@ -50,7 +50,7 @@ class _PlaceSentScreenState extends ConsumerState<TicketCreatedScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(_stateProvider(widget.organizationId));
-    final data = state.valueOrNull;
+    final data = state.value;
 
     return Scaffold(
       appBar: AppBar(

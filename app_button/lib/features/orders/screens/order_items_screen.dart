@@ -72,7 +72,7 @@ class _OrderItemsScreenState extends ConsumerState<OrderItemsScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(widget.stateProvider);
-    final data = state.valueOrNull;
+    final data = state.value;
 
     final formats = AppFormats.of(context);
 

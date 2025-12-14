@@ -47,7 +47,7 @@ IngredientDto _$IngredientDtoFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
-      price: Decimal.fromJson(json['price'] as String),
+      price: Fixed.fromJson(json['price'] as String),
     );
 
 abstract final class _$IngredientDtoJsonKeys {

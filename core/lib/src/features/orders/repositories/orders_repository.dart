@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:core/core.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 import 'package:rxdart/rxdart.dart';
 
 class OrdersRepository {
@@ -11,6 +11,7 @@ class OrdersRepository {
   static const String collection = 'orders';
 
   FirebaseAuth get _auth => Instances.auth;
+
   FirebaseFirestore get _firestore => Instances.firestore;
 
   OrdersRepository._();
@@ -27,24 +28,27 @@ class OrdersRepository {
     required String cartId,
     required Iterable<String> membersIds,
     required String? place,
-    required Decimal payedAmount,
+    required Fixed payedAmount,
   }) async {
     final now = DateTime.now();
 
-    final ref = await _ref(organizationId).add(OrderDto(
-      id: '',
-      originCartId: cartId,
-      createdAt: now,
-      updatedAt: now,
-      at: null, // TODO: Add orderAt
-      organizationId: organizationId,
-      shippable: false,
-      payerId: payerId,
-      membersIds: {payerId, ...membersIds}.toIList(),
-      status: OrderStatus.accepting,
-      place: place,
-      payedAmount: payedAmount,
-    ));
+    final ref = await _ref(organizationId).add(
+      OrderDto(
+        id: '',
+        originCartId: cartId,
+        createdAt: now,
+        updatedAt: now,
+        at: null,
+        // TODO: Add orderAt
+        organizationId: organizationId,
+        shippable: false,
+        payerId: payerId,
+        membersIds: {payerId, ...membersIds}.toIList(),
+        status: OrderStatus.accepting,
+        place: place,
+        payedAmount: payedAmount,
+      ),
+    );
     return ref.id;
   }
 
@@ -89,8 +93,9 @@ class OrdersRepository {
   }
 
   Stream<IList<OrderDto>> watchPage(String organizationId, Cursor cursor) {
-    final onSnapshot =
-        _ref(organizationId).orderBy(OrderDtoFields.updatedAt).apply(cursor).snapshots();
+    final onSnapshot = _ref(
+      organizationId,
+    ).orderBy(OrderDtoFields.updatedAt).apply(cursor).snapshots();
     return onSnapshot.map((snapshot) => snapshot.docs.map((e) => e.data()).toIList());
   }
 }

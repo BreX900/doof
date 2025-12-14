@@ -1,4 +1,6 @@
+// ignore: depend_on_referenced_packages
 import 'package:decimal/decimal.dart';
+// ignore: depend_on_referenced_packages
 import 'package:decimal/intl.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -9,19 +11,16 @@ class AppFormats {
 
   static const LocalizationsDelegate<AppFormats> delegate = _DoofTranslationsDelegate();
 
-  const AppFormats._({
-    required String locale,
-  }) : _locale = locale;
+  const AppFormats._({required String locale}) : _locale = locale;
 
   static AppFormats of(BuildContext context) => Localizations.of(context, AppFormats)!;
 
   NumberFormat get decimal => NumberFormat.decimalPatternDigits(locale: _locale, decimalDigits: 2);
 
   String formatPrice(Decimal price) {
-    return DecimalFormatter(NumberFormat.compactSimpleCurrency(
-      locale: _locale,
-      name: 'EUR',
-    )).format(price);
+    return DecimalFormatter(
+      NumberFormat.compactSimpleCurrency(locale: _locale, name: 'EUR'),
+    ).format(price);
   }
 
   String formatCaps(Decimal price) => '${DecimalFormatter(decimal).format(price)} caps';

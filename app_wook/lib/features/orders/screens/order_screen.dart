@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:core/core.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +11,7 @@ import 'package:mek_gasol/features/orders/utils/orders_utils.dart';
 import 'package:mek_gasol/features/products/utils/purchasable_products_utils.dart';
 import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
+import 'package:mekart/mekart.dart';
 
 final _screenProvider = FutureProvider.autoDispose.family((ref, String orderId) async {
   final userId = await ref.watch(UsersProviders.currentId.future);
@@ -19,31 +19,29 @@ final _screenProvider = FutureProvider.autoDispose.family((ref, String orderId) 
 
   return (
     userId: userId,
-    order: await ref.watch(OrdersProviders.all((
-      Env.organizationId,
-      whereNotStatusIn: const [],
-    )).selectAsync((orders) => orders.firstWhereId(orderId))),
+    order: await ref.watch(
+      OrdersProviders.all((
+        Env.organizationId,
+        whereNotStatusIn: const [],
+      )).selectAsync((orders) => orders.firstWhereId(orderId)),
+    ),
     orderItems: await ref.watch(OrderItemsProviders.all((Env.organizationId, orderId)).future),
   );
 });
 
-class OrderScreen extends ConsumerStatefulWidget {
+class OrderScreen extends SourceConsumerStatefulWidget {
   final String orderId;
   final bool isNew;
 
-  const OrderScreen({
-    super.key,
-    required this.orderId,
-    required this.isNew,
-  });
+  const OrderScreen({super.key, required this.orderId, required this.isNew});
 
   @override
-  ConsumerState<OrderScreen> createState() => _OrderScreenState();
+  SourceConsumerState<OrderScreen> createState() => _OrderScreenState();
 }
 
-class _OrderScreenState extends ConsumerState<OrderScreen> {
-  AutoDisposeFutureProvider<({OrderModel order, IList<OrderItemModel> orderItems, String userId})>
-      get _provider => _screenProvider(widget.orderId);
+class _OrderScreenState extends SourceConsumerState<OrderScreen> {
+  FutureProvider<({OrderModel order, IList<OrderItemModel> orderItems, String userId})>
+  get _provider => _screenProvider(widget.orderId);
 
   IList<OrderItemModel>? _selection;
 
@@ -54,44 +52,49 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
   }
 
   Future<void> _init() async {
-    final data = await ref.read(_provider.futureOfData);
+    final data = await ref.futureOfData(_provider);
     if (widget.isNew) _sendMessage(data.orderItems);
   }
 
-  late final _addItemsToCart = ref.mutation((ref, IList<OrderItemModel> items) async {
-    final userId = await ref.read(UsersProviders.currentId.future);
-    for (final item in items) {
-      final buyer = item.buyers.singleOrNull;
-      if (buyer == null || buyer.id != userId) continue;
-      await CartItemsProviders.upsert(
-        ref,
-        Env.organizationId,
-        Env.cartId,
-        productId: item.product.id,
-        buyers: item.buyers,
-        ingredientsAdded: item.ingredientsAdded,
-        ingredientsRemoved: item.ingredientsRemoved,
-        levels: item.levels.map((key, value) => MapEntry(key.id, value)),
-        quantity: item.quantity,
-      );
-    }
-  }, onError: (_, error) {
-    CoreUtils.showErrorSnackBar(context, error);
-  }, onSuccess: (_, __) {
-    setState(() {
-      _selection = null;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Added to cart!'),
-    ));
-  });
+  late final _addItemsToCart = ref.mutation(
+    (ref, IList<OrderItemModel> items) async {
+      final userId = await ref.read(UsersProviders.currentId.future);
+      for (final item in items) {
+        final buyer = item.buyers.singleOrNull;
+        if (buyer == null || buyer.id != userId) continue;
+        await CartItemsProviders.upsert(
+          ref,
+          Env.organizationId,
+          Env.cartId,
+          productId: item.product.id,
+          buyers: item.buyers,
+          ingredientsAdded: item.ingredientsAdded,
+          ingredientsRemoved: item.ingredientsRemoved,
+          levels: item.levels.map((key, value) => MapEntry(key.id, value)),
+          quantity: item.quantity,
+        );
+      }
+    },
+    onError: (_, error) {
+      CoreUtils.showErrorSnackBar(context, error);
+    },
+    onSuccess: (_, __) {
+      setState(() {
+        _selection = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added to cart!')));
+    },
+  );
 
-  late final _sendMessage = ref.mutation((ref, IList<OrderItemModel> items) async {
-    final message = OrdersUtils.generateMessage(items);
-    await PlatformUtils.shareToWhatsApp(Env.phoneNumber, message);
-  }, onError: (_, error) {
-    CoreUtils.showErrorSnackBar(context, error);
-  });
+  late final _sendMessage = ref.mutation(
+    (ref, IList<OrderItemModel> items) async {
+      final message = OrdersUtils.generateMessage(items);
+      await PlatformUtils.shareToWhatsApp(Env.phoneNumber, message);
+    },
+    onError: (_, error) {
+      CoreUtils.showErrorSnackBar(context, error);
+    },
+  );
 
   void _toggleSelection(String userId, IList<OrderItemModel> items) {
     setState(() {
@@ -106,7 +109,7 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
-    final data = state.valueOrNull;
+    final data = state.value;
     final formats = AppFormats.of(context);
     final selection = _selection;
 
@@ -138,8 +141,9 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
           ),
           IconButton(
             tooltip: 'Select items to insert into cart.',
-            onPressed:
-                data != null ? () async => _toggleSelection(data.userId, data.orderItems) : null,
+            onPressed: data != null
+                ? () async => _toggleSelection(data.userId, data.orderItems)
+                : null,
             icon: const Icon(Icons.repeat),
           ),
         ],
@@ -166,10 +170,10 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
     final selection = _selection;
     final formats = AppFormats.of(context);
 
-    final cartTotal = items.fold(Decimal.zero, (amount, e) => amount + e.totalCost);
+    final cartTotal = items.fold(Fixed.zero, (amount, e) => amount + e.totalCost);
     final userTotal = items
         .where((e) => e.buyers.any((e) => e.id == userId))
-        .fold(Decimal.zero, (amount, e) => amount + e.individualCost);
+        .fold(Fixed.zero, (amount, e) => amount + e.individualCost);
 
     final header = ListTile(
       onTap: () => OrderStatRoute(order.id).go(context),
@@ -209,9 +213,7 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(
-          child: header,
-        ),
+        SliverToBoxAdapter(child: header),
         const SliverToBoxAdapter(child: Divider()),
         ...itemsInLists,
         if (hasFloatingActionButton) const FloatingActionButtonInjector(),

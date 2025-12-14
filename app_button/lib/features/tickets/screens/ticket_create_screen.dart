@@ -13,7 +13,7 @@ final _stateProvider = FutureProvider.autoDispose.family((ref, String organizati
   return (organization: organization);
 });
 
-class TicketCreateScreen extends ConsumerStatefulWidget {
+class TicketCreateScreen extends SourceConsumerStatefulWidget {
   final String organizationId;
 
   TicketCreateScreen({super.key, required this.organizationId});
@@ -21,10 +21,10 @@ class TicketCreateScreen extends ConsumerStatefulWidget {
   late final stateProvider = _stateProvider(organizationId);
 
   @override
-  ConsumerState<TicketCreateScreen> createState() => _TicketCreateScreenState();
+  SourceConsumerState<TicketCreateScreen> createState() => _TicketCreateScreenState();
 }
 
-class _TicketCreateScreenState extends ConsumerState<TicketCreateScreen> {
+class _TicketCreateScreenState extends SourceConsumerState<TicketCreateScreen> {
   final _placeFb = FormControlTyped<String>(
     initialValue: '',
     validators: [ValidatorsTyped.required()],
@@ -93,7 +93,7 @@ class _TicketCreateScreenState extends ConsumerState<TicketCreateScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(widget.stateProvider);
-    final data = state.valueOrNull;
+    final data = state.value;
 
     return Scaffold(
       appBar: AppBar(title: DotsText.or(data?.organization.name)),

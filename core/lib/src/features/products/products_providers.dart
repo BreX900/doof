@@ -1,8 +1,9 @@
 import 'package:core/core.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 
 abstract class ProductsProviders {
   static final all = FutureProvider.family((ref, String organizationId) async {
@@ -16,8 +17,10 @@ abstract class ProductsProviders {
         .toList();
   });
 
-  static final first =
-      FutureProvider.family((ref, (String organizationId, String productId) args) async {
+  static final first = FutureProvider.family((
+    ref,
+    (String organizationId, String productId) args,
+  ) async {
     final (organizationId, productId) = args;
     final products = await ref.watch(all(organizationId).future);
     return products.firstWhere((e) => e.id == productId);
@@ -43,8 +46,10 @@ abstract class ProductsProviders {
         .toList();
   });
 
-  static final single = FutureProvider.autoDispose
-      .family((ref, (String organizationId, String productId) args) async {
+  static final single = FutureProvider.autoDispose.family((
+    ref,
+    (String organizationId, String productId) args,
+  ) async {
     final (organizationId, productId) = args;
     final categories = await ref.watch(CategoriesProviders.all(organizationId).future);
     final ingredients = await ref.watch(IngredientsProviders.all(organizationId).future);
@@ -62,7 +67,7 @@ abstract class ProductsProviders {
     required String categoryId,
     required String title,
     required String description,
-    required Decimal price,
+    required Fixed price,
   }) async {
     await ProductsRepository.instance.upsert(
       organizationId,

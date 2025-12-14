@@ -4,7 +4,6 @@ import 'package:app_button/apis/riverpod/riverpod_utils.dart';
 import 'package:app_button/features/products/widgets/product_tile.dart';
 import 'package:app_button/shared/widgets/app_button_bar.dart';
 import 'package:core/core.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,7 +38,7 @@ final _stateProvider = FutureProvider.autoDispose.family((
   return (cart: cart, product: vls.product, cartItem: vls.cartItem);
 });
 
-class ProductScreen extends ConsumerStatefulWidget {
+class ProductScreen extends SourceConsumerStatefulWidget {
   final String organizationId;
   final Either<String, String> id;
 
@@ -50,12 +49,12 @@ class ProductScreen extends ConsumerStatefulWidget {
     : id = Either.right(itemId);
 
   @override
-  ConsumerState<ProductScreen> createState() => _ProductScreenState();
+  SourceConsumerState<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _ProductScreenState extends ConsumerState<ProductScreen> {
-  AutoDisposeFutureProvider<({CartModel cart, CartItemModel? cartItem, ProductModel product})>
-  get _provider => _stateProvider((widget.organizationId, widget.id));
+class _ProductScreenState extends SourceConsumerState<ProductScreen> {
+  FutureProvider<({CartModel cart, CartItemModel? cartItem, ProductModel product})> get _provider =>
+      _stateProvider((widget.organizationId, widget.id));
 
   final _quantityFb = FormControlTyped<int>(
     initialValue: 1,
@@ -101,7 +100,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   }
 
   Future<void> _init() async {
-    final (cart: _, product: _, :cartItem) = await ref.read(_provider.futureOfData);
+    final (cart: _, product: _, :cartItem) = await ref.futureOfData(_provider);
 
     if (cartItem == null) return;
 
@@ -120,7 +119,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     final textTheme = theme.textTheme;
 
     final isIdle = !ref.watchIsMutating([_upsertProduct]);
-    final upsertProduct = _form.handleSubmit(_upsertProduct.run);
+    final upsertProduct = _form.handleSubmitWith(_upsertProduct);
 
     Widget buildQuantityField() {
       return ReactiveDropdownField(
@@ -206,11 +205,12 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
           child: AppButtonBar(
             child: Row(
               children: [
-                Consumer(
+                SourceBuilder(
                   builder: (context, ref, child) {
-                    final quantity = Decimal.fromInt(ref.watch(_quantityFb.provider.value) ?? 0);
+                    final quantity = Fixed.fromInt(ref.watchSource(_quantityFb.source.value) ?? 0);
                     final extras =
-                        ref.watch(_addableIngredientsFb.provider.value)?.map((e) => e.price) ?? [];
+                        ref.watchSource(_addableIngredientsFb.source.value)?.map((e) => e.price) ??
+                        [];
                     final total = (product.price + extras.sum) * quantity;
 
                     return Text(formats.formatPrice(total), style: textTheme.labelLarge);
@@ -236,7 +236,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
-    final product = state.valueOrNull?.product;
+    final product = state.value?.product;
 
     return Scaffold(
       appBar: AppBar(title: DotsText.or(product?.title)),

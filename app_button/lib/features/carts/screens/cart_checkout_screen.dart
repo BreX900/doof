@@ -2,12 +2,12 @@ import 'package:app_button/apis/riverpod/riverpod_utils.dart';
 import 'package:app_button/shared/widgets/app_button_bar.dart';
 import 'package:app_button/shared/widgets/paragraph.dart';
 import 'package:core/core.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
 final _stateProvider = FutureProvider.autoDispose.family((ref, (String organizaionId,) args) async {
@@ -20,7 +20,7 @@ final _stateProvider = FutureProvider.autoDispose.family((ref, (String organizai
   return (user: user, cart: cart, cartItems: cartItems);
 });
 
-class CartCheckoutScreen extends ConsumerStatefulWidget {
+class CartCheckoutScreen extends SourceConsumerStatefulWidget {
   final String organizationId;
 
   CartCheckoutScreen({super.key, required this.organizationId});
@@ -28,10 +28,10 @@ class CartCheckoutScreen extends ConsumerStatefulWidget {
   late final stateProvider = _stateProvider((organizationId,));
 
   @override
-  ConsumerState<CartCheckoutScreen> createState() => _CartCheckoutScreenState();
+  SourceConsumerState<CartCheckoutScreen> createState() => _CartCheckoutScreenState();
 }
 
-class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
+class _CartCheckoutScreenState extends SourceConsumerState<CartCheckoutScreen> {
   final _placeFb = FormControlTyped(initialValue: '');
 
   late final _form = FormArray([_placeFb]);
@@ -63,7 +63,7 @@ class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
     final formats = AppFormats.of(context);
 
     final isIdle = !ref.watchIsMutating([_checkout]);
-    final total = cartItems.fold(Decimal.zero, (total, item) => total + item.totalCost);
+    final total = cartItems.fold(Fixed.zero, (total, item) => total + item.totalCost);
 
     return Column(
       children: [

@@ -1,8 +1,8 @@
 import 'package:core/src/apis/serialization/serialization.dart';
 import 'package:core/src/shared/data/identifiable.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:mek_data_class/mek_data_class.dart';
+import 'package:mekart/mekart.dart';
 
 part 'order_dto.g.dart';
 
@@ -35,7 +35,7 @@ class OrderDto with Identifiable, _$OrderDto {
   final bool shippable;
   final OrderStatus status;
   final String? place;
-  final Decimal payedAmount;
+  final Fixed payedAmount;
 
   const OrderDto({
     required this.id,
@@ -53,6 +53,7 @@ class OrderDto with Identifiable, _$OrderDto {
   });
 
   factory OrderDto.fromJson(Map<String, dynamic> map) => _$OrderDtoFromJson(map);
+
   Map<String, dynamic> toJson() => _$OrderDtoToJson(this);
 }
 
@@ -61,9 +62,7 @@ class OrderUpdateDto {
   final DateTime updateAt = DateTime.now();
   final OrderStatus status;
 
-  OrderUpdateDto({
-    required this.status,
-  });
+  OrderUpdateDto({required this.status});
 
   Map<String, dynamic> toJson() => _$OrderUpdateDtoToJson(this);
 }

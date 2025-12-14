@@ -57,27 +57,30 @@ abstract class UsersProviders {
     return Instances.auth.userChanges();
   });
 
-  static final BehaviorSubject<SignStatus> signStatusController =
-      BehaviorSubject<SignStatus>(onListen: () {
-    signStatusController.addStream(Instances.auth.userChanges().asyncExpand((authUser) async* {
-      if (authUser == null) {
-        yield SignStatus.none;
-        return;
-      }
+  static final BehaviorSubject<SignStatus> signStatusController = BehaviorSubject<SignStatus>(
+    onListen: () async {
+      await signStatusController.addStream(
+        Instances.auth.userChanges().asyncExpand((authUser) async* {
+          if (authUser == null) {
+            yield SignStatus.none;
+            return;
+          }
 
-      if (CoreEnv.shouldVerifyEmail && !authUser.emailVerified) {
-        yield SignStatus.unverified;
-        return;
-      }
+          if (CoreEnv.shouldVerifyEmail && !authUser.emailVerified) {
+            yield SignStatus.unverified;
+            return;
+          }
 
-      yield* UsersRepository.instance.watch(authUser.uid).map((user) {
-        lg.info('DbUser: ${user?.id}');
-        if (user == null) return SignStatus.partial;
+          yield* UsersRepository.instance.watch(authUser.uid).map((user) {
+            lg.info('DbUser: ${user?.id}');
+            if (user == null) return SignStatus.partial;
 
-        return SignStatus.full;
-      });
-    }));
-  });
+            return SignStatus.full;
+          });
+        }),
+      );
+    },
+  );
 
   static final single = StreamProvider.family((ref, String userId) {
     return UsersRepository.instance.watch(userId);
@@ -117,8 +120,10 @@ abstract class UsersProviders {
     required String code,
     required String? organizationId,
   }) async {
-    final user =
-        await UsersRepository.instance.confirmPhoneNumberVerification(verificationId, code: code);
+    final user = await UsersRepository.instance.confirmPhoneNumberVerification(
+      verificationId,
+      code: code,
+    );
     await _moveCartItemsOnline(user, organizationId);
   }
 
@@ -139,20 +144,29 @@ abstract class UsersProviders {
     final cartItems = await LocalCartItemsRepository.instance.fetchAll();
     if (cartItems.isEmpty) return;
 
-    final personalCart =
-        await CartsRepository.instance.fetchPersonal(organizationId, userId: user.id);
+    final personalCart = await CartsRepository.instance.fetchPersonal(
+      organizationId,
+      userId: user.id,
+    );
     final String personalCartId;
     if (personalCart != null) {
       personalCartId = personalCart.id;
     } else {
-      personalCartId =
-          await CartsRepository.instance.create(organizationId, isPublic: false, title: null);
+      personalCartId = await CartsRepository.instance.create(
+        organizationId,
+        isPublic: false,
+        title: null,
+      );
     }
 
-    await Future.wait(cartItems.map((item) async {
-      return await CartItemsRepository.instance
-          .upsert(personalCartId, item.change((c) => c..buyers = {...c.buyers, user.id}.toIList()));
-    }));
+    await Future.wait(
+      cartItems.map((item) async {
+        return await CartItemsRepository.instance.upsert(
+          personalCartId,
+          item.change((c) => c..buyers = {...c.buyers, user.id}.toIList()),
+        );
+      }),
+    );
 
     await LocalCartItemsRepository.instance.clear();
   }

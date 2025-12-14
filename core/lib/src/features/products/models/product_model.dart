@@ -2,9 +2,9 @@ import 'package:core/src/features/additions/dto/addition_dto.dart';
 import 'package:core/src/features/categories/dto/category_dto.dart';
 import 'package:core/src/features/ingredients/dto/ingredient_dto.dart';
 import 'package:core/src/shared/data/identifiable.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:mek_data_class/mek_data_class.dart';
+import 'package:mekart/mekart.dart';
 
 part 'product_model.g.dart';
 
@@ -17,7 +17,7 @@ class ProductModel with Identifiable, _$ProductModel {
   final String? imageUrl;
   final String title;
   final String description;
-  final Decimal price;
+  final Fixed price;
 
   final IList<IngredientDto> ingredients;
   final IList<IngredientDto> removableIngredients;

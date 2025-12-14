@@ -2,13 +2,12 @@ import 'package:app_button/shared/data/r.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 import 'package:reactive_phone_form_field/reactive_phone_form_field.dart';
 
-class SignInPhoneNumberScreen extends ConsumerStatefulWidget {
+class SignInPhoneNumberScreen extends SourceConsumerStatefulWidget {
   final String? organizationId;
   final String? verificationId;
   final bool shouldPop;
@@ -21,10 +20,10 @@ class SignInPhoneNumberScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<SignInPhoneNumberScreen> createState() => _SignInPhoneNumberScreenState();
+  SourceConsumerState<SignInPhoneNumberScreen> createState() => _SignInPhoneNumberScreenState();
 }
 
-class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScreen> {
+class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumberScreen> {
   final _phoneNumberFb = FormControlTypedOptional<PhoneNumber>(
     validators: [
       ValidatorsTyped.required(),
@@ -118,7 +117,7 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
     switch (verificationId) {
       case null:
         final isIdle = !ref.watchIsMutating([_signIn]);
-        final signIn = _phoneNumberFb.handleSubmit(_signIn.run);
+        final signIn = _phoneNumberFb.handleSubmitWith(_signIn.run);
 
         return _buildContent(
           title: const Text('Ultimo sforzo, conferma il tuo ordine tramite sms\n\nGrazie!'),
@@ -139,7 +138,7 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
         );
       default:
         final isIdle = !ref.watchIsMutating([_confirmVerification]);
-        final confirmVerification = _sentCodeFb.handleSubmit(_confirmVerification.run);
+        final confirmVerification = _sentCodeFb.handleSubmitWith(_confirmVerification.run);
 
         return _buildContent(
           title: const Text('Ultimo sforzo, conferma il tuo ordine tramite sms\n\nGrazie!'),

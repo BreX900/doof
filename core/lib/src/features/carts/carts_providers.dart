@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:core/core.dart';
 import 'package:core/src/utils/dart_utils.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
@@ -18,8 +17,10 @@ abstract class CartsProviders {
     return carts.firstWhere((cart) => cart.isPersonal(userId));
   });
 
-  static final first =
-      FutureProvider.family((ref, (String organizationId, String cartId) args) async {
+  static final first = FutureProvider.family((
+    ref,
+    (String organizationId, String cartId) args,
+  ) async {
     final (organizationId, cartId) = args;
     final carts = await ref.watch(all(organizationId).future);
     return carts.firstWhereId(cartId);
@@ -51,15 +52,17 @@ abstract class CartsProviders {
           isPublic: false,
           title: null,
         ),
-        ...allCarts
+        ...allCarts,
       ];
     }
 
     return allCarts.toIList();
   });
 
-  static final public =
-      StreamProvider.family((ref, (String organizationId, String cartId) args) async* {
+  static final public = StreamProvider.family((
+    ref,
+    (String organizationId, String cartId) args,
+  ) async* {
     final (organizationId, cartId) = args;
 
     final users = await ref.watch(UsersProviders.all.future);
@@ -74,8 +77,11 @@ abstract class CartsProviders {
     }
   });
 
-  static Future<void> create(MutationRef ref, String organizationId,
-      {required String title}) async {
+  static Future<void> create(
+    MutationRef ref,
+    String organizationId, {
+    required String title,
+  }) async {
     await CartsRepository.instance.create(organizationId, isPublic: true, title: title);
   }
 
@@ -89,7 +95,7 @@ abstract class CartsProviders {
     final userId = await ref.read(UsersProviders.currentId.future);
     if (userId == null) throw MissingCredentialsFailure();
 
-    final total = items.fold(Decimal.zero, (total, e) => total + e.totalCost);
+    final total = items.fold(Fixed.zero, (total, e) => total + e.totalCost);
 
     final orderId = await OrdersRepository.instance.create(
       organizationId,
@@ -99,24 +105,28 @@ abstract class CartsProviders {
       place: place?.nullIfEmpty,
       payedAmount: total,
     );
-    await Future.wait(items.map((e) async {
-      final product = await ProductsRepository.instance.fetch(organizationId, e.product.id);
+    await Future.wait(
+      items.map((e) async {
+        final product = await ProductsRepository.instance.fetch(organizationId, e.product.id);
 
-      await OrderItemsRepository.instance.create(
-        orderId,
-        payedAmount: e.totalCost,
-        levels: e.levels,
-        ingredientsRemoved: e.ingredientsRemoved,
-        ingredientsAdded: e.ingredientsAdded,
-        buyers: e.buyers,
-        product: product,
-        quantity: e.quantity,
-      );
-    }));
+        await OrderItemsRepository.instance.create(
+          orderId,
+          payedAmount: e.totalCost,
+          levels: e.levels,
+          ingredientsRemoved: e.ingredientsRemoved,
+          ingredientsAdded: e.ingredientsAdded,
+          buyers: e.buyers,
+          product: product,
+          quantity: e.quantity,
+        );
+      }),
+    );
 
-    await Future.wait(items.map((e) async {
-      await CartItemsRepository.instance.remove(cart.id, e.id);
-    }));
+    await Future.wait(
+      items.map((e) async {
+        await CartItemsRepository.instance.remove(cart.id, e.id);
+      }),
+    );
 
     return orderId;
   }
@@ -135,16 +145,20 @@ abstract class CartsProviders {
 }
 
 abstract class CartItemsProviders {
-  static final first = FutureProvider.family(
-      (ref, (String organizationId, String cartId, String itemId) args) async {
+  static final first = FutureProvider.family((
+    ref,
+    (String organizationId, String cartId, String itemId) args,
+  ) async {
     final (organizationId, cartId, itemId) = args;
 
     final products = await ref.watch(all((organizationId, cartId)).future);
     return products.firstWhereId(itemId);
   });
 
-  static final all =
-      FutureProvider.family((ref, (String organizationId, String cartId) args) async {
+  static final all = FutureProvider.family((
+    ref,
+    (String organizationId, String cartId) args,
+  ) async {
     final (organizationId, cartId) = args;
 
     final users = await ref.watch(UsersProviders.all.future);
@@ -160,13 +174,21 @@ abstract class CartItemsProviders {
         product: products.firstWhereId(e.productId),
         quantity: e.quantity,
         buyers: users.whereIds(e.buyers).sortedBy((e) => e.displayName!).toIList(),
-        ingredientsRemoved:
-            e.ingredientsRemoved.map(ingredients.firstWhereId).sortedBy((e) => e.title).toIList(),
-        ingredientsAdded:
-            e.ingredientsAdded.map(ingredients.firstWhereId).sortedBy((e) => e.title).toIList(),
-        levels: IMap.fromEntries(e.levels.mapTo((key, value) {
-          return MapEntry(levels.firstWhereId(key), value);
-        }).sortedBy((e) => e.key.title)),
+        ingredientsRemoved: e.ingredientsRemoved
+            .map(ingredients.firstWhereId)
+            .sortedBy((e) => e.title)
+            .toIList(),
+        ingredientsAdded: e.ingredientsAdded
+            .map(ingredients.firstWhereId)
+            .sortedBy((e) => e.title)
+            .toIList(),
+        levels: IMap.fromEntries(
+          e.levels
+              .mapTo((key, value) {
+                return MapEntry(levels.firstWhereId(key), value);
+              })
+              .sortedBy((e) => e.key.title),
+        ),
       );
     });
   });
@@ -198,8 +220,11 @@ abstract class CartItemsProviders {
       return;
     }
     if (targetCartId == CartModel.temporaryId) {
-      targetCartId =
-          await CartsRepository.instance.create(organizationId, isPublic: false, title: null);
+      targetCartId = await CartsRepository.instance.create(
+        organizationId,
+        isPublic: false,
+        title: null,
+      );
     }
     await CartItemsRepository.instance.upsert(targetCartId, item);
   }

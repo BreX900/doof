@@ -1,0 +1,11 @@
+name: _
+
+environment:
+  sdk: '>=3.10.0 <3.11.0'
+  flutter: '>=3.38.0 <3.39.0'
+
+workspace:
+  - core
+  - backoffice
+  - app_wook
+  - app_button

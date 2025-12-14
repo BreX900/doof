@@ -11,11 +11,14 @@ import 'package:core/src/shared/core_utils.dart';
 import 'package:core/src/shared/data/identifiable.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:mek/mek.dart';
 
 abstract class OrdersProviders {
-  static final all = StreamProvider.family(
-      (ref, (String organizationId, {List<OrderStatus> whereNotStatusIn}) args) async* {
+  static final all = StreamProvider.family((
+    ref,
+    (String organizationId, {List<OrderStatus> whereNotStatusIn}) args,
+  ) async* {
     final (organizationId, :whereNotStatusIn) = args;
     final userId = await ref.watch(UsersProviders.currentId.future);
     if (userId == null) throw MissingCredentialsFailure();
@@ -35,9 +38,11 @@ abstract class OrdersProviders {
 
     final items = await ref.read(OrderItemsProviders.all((organizationId, order.id)).future);
 
-    await Future.wait(items.map((e) async {
-      await OrderItemsRepository.instance.delete(order.id, e.id);
-    }));
+    await Future.wait(
+      items.map((e) async {
+        await OrderItemsRepository.instance.delete(order.id, e.id);
+      }),
+    );
     await OrdersRepository.instance.delete(organizationId, order.id);
   }
 
@@ -60,8 +65,10 @@ abstract class OrdersProviders {
     }
   });
 
-  static final single =
-      FutureProvider.autoDispose.family((ref, (String organizationId, String orderId) args) async {
+  static final single = FutureProvider.autoDispose.family((
+    ref,
+    (String organizationId, String orderId) args,
+  ) async {
     final (organizationId, orderId) = args;
     final users = await ref.watch(UsersProviders.all.future);
     final order = await OrdersRepository.instance.fetch(organizationId, orderId);
@@ -80,15 +87,19 @@ abstract class OrdersProviders {
 }
 
 abstract class OrderItemsProviders {
-  static final single = FutureProvider.family(
-      (ref, (String orderId, String itemId, {String organizationId}) args) async {
+  static final single = FutureProvider.family((
+    ref,
+    (String orderId, String itemId, {String organizationId}) args,
+  ) async {
     final (orderId, itemId, :organizationId) = args;
     final products = await ref.watch(all((organizationId, orderId)).future);
     return products.firstWhere((product) => product.id == itemId);
   });
 
-  static final all =
-      FutureProvider.family((ref, (String organizationId, String orderId) args) async {
+  static final all = FutureProvider.family((
+    ref,
+    (String organizationId, String orderId) args,
+  ) async {
     final (organizationId, orderId) = args;
     final users = await ref.watch(UsersProviders.all.future);
     final items = await OrderItemsRepository.instance.fetchAll(orderId);
@@ -100,12 +111,16 @@ abstract class OrderItemsProviders {
         buyers: users.whereIds(item.buyers).toIList(),
         product: products.firstWhereId(item.product.id),
         quantity: item.quantity,
-        ingredientsRemoved:
-            item.ingredients.where((e) => !e.value).map((e) => e.ingredient).toIList(),
+        ingredientsRemoved: item.ingredients
+            .where((e) => !e.value)
+            .map((e) => e.ingredient)
+            .toIList(),
         ingredientsAdded: item.ingredients.where((e) => e.value).map((e) => e.ingredient).toIList(),
-        levels: IMap.fromEntries(item.levels.map((e) {
-          return MapEntry(e.level, e.value);
-        })),
+        levels: IMap.fromEntries(
+          item.levels.map((e) {
+            return MapEntry(e.level, e.value);
+          }),
+        ),
         payedAmount: item.payedAmount,
       );
     }).toIList();

@@ -2,9 +2,10 @@ import 'package:core/src/features/additions/dto/addition_dto.dart';
 import 'package:core/src/features/additions/repositories/additions_repository.dart';
 import 'package:core/src/shared/core_utils.dart';
 import 'package:core/src/shared/data/identifiable.dart';
-import 'package:decimal/decimal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:mek/mek.dart';
+import 'package:mekart/mekart.dart';
 
 abstract class IngredientsProviders {
   static final all = FutureProvider.family((ref, String organizationId) async {
@@ -26,8 +27,10 @@ abstract class IngredientsProviders {
     return page;
   });
 
-  static final single = FutureProvider.autoDispose
-      .family((ref, (String organizationId, String ingredientId) args) async {
+  static final single = FutureProvider.autoDispose.family((
+    ref,
+    (String organizationId, String ingredientId) args,
+  ) async {
     final (organizationId, ingredientId) = args;
     return await IngredientsRepository.instance.fetch(organizationId, ingredientId);
   });
@@ -38,7 +41,7 @@ abstract class IngredientsProviders {
     required String? ingredientId,
     required String title,
     required String description,
-    required Decimal price,
+    required Fixed price,
   }) async {
     final ingredient = IngredientDto(
       id: ingredientId ?? '',

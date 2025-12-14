@@ -1,25 +1,20 @@
 import 'package:core/core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
-class SignInScreen extends ConsumerStatefulWidget {
+class SignInScreen extends SourceConsumerStatefulWidget {
   final String? organizationId;
   final VoidCallback? onSignUp;
 
-  const SignInScreen({
-    super.key,
-    this.organizationId,
-    this.onSignUp,
-  });
+  const SignInScreen({super.key, this.organizationId, this.onSignUp});
 
   @override
-  ConsumerState<SignInScreen> createState() => _SignInScreenState();
+  SourceConsumerState<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends ConsumerState<SignInScreen> {
+class _SignInScreenState extends SourceConsumerState<SignInScreen> {
   final _emailFb = FormControlTyped<String>(
     initialValue: '',
     validators: [ValidatorsTyped.required(), ValidatorsTyped.email()],
@@ -31,26 +26,33 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   late final _form = FormArray<void>([_emailFb, _passwordFb]);
 
-  late final _signIn = ref.mutation((ref, arg) async {
-    await UsersProviders.signIn(
-      ref,
-      email: _emailFb.value,
-      password: _passwordFb.value,
-      organizationId: widget.organizationId,
-    );
-  }, onError: (_, error) {
-    CoreUtils.showErrorSnackBar(context, error);
-  });
+  late final _signIn = ref.mutation(
+    (ref, None _) async {
+      await UsersProviders.signIn(
+        ref,
+        email: _emailFb.value,
+        password: _passwordFb.value,
+        organizationId: widget.organizationId,
+      );
+    },
+    onError: (_, error) {
+      CoreUtils.showErrorSnackBar(context, error);
+    },
+  );
 
-  late final _sendPasswordResetEmail = ref.mutation((ref, arg) async {
-    await UsersProviders.sendPasswordResetEmail(ref, _emailFb.value);
-  }, onError: (_, error) {
-    CoreUtils.showErrorSnackBar(context, error);
-  }, onSuccess: (_, __) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Sent password reset email to ${_emailFb.value}!'),
-    ));
-  });
+  late final _sendPasswordResetEmail = ref.mutation(
+    (ref, None _) async {
+      await UsersProviders.sendPasswordResetEmail(ref, _emailFb.value);
+    },
+    onError: (_, error) {
+      CoreUtils.showErrorSnackBar(context, error);
+    },
+    onSuccess: (_, __) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Sent password reset email to ${_emailFb.value}!')));
+    },
+  );
 
   @override
   void initState() {
@@ -64,8 +66,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     final isIdle = !ref.watchIsMutating([_signIn, _sendPasswordResetEmail]);
-    final signIn = _form.handleSubmit(_signIn.run);
-    final sendPasswordResetEmail = _emailFb.handleSubmit(_sendPasswordResetEmail.run);
+    final signIn = _form.handleSubmit(() => _signIn(none));
+    final sendPasswordResetEmail = _emailFb.handleSubmit(() => _sendPasswordResetEmail(none));
 
     List<Widget> buildFields() {
       return [
@@ -80,7 +82,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           decoration: const InputDecoration(labelText: 'Password'),
         ),
         TextButton.icon(
-          onPressed: isIdle ? () => sendPasswordResetEmail(null) : null,
+          onPressed: isIdle ? sendPasswordResetEmail : null,
           icon: const Icon(Icons.lock_reset_outlined),
           label: const Text('Send reset password email'),
         ),
@@ -88,9 +90,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign In'),
-      ),
+      appBar: AppBar(title: const Text('Sign In')),
       body: SafeArea(
         minimum: const EdgeInsets.all(16.0),
         child: Column(
@@ -102,7 +102,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ElevatedButton.icon(
-                  onPressed: isIdle ? () => signIn(null) : null,
+                  onPressed: isIdle ? signIn : null,
                   icon: const Icon(Icons.login),
                   label: const Text('Sign In'),
                 ),
@@ -116,7 +116,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 ],
                 const SizedBox(height: 16.0),
               ],
-            )
+            ),
           ],
         ),
       ),

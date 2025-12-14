@@ -24,7 +24,7 @@ import 'package:mek/mek.dart';
 
 part 'routes.g.dart';
 
-@TypedGoRoute<QrCodeRoute>(path: '/', routes: [])
+@TypedGoRoute<QrCodeRoute>(path: '/')
 class QrCodeRoute extends GoRouteData {
   const QrCodeRoute();
 
@@ -37,10 +37,13 @@ class QrCodeRoute extends GoRouteData {
   }
 }
 
-@TypedGoRoute<ServicesRoute>(path: '/services/:organizationId', routes: [
-  TypedGoRoute<TicketCreateRoute>(path: 'table-service'),
-  TypedGoRoute<TicketCreatedRoute>(path: 'table-service-requested')
-])
+@TypedGoRoute<ServicesRoute>(
+  path: '/services/:organizationId',
+  routes: [
+    TypedGoRoute<TicketCreateRoute>(path: 'table-service'),
+    TypedGoRoute<TicketCreatedRoute>(path: 'table-service-requested'),
+  ],
+)
 class ServicesRoute extends GoRouteData {
   final String organizationId;
 
@@ -64,9 +67,7 @@ class TicketCreateRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: place_upsert_screen.loadLibrary,
-      builder: (context) => place_upsert_screen.TicketCreateScreen(
-        organizationId: organizationId,
-      ),
+      builder: (context) => place_upsert_screen.TicketCreateScreen(organizationId: organizationId),
     );
   }
 }
@@ -80,9 +81,7 @@ class TicketCreatedRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: place_sent_screen.loadLibrary,
-      builder: (context) => place_sent_screen.TicketCreatedScreen(
-        organizationId: organizationId,
-      ),
+      builder: (context) => place_sent_screen.TicketCreatedScreen(organizationId: organizationId),
     );
   }
 }
@@ -93,11 +92,7 @@ class SignInPhoneNumberRoute extends GoRouteData {
   final String? verificationId;
   final bool shouldPop;
 
-  const SignInPhoneNumberRoute({
-    this.organizationId,
-    this.verificationId,
-    this.shouldPop = false,
-  });
+  const SignInPhoneNumberRoute({this.organizationId, this.verificationId, this.shouldPop = false});
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -112,18 +107,25 @@ class SignInPhoneNumberRoute extends GoRouteData {
   }
 }
 
-@TypedShellRoute<StoreRoute>(routes: [
-  TypedGoRoute<ProductsRoute>(path: '/store/:organizationId/products', routes: [
-    TypedGoRoute<ProductRoute>(path: ':productId'),
-  ]),
-  TypedGoRoute<CartRoute>(path: '/store/:organizationId/cart', routes: [
-    TypedGoRoute<CartCheckoutRoute>(path: 'checkout'),
-    TypedGoRoute<CartItemRoute>(path: ':itemId'),
-  ]),
-  TypedGoRoute<OrdersRoute>(path: '/store/:organizationId/orders', routes: [
-    TypedGoRoute<OrderItemsRoute>(path: ':orderId'),
-  ]),
-])
+@TypedShellRoute<StoreRoute>(
+  routes: [
+    TypedGoRoute<ProductsRoute>(
+      path: '/store/:organizationId/products',
+      routes: [TypedGoRoute<ProductRoute>(path: ':productId')],
+    ),
+    TypedGoRoute<CartRoute>(
+      path: '/store/:organizationId/cart',
+      routes: [
+        TypedGoRoute<CartCheckoutRoute>(path: 'checkout'),
+        TypedGoRoute<CartItemRoute>(path: ':itemId'),
+      ],
+    ),
+    TypedGoRoute<OrdersRoute>(
+      path: '/store/:organizationId/orders',
+      routes: [TypedGoRoute<OrderItemsRoute>(path: ':orderId')],
+    ),
+  ],
+)
 class StoreRoute extends ShellRouteData {
   const StoreRoute();
 
@@ -137,9 +139,7 @@ class StoreRoute extends ShellRouteData {
     return DeferredLibraryBuilder(
       loader: store_bottom_bar.loadLibrary,
       builder: (context) => Scaffold(
-        bottomNavigationBar: store_bottom_bar.StoreBottomBar(
-          organizationId: organizationId,
-        ),
+        bottomNavigationBar: store_bottom_bar.StoreBottomBar(organizationId: organizationId),
         body: navigator,
       ),
     );
@@ -159,9 +159,7 @@ class ProductsRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: products_screen.loadLibrary,
-      builder: (context) => products_screen.ProductsScreen(
-        organizationId: organizationId,
-      ),
+      builder: (context) => products_screen.ProductsScreen(organizationId: organizationId),
     );
   }
 }
@@ -176,10 +174,8 @@ class ProductRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: product_screen.loadLibrary,
-      builder: (context) => product_screen.ProductScreen(
-        organizationId: organizationId,
-        productId: productId,
-      ),
+      builder: (context) =>
+          product_screen.ProductScreen(organizationId: organizationId, productId: productId),
     );
   }
 }
@@ -212,10 +208,8 @@ class CartItemRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: product_screen.loadLibrary,
-      builder: (context) => product_screen.ProductScreen.fromCart(
-        organizationId: organizationId,
-        itemId: itemId,
-      ),
+      builder: (context) =>
+          product_screen.ProductScreen.fromCart(organizationId: organizationId, itemId: itemId),
     );
   }
 }
@@ -229,9 +223,7 @@ class CartCheckoutRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: cart_checkout_screen.loadLibrary,
-      builder: (context) => cart_checkout_screen.CartCheckoutScreen(
-        organizationId: organizationId,
-      ),
+      builder: (context) => cart_checkout_screen.CartCheckoutScreen(organizationId: organizationId),
     );
   }
 }
@@ -249,9 +241,7 @@ class OrdersRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: orders_screen.loadLibrary,
-      builder: (context) => orders_screen.OrdersScreen(
-        organizationId: organizationId,
-      ),
+      builder: (context) => orders_screen.OrdersScreen(organizationId: organizationId),
     );
   }
 }
@@ -266,10 +256,8 @@ class OrderItemsRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: order_items_screen.loadLibrary,
-      builder: (context) => order_items_screen.OrderItemsScreen(
-        organizationId: organizationId,
-        orderId: orderId,
-      ),
+      builder: (context) =>
+          order_items_screen.OrderItemsScreen(organizationId: organizationId, orderId: orderId),
     );
   }
 }

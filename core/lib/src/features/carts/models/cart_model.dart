@@ -4,9 +4,9 @@ import 'package:core/src/features/products/models/item_model.dart';
 import 'package:core/src/features/products/models/product_model.dart';
 import 'package:core/src/features/users/dto/user_dto.dart';
 import 'package:core/src/shared/data/identifiable.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:mek_data_class/mek_data_class.dart';
+import 'package:mekart/mekart.dart';
 
 part 'cart_model.g.dart';
 
@@ -39,6 +39,7 @@ class CartModel with Identifiable, _$CartModel {
   );
 
   bool get isPrivate => !isPublic;
+
   String get displayTitle => title ?? 'Personal';
 
   bool isPersonal(String userId) => isPrivate && owner.id == userId;
@@ -72,6 +73,6 @@ class CartItemModel extends ProductItem with Identifiable, _$CartItemModel {
   });
 
   @override
-  Decimal get totalCost =>
-      quantity.toDecimal() * ingredientsAdded.fold(product.price, (total, e) => total + e.price);
+  Fixed get totalCost =>
+      quantity.toFixed() * ingredientsAdded.fold(product.price, (total, e) => total + e.price);
 }

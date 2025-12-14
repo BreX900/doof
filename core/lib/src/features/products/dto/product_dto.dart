@@ -1,12 +1,12 @@
 import 'package:core/src/apis/serialization/serialization.dart';
 import 'package:core/src/shared/data/identifiable.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:mek_data_class/mek_data_class.dart';
+import 'package:mekart/mekart.dart';
 
 part 'product_dto.g.dart';
 
-@DataClass(createFieldsClass: true, fieldsClassVisible: true)
+@DataClass()
 @DtoSerializable()
 class ProductDto with Identifiable, _$ProductDto {
   static const fields = ProductDtoFields();
@@ -18,7 +18,7 @@ class ProductDto with Identifiable, _$ProductDto {
   final String title;
   final String description;
 
-  final Decimal price;
+  final Fixed price;
   final IList<String> ingredients;
   final IList<String> removableIngredients;
   final IList<String> addableIngredients;
@@ -38,5 +38,6 @@ class ProductDto with Identifiable, _$ProductDto {
   });
 
   factory ProductDto.fromJson(Map<String, dynamic> map) => _$ProductDtoFromJson(map);
+
   Map<String, dynamic> toJson() => _$ProductDtoToJson(this);
 }

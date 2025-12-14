@@ -3,6 +3,7 @@ import 'package:core/src/features/categories/repositories/categories_repository.
 import 'package:core/src/shared/core_utils.dart';
 import 'package:core/src/shared/data/identifiable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:mek/mek.dart';
 
 abstract class CategoriesProviders {

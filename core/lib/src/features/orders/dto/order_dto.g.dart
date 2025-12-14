@@ -10,6 +10,7 @@ part of 'order_dto.dart';
 
 mixin _$OrderDto {
   OrderDto get _self => this as OrderDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -27,6 +28,7 @@ mixin _$OrderDto {
           _self.status == other.status &&
           _self.place == other.place &&
           _self.payedAmount == other.payedAmount;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -46,20 +48,21 @@ mixin _$OrderDto {
   }
 
   @override
-  String toString() => (ClassToString('OrderDto')
-        ..add('id', _self.id)
-        ..add('originCartId', _self.originCartId)
-        ..add('createdAt', _self.createdAt)
-        ..add('updatedAt', _self.updatedAt)
-        ..add('at', _self.at)
-        ..add('organizationId', _self.organizationId)
-        ..add('payerId', _self.payerId)
-        ..add('membersIds', _self.membersIds)
-        ..add('shippable', _self.shippable)
-        ..add('status', _self.status)
-        ..add('place', _self.place)
-        ..add('payedAmount', _self.payedAmount))
-      .toString();
+  String toString() =>
+      (ClassToString('OrderDto')
+            ..add('id', _self.id)
+            ..add('originCartId', _self.originCartId)
+            ..add('createdAt', _self.createdAt)
+            ..add('updatedAt', _self.updatedAt)
+            ..add('at', _self.at)
+            ..add('organizationId', _self.organizationId)
+            ..add('payerId', _self.payerId)
+            ..add('membersIds', _self.membersIds)
+            ..add('shippable', _self.shippable)
+            ..add('status', _self.status)
+            ..add('place', _self.place)
+            ..add('payedAmount', _self.payedAmount))
+          .toString();
 }
 
 // **************************************************************************
@@ -67,23 +70,22 @@ mixin _$OrderDto {
 // **************************************************************************
 
 OrderDto _$OrderDtoFromJson(Map<String, dynamic> json) => OrderDto(
-      id: json['id'] as String,
-      originCartId: json['originCartId'] as String?,
-      createdAt:
-          const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
-      updatedAt:
-          const TimestampJsonConvert().fromJson(json['updatedAt'] as Timestamp),
-      at: _$JsonConverterFromJson<Timestamp, DateTime>(
-          json['at'], const TimestampJsonConvert().fromJson),
-      organizationId: json['organizationId'] as String,
-      payerId: json['payerId'] as String,
-      membersIds: IList<String>.fromJson(
-          json['membersIds'], (value) => value as String),
-      status: $enumDecode(_$OrderStatusEnumMap, json['status']),
-      shippable: json['shippable'] as bool,
-      place: json['place'] as String?,
-      payedAmount: Decimal.fromJson(json['payedAmount'] as String),
-    );
+  id: json['id'] as String,
+  originCartId: json['originCartId'] as String?,
+  createdAt: const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
+  updatedAt: const TimestampJsonConvert().fromJson(json['updatedAt'] as Timestamp),
+  at: _$JsonConverterFromJson<Timestamp, DateTime>(
+    json['at'],
+    const TimestampJsonConvert().fromJson,
+  ),
+  organizationId: json['organizationId'] as String,
+  payerId: json['payerId'] as String,
+  membersIds: IList<String>.fromJson(json['membersIds'], (value) => value as String),
+  status: $enumDecode(_$OrderStatusEnumMap, json['status']),
+  shippable: json['shippable'] as bool,
+  place: json['place'] as String?,
+  payedAmount: Fixed.fromJson(json['payedAmount'] as String),
+);
 
 abstract final class _$OrderDtoJsonKeys {
   static const String id = 'id';
@@ -101,27 +103,24 @@ abstract final class _$OrderDtoJsonKeys {
 }
 
 Map<String, dynamic> _$OrderDtoToJson(OrderDto instance) => <String, dynamic>{
-      'id': instance.id,
-      'originCartId': instance.originCartId,
-      'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
-      'updatedAt': const TimestampJsonConvert().toJson(instance.updatedAt),
-      'at': _$JsonConverterToJson<Timestamp, DateTime>(
-          instance.at, const TimestampJsonConvert().toJson),
-      'organizationId': instance.organizationId,
-      'payerId': instance.payerId,
-      'membersIds': instance.membersIds.toJson(
-        (value) => value,
-      ),
-      'shippable': instance.shippable,
-      'status': _$OrderStatusEnumMap[instance.status]!,
-      'place': instance.place,
-      'payedAmount': instance.payedAmount.toJson(),
-    };
+  'id': instance.id,
+  'originCartId': instance.originCartId,
+  'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
+  'updatedAt': const TimestampJsonConvert().toJson(instance.updatedAt),
+  'at': _$JsonConverterToJson<Timestamp, DateTime>(
+    instance.at,
+    const TimestampJsonConvert().toJson,
+  ),
+  'organizationId': instance.organizationId,
+  'payerId': instance.payerId,
+  'membersIds': instance.membersIds.toJson((value) => value),
+  'shippable': instance.shippable,
+  'status': _$OrderStatusEnumMap[instance.status]!,
+  'place': instance.place,
+  'payedAmount': instance.payedAmount.toJson(),
+};
 
-Value? _$JsonConverterFromJson<Json, Value>(
-  Object? json,
-  Value? Function(Json json) fromJson,
-) =>
+Value? _$JsonConverterFromJson<Json, Value>(Object? json, Value? Function(Json json) fromJson) =>
     json == null ? null : fromJson(json as Json);
 
 const _$OrderStatusEnumMap = {
@@ -136,14 +135,10 @@ const _$OrderStatusEnumMap = {
   OrderStatus.delivered: 'delivered',
 };
 
-Json? _$JsonConverterToJson<Json, Value>(
-  Value? value,
-  Json? Function(Value value) toJson,
-) =>
+Json? _$JsonConverterToJson<Json, Value>(Value? value, Json? Function(Value value) toJson) =>
     value == null ? null : toJson(value);
 
-Map<String, dynamic> _$OrderUpdateDtoToJson(OrderUpdateDto instance) =>
-    <String, dynamic>{
-      'updateAt': const TimestampJsonConvert().toJson(instance.updateAt),
-      'status': _$OrderStatusEnumMap[instance.status]!,
-    };
+Map<String, dynamic> _$OrderUpdateDtoToJson(OrderUpdateDto instance) => <String, dynamic>{
+  'updateAt': const TimestampJsonConvert().toJson(instance.updateAt),
+  'status': _$OrderStatusEnumMap[instance.status]!,
+};

@@ -25,7 +25,7 @@ class ServicesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(stateProvider);
-    final data = state.valueOrNull;
+    final data = state.value;
 
     final services = [
       const SizedBox(height: 128.0),

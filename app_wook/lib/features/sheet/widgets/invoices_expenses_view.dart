@@ -1,5 +1,4 @@
 import 'package:core/core.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:mek_gasol/features/sheet/dto/invoice_dto.dart';
@@ -25,24 +24,34 @@ class _InvoiceExpensesViewState extends State<InvoiceExpensesView> {
     final textStyle = DefaultTextStyle.of(context);
     final formats = AppFormats.of(context);
 
-    final expenses = Map.fromEntries(widget.invoices.where((e) {
-      if (_year == null) return true;
-      return e.createdAt.year == _year;
-    }).expand((invoice) {
-      return invoice.items.mapTo((userId, item) {
-        return MapEntry(userId, MapEntry(invoice.createdAt, item.amount));
-      });
-    }).groupFolding(IList<MapEntry<DateTime, Decimal>>(), (e) => e.key, (total, e) {
-      return total.add(e.value);
-    }).mapTo((userId, items) {
-      final total = items.groupFolding(Decimal.zero, (e) {
-        if (_year == null) return e.key.copyDateWith(month: 1, day: 1);
-        return e.key.copyDateWith(day: 1);
-      }, (total, e) {
-        return total + e.value;
-      });
-      return MapEntry(userId, total);
-    }));
+    final expenses = Map.fromEntries(
+      widget.invoices
+          .where((e) {
+            if (_year == null) return true;
+            return e.createdAt.year == _year;
+          })
+          .expand((invoice) {
+            return invoice.items.mapTo((userId, item) {
+              return MapEntry(userId, MapEntry(invoice.createdAt, item.amount));
+            });
+          })
+          .groupFolding(IList<MapEntry<DateTime, Fixed>>(), (e) => e.key, (total, e) {
+            return total.add(e.value);
+          })
+          .mapTo((userId, items) {
+            final total = items.groupFolding(
+              Fixed.zero,
+              (e) {
+                if (_year == null) return e.key.copyDateWith(month: 1, day: 1);
+                return e.key.copyDateWith(day: 1);
+              },
+              (total, e) {
+                return total + e.value;
+              },
+            );
+            return MapEntry(userId, total);
+          }),
+    );
 
     final years = widget.invoices.map((invoice) {
       return invoice.createdAt.copyDateWith(month: 1, day: 1);
@@ -79,7 +88,7 @@ class _InvoiceExpensesViewState extends State<InvoiceExpensesView> {
       const Text('Total'),
       Text(formats.formatPrice(expenses.values.expand((e) => e.values).sum)),
       ...dates.map((date) {
-        final amount = expenses.values.map((e) => e[date] ?? Decimal.zero).sum;
+        final amount = expenses.values.map((e) => e[date] ?? Fixed.zero).sum;
         return Text(formats.formatPrice(amount));
       }),
     ];
@@ -89,12 +98,8 @@ class _InvoiceExpensesViewState extends State<InvoiceExpensesView> {
         Expanded(
           child: TableView.builder(
             diagonalDragBehavior: DiagonalDragBehavior.free,
-            verticalDetails: const ScrollableDetails.vertical(
-              physics: ClampingScrollPhysics(),
-            ),
-            horizontalDetails: const ScrollableDetails.horizontal(
-              physics: ClampingScrollPhysics(),
-            ),
+            verticalDetails: const ScrollableDetails.vertical(physics: ClampingScrollPhysics()),
+            horizontalDetails: const ScrollableDetails.horizontal(physics: ClampingScrollPhysics()),
             columnCount: columns.length,
             rowCount: rows.length + 1 + 1,
             pinnedColumnCount: 1,
@@ -149,7 +154,7 @@ class _InvoiceExpensesViewState extends State<InvoiceExpensesView> {
               );
             }).toList(),
           ),
-        )
+        ),
       ],
     );
   }

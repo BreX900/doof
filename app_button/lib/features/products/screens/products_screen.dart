@@ -111,7 +111,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
-    final data = state.valueOrNull;
+    final data = state.value;
     final organization = data?.organization;
     final categories = data?.categorizedProducts.keys.toList() ?? const [];
     final pendingOrders = data?.pendingOrders ?? const IListConst([]);

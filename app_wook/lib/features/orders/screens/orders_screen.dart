@@ -8,42 +8,50 @@ import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mek_gasol/shared/widgets/sign_out_icon_button.dart';
 
-class OrdersScreen extends ConsumerStatefulWidget {
+class OrdersScreen extends SourceConsumerStatefulWidget {
   const OrdersScreen({super.key});
 
   @override
-  ConsumerState<OrdersScreen> createState() => _OrdersScreenState();
+  SourceConsumerState<OrdersScreen> createState() => _OrdersScreenState();
 }
 
-class _OrdersScreenState extends ConsumerState<OrdersScreen> {
-  StreamProvider<IList<OrderModel>> get _provider => OrdersProviders.all((
-        Env.organizationId,
-        whereNotStatusIn: const [],
-      ));
+class _OrdersScreenState extends SourceConsumerState<OrdersScreen> {
+  StreamProvider<IList<OrderModel>> get _provider =>
+      OrdersProviders.all((Env.organizationId, whereNotStatusIn: const []));
 
   final _removedOrderIds = <String>{};
 
-  late final _cancelOrder = ref.mutation((ref, OrderModel order) async {
-    final items = await ref.read(OrderItemsProviders.all((Env.organizationId, order.id)).future);
-    await CartItemsProviders.upsertFromOrder(ref, Env.organizationId, Env.cartId, items);
-    await OrdersProviders.delete(ref, Env.organizationId, order);
-  }, onStart: (OrderModel order) {
-    _removedOrderIds.add(order.id);
-  }, onError: (_, error) {
-    CoreUtils.showErrorSnackBar(context, error);
-  }, onFinish: (order, _, __) {
-    _removedOrderIds.remove(order.id);
-  });
+  late final _cancelOrder = ref.mutation(
+    (ref, OrderModel order) async {
+      final items = await ref.read(OrderItemsProviders.all((Env.organizationId, order.id)).future);
+      await CartItemsProviders.upsertFromOrder(ref, Env.organizationId, Env.cartId, items);
+      await OrdersProviders.delete(ref, Env.organizationId, order);
+    },
+    onStart: (OrderModel order) {
+      _removedOrderIds.add(order.id);
+    },
+    onError: (_, error) {
+      CoreUtils.showErrorSnackBar(context, error);
+    },
+    onFinish: (order, _, __) {
+      _removedOrderIds.remove(order.id);
+    },
+  );
 
-  late final _deleteOrder = ref.mutation((ref, OrderModel order) async {
-    await OrdersProviders.delete(ref, Env.organizationId, order);
-  }, onStart: (OrderModel order) {
-    _removedOrderIds.add(order.id);
-  }, onError: (_, error) {
-    CoreUtils.showErrorSnackBar(context, error);
-  }, onFinish: (order, _, __) {
-    _removedOrderIds.remove(order.id);
-  });
+  late final _deleteOrder = ref.mutation(
+    (ref, OrderModel order) async {
+      await OrdersProviders.delete(ref, Env.organizationId, order);
+    },
+    onStart: (OrderModel order) {
+      _removedOrderIds.add(order.id);
+    },
+    onError: (_, error) {
+      CoreUtils.showErrorSnackBar(context, error);
+    },
+    onFinish: (order, _, __) {
+      _removedOrderIds.remove(order.id);
+    },
+  );
 
   Widget _buildBody(IList<OrderModel> orders) {
     if (orders.isEmpty) {
@@ -78,10 +86,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           confirmDismiss: (direction) async => !isMutating,
           onDismissed: !isMutating
               ? (direction) => switch (direction) {
-                    DismissDirection.startToEnd => _cancelOrder(order),
-                    DismissDirection.endToStart => _deleteOrder(order),
-                    _ => throw UnsupportedError('$direction'),
-                  }
+                  DismissDirection.startToEnd => _cancelOrder(order),
+                  DismissDirection.endToStart => _deleteOrder(order),
+                  _ => throw UnsupportedError('$direction'),
+                }
               : null,
           background: const DismissingTile.left(
             secondary: Icon(Icons.cancel),
@@ -103,10 +111,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     final orders = ref.watch(_provider);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const SignOutIconButton(),
-        title: const Text('Orders'),
-      ),
+      appBar: AppBar(leading: const SignOutIconButton(), title: const Text('Orders')),
       body: orders.buildView(
         onRefresh: () => ref.invalidateWithAncestors(_provider),
         data: (orders) =>

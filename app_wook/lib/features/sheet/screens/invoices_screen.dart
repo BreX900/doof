@@ -23,11 +23,7 @@ final _screenProvider = FutureProvider.autoDispose((ref) async {
     ref.watch(UsersProviders.all.future),
   ).wait;
 
-  return (
-    invoices: results.$1,
-    users: results.$2,
-    hearts: _calculate(results.$2, results.$1),
-  );
+  return (invoices: results.$1, users: results.$2, hearts: _calculate(results.$2, results.$1));
 });
 
 class InvoicesScreen extends ConsumerStatefulWidget {
@@ -38,9 +34,8 @@ class InvoicesScreen extends ConsumerStatefulWidget {
 }
 
 class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
-  AutoDisposeFutureProvider<
-          ({IList<LifeBar> hearts, IList<InvoiceDto> invoices, IList<UserDto> users})>
-      get _provider => _screenProvider;
+  FutureProvider<({IList<LifeBar> hearts, IList<InvoiceDto> invoices, IList<UserDto> users})>
+  get _provider => _screenProvider;
 
   Widget _buildBody({
     required IList<UserDto> users,
@@ -68,10 +63,8 @@ class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
         ),
         DeferredLibraryBuilder(
           loader: invoices_expenses_view.loadLibrary,
-          builder: (context) => invoices_expenses_view.InvoiceExpensesView(
-            users: users,
-            invoices: invoices,
-          ),
+          builder: (context) =>
+              invoices_expenses_view.InvoiceExpensesView(users: users, invoices: invoices),
         ),
       ],
     );
@@ -90,7 +83,7 @@ class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
             IconButton(
               onPressed: () => const InvoiceCreateRoute().go(context),
               icon: const Icon(Icons.add),
-            )
+            ),
           ],
           bottom: const TabBar(
             tabs: [
@@ -103,11 +96,8 @@ class _OrdersScreenState extends ConsumerState<InvoicesScreen> {
         ),
         body: orders.buildView(
           onRefresh: () => ref.invalidateWithAncestors(_provider),
-          data: (items) => _buildBody(
-            invoices: items.invoices,
-            users: items.users,
-            lifeBars: items.hearts,
-          ),
+          data: (items) =>
+              _buildBody(invoices: items.invoices, users: items.users, lifeBars: items.hearts),
         ),
       ),
     );
@@ -162,28 +152,33 @@ IList<LifeBar> _calculate(IList<UserDto> users, IList<InvoiceDto> invoices) {
 
   // print('heartsCount: $heartsCount, life: ($minLife, $maxLife, $lifeBar), $points');
 
-  return usersData.mapTo((userId, data) {
-    final life = (data.life - minLife) / lifeBar;
-    final fullHearts = _calculateHearts(LifeBar.hearts, life);
-    final missingHearts = _calculateHearts(LifeBar.hearts, 1 - life);
-    // print('${data.life}, life: $life, hearts: ($fullHearts, $brokenHearts, $missingHearts)');
-    // '${'❤️' * fullHearts}${'💔' * brokenHearts}${'🤍' * missingHearts}'
+  return usersData
+      .mapTo((userId, data) {
+        final life = (data.life - minLife) / lifeBar;
+        final fullHearts = _calculateHearts(LifeBar.hearts, life);
+        final missingHearts = _calculateHearts(LifeBar.hearts, 1 - life);
+        // print('${data.life}, life: $life, hearts: ($fullHearts, $brokenHearts, $missingHearts)');
+        // '${'❤️' * fullHearts}${'💔' * brokenHearts}${'🤍' * missingHearts}'
 
-    final user = users.firstWhere((e) => e.id == userId);
-    return LifeBar(
-      user,
-      data,
-      fullHearts,
-      missingHearts,
-      hasManyPresences: presencesKings.contains(userId),
-      kingJobs:
-          jobsKings.entries.where((e) => e.value.contains(userId)).map((e) => e.key).toIList(),
-      hasMorePoints: morePointsUsers.contains(userId),
-      hasLessPoints: lessPointsUsers.contains(userId),
-    );
-  }).sortedBy<num>((e) {
-    return e.data.life * -1;
-  }).toIList();
+        final user = users.firstWhere((e) => e.id == userId);
+        return LifeBar(
+          user,
+          data,
+          fullHearts,
+          missingHearts,
+          hasManyPresences: presencesKings.contains(userId),
+          kingJobs: jobsKings.entries
+              .where((e) => e.value.contains(userId))
+              .map((e) => e.key)
+              .toIList(),
+          hasMorePoints: morePointsUsers.contains(userId),
+          hasLessPoints: lessPointsUsers.contains(userId),
+        );
+      })
+      .sortedBy<num>((e) {
+        return e.data.life * -1;
+      })
+      .toIList();
 }
 
 /// Examples: [division], [value] -> result

@@ -9,7 +9,6 @@ import 'package:core/src/features/orders/repositories/orders_repository.dart';
 import 'package:core/src/features/products/dto/product_dto.dart';
 import 'package:core/src/features/users/dto/user_dto.dart';
 import 'package:core/src/shared/instances.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:mekart/mekart.dart';
 
@@ -35,27 +34,29 @@ class OrderItemsRepository {
     required IList<IngredientDto> ingredientsRemoved,
     required IList<IngredientDto> ingredientsAdded,
     required IMap<LevelDto, double> levels,
-    required Decimal payedAmount,
+    required Fixed payedAmount,
   }) async {
-    await _ref(orderId).add(OrderItemDto(
-      id: '',
-      createdAt: DateTime.now(),
-      buyers: buyers.map((e) => e.id).toIList(),
-      product: product,
-      quantity: quantity,
-      ingredients: [
-        ...ingredientsRemoved.map((ingredient) {
-          return OrderIngredientDto(ingredient: ingredient, value: false);
-        }),
-        ...ingredientsAdded.map((ingredient) {
-          return OrderIngredientDto(ingredient: ingredient, value: true);
-        }),
-      ].toIList(),
-      levels: levels.entries.mapTo((ingredient, value) {
-        return OrderLevelDto(level: ingredient, value: value);
-      }).toIList(),
-      payedAmount: payedAmount,
-    ));
+    await _ref(orderId).add(
+      OrderItemDto(
+        id: '',
+        createdAt: DateTime.now(),
+        buyers: buyers.map((e) => e.id).toIList(),
+        product: product,
+        quantity: quantity,
+        ingredients: [
+          ...ingredientsRemoved.map((ingredient) {
+            return OrderIngredientDto(ingredient: ingredient, value: false);
+          }),
+          ...ingredientsAdded.map((ingredient) {
+            return OrderIngredientDto(ingredient: ingredient, value: true);
+          }),
+        ].toIList(),
+        levels: levels.entries.mapTo((ingredient, value) {
+          return OrderLevelDto(level: ingredient, value: value);
+        }).toIList(),
+        payedAmount: payedAmount,
+      ),
+    );
   }
 
   Future<void> delete(String orderId, String productId) async {

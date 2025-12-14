@@ -5,7 +5,6 @@ import 'package:app_button/utils/env.dart';
 import 'package:app_button/utils/logger.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:core/core.dart';
-import 'package:decimal/decimal.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +15,7 @@ final class ButtonMigrations {
   static const organizationId = 'dev';
 
   FirebaseFirestore get _firestore => Instances.firestore;
+
   FirebaseStorage get _storage => FirebaseStorage.instance;
 
   ButtonMigrations._();
@@ -38,75 +38,66 @@ final class ButtonMigrations {
   Future<void> migrate() async {
     lg.config('Database Migrating...');
 
-    await OrganizationsRepository.instance.save(const OrganizationDto(
-      id: organizationId,
-      name: 'BagniDoof',
-    ));
+    await OrganizationsRepository.instance.save(
+      const OrganizationDto(id: organizationId, name: 'BagniDoof'),
+    );
 
     const firstCoursesCategory = CategoryDto(
       id: 'qis6JTiLNl0Cdfz2D0Wh',
       weight: 0,
       title: 'Primi Piatti',
     );
-    const ravioliCategory = CategoryDto(
-      id: '1hbbRQVurQwZ7JSAu19Z',
-      weight: 1,
-      title: 'Ravioli',
-    );
-    const drinksCategory = CategoryDto(
-      id: 'J5IU4RRi5Dy5EHyfkSNL',
-      weight: 2,
-      title: 'Bevande',
-    );
+    const ravioliCategory = CategoryDto(id: '1hbbRQVurQwZ7JSAu19Z', weight: 1, title: 'Ravioli');
+    const drinksCategory = CategoryDto(id: 'J5IU4RRi5Dy5EHyfkSNL', weight: 2, title: 'Bevande');
     const categories = [firstCoursesCategory, ravioliCategory, drinksCategory];
 
     final chickenIngredient = IngredientDto(
       id: 'koyuDvKDhL1imLcgjHr5',
       title: 'Pollo',
       description: 'Aggiunta di pollo',
-      price: Decimal.parse('1.50'),
+      price: Fixed.parse('1.50'),
     );
     final pigIngredient = IngredientDto(
       id: 'VEI2ub9FOosr2GK6jMMc',
       title: 'Maiale',
       description: 'Aggiunta di maiale',
-      price: Decimal.parse('1.50'),
+      price: Fixed.parse('1.50'),
     );
     final beefIngredient = IngredientDto(
       id: 'DsqZgv5vO6fKmk2e0pYV',
       title: 'Manzo',
       description: 'Pezzettini di manzo saltati in padella.',
-      price: Decimal.parse('1.80'),
+      price: Fixed.parse('1.80'),
     );
     final shrimpsIngredient = IngredientDto(
       id: 'J4XU2yRjpaTzYzNLTRRM',
       title: 'Gamberetti',
       description: 'Aggiunta di gamberetti',
-      price: Decimal.parse('1.80'),
+      price: Fixed.parse('1.80'),
     );
     final eggIngredient = IngredientDto(
       id: 'MV0JieRZm6GREnaUM7Ip',
       title: 'Uovo Extra',
       description: 'Aggiunta di un uovo strapazzato',
-      price: Decimal.parse('0.70'),
+      price: Fixed.parse('0.70'),
     );
     final zuchinisIngredient = IngredientDto(
       id: 'Dw50GWoFNGuIxc1N7sMB',
       title: 'Zucchine Extra',
       description: 'Aggiunta di una porzione di zucchine',
-      price: Decimal.parse('0.50'),
+      price: Fixed.parse('0.50'),
     );
     final carrotsIngredient = IngredientDto(
       id: '98L1YkegtKjBi1fXPY1d',
       title: 'Carote Extra',
       description: 'Aggiunta di una porzione di carote',
-      price: Decimal.parse('0.50'),
+      price: Fixed.parse('0.50'),
     );
     final cabbageIngredient = IngredientDto(
       id: 'fL6SSIIhwD5CZ7C2Httd',
       title: 'Cavolo Extra',
       description: 'Aggiunta di una porzione di cavolo',
-      price: Decimal.parse('0.50'),
+      price: Fixed.parse('0.50'),
     );
     final ingredients = [
       chickenIngredient,
@@ -154,24 +145,33 @@ final class ButtonMigrations {
         id: '2CEsGXmUT6GcDMhKHD7C',
         categoryId: firstCoursesCategory.id,
         imageUrl: await _uploadProductImage(
-            organizationId, '2CEsGXmUT6GcDMhKHD7C', R.firstCoursesSpaghettiUovo),
+          organizationId,
+          '2CEsGXmUT6GcDMhKHD7C',
+          R.firstCoursesSpaghettiUovo,
+        ),
         title: "Spaghetti all'uovo",
         description: "Spaghetti all'uovo saltati con uova e verdure di stagione.",
-        price: Decimal.parse('4.10'),
+        price: Fixed.parse('4.10'),
         ingredients: IList([eggIngredient.id, zuchinisIngredient.id, carrotsIngredient.id]),
         removableIngredients: IList([zuchinisIngredient.id]),
-        addableIngredients:
-            resolveAddableIngredients([eggIngredient, zuchinisIngredient, carrotsIngredient]),
+        addableIngredients: resolveAddableIngredients([
+          eggIngredient,
+          zuchinisIngredient,
+          carrotsIngredient,
+        ]),
         levels: productLevels,
       ),
       ProductDto(
         id: 'eCO73liFjEGHEvIaF8QL',
         categoryId: firstCoursesCategory.id,
         imageUrl: await _uploadProductImage(
-            organizationId, 'eCO73liFjEGHEvIaF8QL', R.firstCoursesSpaghettiUdon),
+          organizationId,
+          'eCO73liFjEGHEvIaF8QL',
+          R.firstCoursesSpaghettiUdon,
+        ),
         title: 'Spaghetti Udon',
         description: 'Spaghetti udon saltati con uova e verdure di stagione.',
-        price: Decimal.parse('4.10'),
+        price: Fixed.parse('4.10'),
         ingredients: IList([eggIngredient.id, cabbageIngredient.id]),
         removableIngredients: IList([cabbageIngredient.id]),
         addableIngredients: resolveAddableIngredients([eggIngredient, cabbageIngredient]),
@@ -181,10 +181,13 @@ final class ButtonMigrations {
         id: 'OU54VLbMSMRnMEIme0nu',
         categoryId: firstCoursesCategory.id,
         imageUrl: await _uploadProductImage(
-            organizationId, 'OU54VLbMSMRnMEIme0nu', R.firstCoursesGnocchiRiso),
+          organizationId,
+          'OU54VLbMSMRnMEIme0nu',
+          R.firstCoursesGnocchiRiso,
+        ),
         title: 'Gnocchi Di Riso',
         description: 'Gnocchi di riso saltati con uova e verdure di stagione.',
-        price: Decimal.parse('4.10'),
+        price: Fixed.parse('4.10'),
         ingredients: IList([eggIngredient.id, zuchinisIngredient.id]),
         removableIngredients: IList([zuchinisIngredient.id]),
         addableIngredients: resolveAddableIngredients([eggIngredient, zuchinisIngredient]),
@@ -194,10 +197,13 @@ final class ButtonMigrations {
         id: 'KFdKDYCv5CrdEkMPlPPY',
         categoryId: firstCoursesCategory.id,
         imageUrl: await _uploadProductImage(
-            organizationId, 'KFdKDYCv5CrdEkMPlPPY', R.firstCoursesRisoCantonese),
+          organizationId,
+          'KFdKDYCv5CrdEkMPlPPY',
+          R.firstCoursesRisoCantonese,
+        ),
         title: 'Riso Alla Cantonese',
         description: 'Riso saltato con uova, prosciutto cotto e piselli.',
-        price: Decimal.parse('3.60'),
+        price: Fixed.parse('3.60'),
         ingredients: IList([eggIngredient.id]),
         removableIngredients: const IListConst([]),
         addableIngredients: resolveAddableIngredients([eggIngredient]),
@@ -207,10 +213,13 @@ final class ButtonMigrations {
         id: 'eOuccbWyv3hXdaQTCUxm',
         categoryId: firstCoursesCategory.id,
         imageUrl: await _uploadProductImage(
-            organizationId, 'eOuccbWyv3hXdaQTCUxm', R.firstCoursesRisoVerdureMiste),
+          organizationId,
+          'eOuccbWyv3hXdaQTCUxm',
+          R.firstCoursesRisoVerdureMiste,
+        ),
         title: 'Riso Con Verdure Miste',
         description: 'Riso saltato con uova, carote, zucchine e piselli.',
-        price: Decimal.parse('3.60'),
+        price: Fixed.parse('3.60'),
         ingredients: IList([eggIngredient.id, carrotsIngredient.id]),
         removableIngredients: IList([carrotsIngredient.id]),
         addableIngredients: const IListConst([]),
@@ -220,10 +229,13 @@ final class ButtonMigrations {
         id: 'tGVLMvzKY8FpgirYVK6P',
         categoryId: firstCoursesCategory.id,
         imageUrl: await _uploadProductImage(
-            organizationId, 'tGVLMvzKY8FpgirYVK6P', R.firstCoursesRisoGamberetti),
+          organizationId,
+          'tGVLMvzKY8FpgirYVK6P',
+          R.firstCoursesRisoGamberetti,
+        ),
         title: 'Riso Con Gamberetti',
         description: 'Riso saltato con uova, piselli e gamberetti.',
-        price: Decimal.parse('4.40'),
+        price: Fixed.parse('4.40'),
         ingredients: IList([eggIngredient.id, shrimpsIngredient.id]),
         removableIngredients: IList([eggIngredient.id]),
         addableIngredients: resolveAddableIngredients([eggIngredient, shrimpsIngredient]),
@@ -236,10 +248,13 @@ final class ButtonMigrations {
         id: 'tIGXj4JPigpru7r1HTqT',
         categoryId: ravioliCategory.id,
         imageUrl: await _uploadProductImage(
-            organizationId, 'tIGXj4JPigpru7r1HTqT', R.ravioliRavioliVerdure),
+          organizationId,
+          'tIGXj4JPigpru7r1HTqT',
+          R.ravioliRavioliVerdure,
+        ),
         title: 'Ravioli Con Verdure',
         description: 'Ravioli al vapore con ripieno alle verdure (6 pz).',
-        price: Decimal.parse('3.50'),
+        price: Fixed.parse('3.50'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -249,10 +264,13 @@ final class ButtonMigrations {
         id: '3ED7ABZLejHEwVx5d9GU',
         categoryId: ravioliCategory.id,
         imageUrl: await _uploadProductImage(
-            organizationId, '3ED7ABZLejHEwVx5d9GU', R.ravioliRavioliCarne),
+          organizationId,
+          '3ED7ABZLejHEwVx5d9GU',
+          R.ravioliRavioliCarne,
+        ),
         title: 'Ravioli Di Carne',
         description: 'Ravioli al vapore con ripieno alla carne di maiale (6 pz).',
-        price: Decimal.parse('3.50'),
+        price: Fixed.parse('3.50'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -262,10 +280,13 @@ final class ButtonMigrations {
         id: 'n2MHLI4GfWCfPauCpigP',
         categoryId: ravioliCategory.id,
         imageUrl: await _uploadProductImage(
-            organizationId, 'n2MHLI4GfWCfPauCpigP', R.ravioliRavioliXiaoLongBao),
+          organizationId,
+          'n2MHLI4GfWCfPauCpigP',
+          R.ravioliRavioliXiaoLongBao,
+        ),
         title: 'Xiao Long Bao',
         description: 'Ravioli al vapore con ripieno alla carne di maiale (6 pz).',
-        price: Decimal.parse('3.50'),
+        price: Fixed.parse('3.50'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -275,10 +296,13 @@ final class ButtonMigrations {
         id: 'B8paUtP7m1p2LeVI9pAG',
         categoryId: ravioliCategory.id,
         imageUrl: await _uploadProductImage(
-            organizationId, 'B8paUtP7m1p2LeVI9pAG', R.ravioliRavioliGamberi),
+          organizationId,
+          'B8paUtP7m1p2LeVI9pAG',
+          R.ravioliRavioliGamberi,
+        ),
         title: 'Shao Mai',
         description: 'Ravioli al vapore con ripieno ai gamberetti (6 pz).',
-        price: Decimal.parse('4.20'),
+        price: Fixed.parse('4.20'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -293,7 +317,7 @@ final class ButtonMigrations {
         imageUrl: null,
         title: 'Acqua Naturale',
         description: 'Bottiglietta da 0.5L.',
-        price: Decimal.parse('1.00'),
+        price: Fixed.parse('1.00'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -305,7 +329,7 @@ final class ButtonMigrations {
         imageUrl: null,
         title: 'Acqua Frizzante',
         description: 'Bottiglietta da 0.5L.',
-        price: Decimal.parse('3.50'),
+        price: Fixed.parse('3.50'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -317,7 +341,7 @@ final class ButtonMigrations {
         imageUrl: null,
         title: 'Té Al Limone',
         description: 'Lattina da 33cl.',
-        price: Decimal.parse('1.50'),
+        price: Fixed.parse('1.50'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -329,7 +353,7 @@ final class ButtonMigrations {
         imageUrl: null,
         title: 'Té Alla Pesca',
         description: 'Lattina da 33cl.',
-        price: Decimal.parse('1.50'),
+        price: Fixed.parse('1.50'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -341,7 +365,7 @@ final class ButtonMigrations {
         imageUrl: null,
         title: 'Fanta',
         description: 'Lattina da 33cl.',
-        price: Decimal.parse('1.50'),
+        price: Fixed.parse('1.50'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -353,7 +377,7 @@ final class ButtonMigrations {
         imageUrl: null,
         title: 'Coca Cola',
         description: 'Lattina da 33cl.',
-        price: Decimal.parse('1.50'),
+        price: Fixed.parse('1.50'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -365,7 +389,7 @@ final class ButtonMigrations {
         imageUrl: null,
         title: 'Redbull',
         description: 'Lattina da 25cl.',
-        price: Decimal.parse('3.00'),
+        price: Fixed.parse('3.00'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -377,7 +401,7 @@ final class ButtonMigrations {
         imageUrl: null,
         title: 'Birra Moretti',
         description: 'Bottiglia da 66cl.',
-        price: Decimal.parse('3.00'),
+        price: Fixed.parse('3.00'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -389,7 +413,7 @@ final class ButtonMigrations {
         imageUrl: null,
         title: 'Birra Ichnusa',
         description: 'Bottiglia da 50cl.',
-        price: Decimal.parse('3.00'),
+        price: Fixed.parse('3.00'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -401,7 +425,7 @@ final class ButtonMigrations {
         imageUrl: null,
         title: 'Birra Tsingtao',
         description: 'Bottiglia da 64cl.',
-        price: Decimal.parse('3.00'),
+        price: Fixed.parse('3.00'),
         ingredients: const IListConst([]),
         addableIngredients: const IListConst([]),
         removableIngredients: const IListConst([]),
@@ -410,24 +434,42 @@ final class ButtonMigrations {
     ];
 
     await Future.wait([
-      _elaborate('Updating: Categories', categories.map((e) {
-        return CategoriesRepository.instance.upsert(organizationId, e);
-      })),
-      _elaborate('Updating: First Courses', firstCourses.map((e) {
-        return ProductsRepository.instance.upsert(organizationId, e);
-      })),
-      _elaborate('Updating: Ingredients', ingredients.map((e) {
-        return IngredientsRepository.instance.upsert(organizationId, e);
-      })),
-      _elaborate('Updating: Levels', levels.map((e) {
-        return LevelsRepository.instance.save(organizationId, e);
-      })),
-      _elaborate('Updating: Ravioli', ravioli.map((e) {
-        return ProductsRepository.instance.upsert(organizationId, e);
-      })),
-      _elaborate('Updating: Drinks', drinks.map((e) {
-        return ProductsRepository.instance.upsert(organizationId, e);
-      })),
+      _elaborate(
+        'Updating: Categories',
+        categories.map((e) {
+          return CategoriesRepository.instance.upsert(organizationId, e);
+        }),
+      ),
+      _elaborate(
+        'Updating: First Courses',
+        firstCourses.map((e) {
+          return ProductsRepository.instance.upsert(organizationId, e);
+        }),
+      ),
+      _elaborate(
+        'Updating: Ingredients',
+        ingredients.map((e) {
+          return IngredientsRepository.instance.upsert(organizationId, e);
+        }),
+      ),
+      _elaborate(
+        'Updating: Levels',
+        levels.map((e) {
+          return LevelsRepository.instance.save(organizationId, e);
+        }),
+      ),
+      _elaborate(
+        'Updating: Ravioli',
+        ravioli.map((e) {
+          return ProductsRepository.instance.upsert(organizationId, e);
+        }),
+      ),
+      _elaborate(
+        'Updating: Drinks',
+        drinks.map((e) {
+          return ProductsRepository.instance.upsert(organizationId, e);
+        }),
+      ),
     ]);
     lg.config('Database Updated!');
   }
@@ -467,20 +509,26 @@ final class ButtonMigrations {
   // }
 
   Future<void> _cleanCollections(Map<dynamic, dynamic> collections, {String? doc}) async {
-    await Future.wait(collections.entries.mapTo((collection, subCollections) async {
-      final collectionRef = doc != null
-          ? _firestore.doc(doc).collection(collection)
-          : _firestore.collection(collection);
+    await Future.wait(
+      collections.entries.mapTo((collection, subCollections) async {
+        final collectionRef = doc != null
+            ? _firestore.doc(doc).collection(collection)
+            : _firestore.collection(collection);
 
-      final docs = await collectionRef.get();
+        final docs = await collectionRef.get();
 
-      await Future.wait(docs.docs.map((doc) async {
-        if (subCollections is Map) await _cleanCollections(subCollections, doc: doc.reference.path);
+        await Future.wait(
+          docs.docs.map((doc) async {
+            if (subCollections is Map) {
+              await _cleanCollections(subCollections, doc: doc.reference.path);
+            }
 
-        await doc.reference.delete();
-      }));
-      lg.config('  ✅ ${collectionRef.path}');
-    }));
+            await doc.reference.delete();
+          }),
+        );
+        lg.config('  ✅ ${collectionRef.path}');
+      }),
+    );
   }
 
   Future<void> _elaborate(String name, Iterable<Future<void>> futures) async {
@@ -497,7 +545,8 @@ final class ButtonMigrations {
     final data = await rootBundle.load(assetId);
     final snapshot = await _storage
         .ref(
-            '${prefix}organizations/$organizationId/products/$productId/${assetId.split('/').last}')
+          '${prefix}organizations/$organizationId/products/$productId/${assetId.split('/').last}',
+        )
         .putData(data.buffer.asUint8List());
     return await snapshot.ref.getDownloadURL();
   }

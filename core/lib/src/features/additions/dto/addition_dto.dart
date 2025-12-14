@@ -1,7 +1,7 @@
 import 'package:core/src/apis/serialization/serialization.dart';
 import 'package:core/src/shared/data/identifiable.dart';
-import 'package:decimal/decimal.dart';
 import 'package:mek_data_class/mek_data_class.dart';
+import 'package:mekart/mekart.dart';
 
 part 'addition_dto.g.dart';
 
@@ -15,7 +15,7 @@ class IngredientDto with Identifiable, _$IngredientDto {
   final String title;
   final String description;
 
-  final Decimal price;
+  final Fixed price;
 
   const IngredientDto({
     required this.id,
@@ -25,5 +25,6 @@ class IngredientDto with Identifiable, _$IngredientDto {
   });
 
   factory IngredientDto.fromJson(Map<String, dynamic> map) => _$IngredientDtoFromJson(map);
+
   Map<String, dynamic> toJson() => _$IngredientDtoToJson(this);
 }
