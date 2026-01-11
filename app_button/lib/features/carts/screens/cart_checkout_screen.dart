@@ -10,14 +10,20 @@ import 'package:mek/mek.dart';
 import 'package:mekart/mekart.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
-final _stateProvider = FutureProvider.autoDispose.family((ref, (String organizaionId,) args) async {
+final _stateProvider = FutureProvider.autoDispose.family((ref, (String organizaionId,) args) {
   final (organizationId,) = args;
 
-  final user = await ref.watch(UsersProviders.currentAuth.future);
-  final cart = await ref.watch(CartsProviders.personal(organizationId).future);
-  final cartItems = await ref.watch(CartItemsProviders.all((organizationId, cart.id)).future);
+  final userState = ref.watch(UsersProviders.currentAuth);
+  final cartState = ref.watch(CartsProviders.personal(organizationId));
+  final cartItemsState = ref.watch(
+    CartItemsProviders.all((organizationId, cartState.requireValue.id)),
+  );
 
-  return (user: user, cart: cart, cartItems: cartItems);
+  return (
+    user: userState.requireValue,
+    cart: cartState.requireValue,
+    cartItems: cartItemsState.requireValue,
+  );
 });
 
 class CartCheckoutScreen extends SourceConsumerStatefulWidget {

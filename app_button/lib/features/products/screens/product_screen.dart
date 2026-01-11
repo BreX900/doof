@@ -14,28 +14,28 @@ import 'package:reactive_forms/reactive_forms.dart';
 
 final _stateProvider = FutureProvider.autoDispose.family((
   ref,
-  (String organizationId, Either<String, String> id) args,
-) async {
+  (String, Either<String, String>) args,
+) {
   final (organizationId, id) = args;
 
-  final cart = await ref.watch(CartsProviders.personal(organizationId).future);
+  final cartState = ref.watch(CartsProviders.personal(organizationId));
 
-  final vls = await id.when(
-    (productId) async {
+  final vls = id.when(
+    (productId) {
       return (
-        product: await ref.watch(ProductsProviders.single((organizationId, productId)).future),
+        product: ref.watch(ProductsProviders.single((organizationId, productId))).requireValue,
         cartItem: null,
       );
     },
-    (itemId) async {
-      final cartItem = await ref.watch(
-        CartItemsProviders.first((organizationId, cart.id, itemId)).future,
+    (itemId) {
+      final cartItemState = ref.watch(
+        CartItemsProviders.first((organizationId, cartState.requireValue.id, itemId)),
       );
-      return (product: cartItem.product, cartItem: cartItem);
+      return (product: cartItemState.requireValue.product, cartItem: cartItemState.requireValue);
     },
   );
 
-  return (cart: cart, product: vls.product, cartItem: vls.cartItem);
+  return (cart: cartState.requireValue, product: vls.product, cartItem: vls.cartItem);
 });
 
 class ProductScreen extends SourceConsumerStatefulWidget {

@@ -10,12 +10,12 @@ import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
 
-final _screenProvider = FutureProvider.autoDispose((ref) async {
-  final cart = await ref.watch(CartsProviders.public((Env.organizationId, Env.cartId)).future);
-  final items = await ref.watch(CartItemsProviders.all((Env.organizationId, Env.cartId)).future);
-  final message = OrdersUtils.generateMessage(items);
+final _screenProvider = FutureProvider.autoDispose((ref) {
+  final cartState = ref.watch(CartsProviders.public((Env.organizationId, Env.cartId)));
+  final itemsState = ref.watch(CartItemsProviders.all((Env.organizationId, Env.cartId)));
+  final message = OrdersUtils.generateMessage(itemsState.requireValue);
 
-  return (cart: cart, items: items, message: message);
+  return (cart: cartState.requireValue, items: itemsState.requireValue, message: message);
 });
 
 class OrderCheckoutScreen extends SourceConsumerStatefulWidget {

@@ -14,13 +14,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mek/mek.dart';
 
-final _stateProvider = FutureProvider.family((ref, String organizationId) async {
-  final signStatus = await ref.watch(UsersProviders.currentStatus.future);
-  final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
-  final cart = await ref.watch(CartsProviders.personal(organizationId).future);
-  final items = await ref.watch(CartItemsProviders.all((organizationId, cart.id)).future);
+final _stateProvider = FutureProvider.family((ref, String organizationId) {
+  final signStatusState = ref.watch(UsersProviders.currentStatus);
+  final organizationState = ref.watch(OrganizationsProviders.single(organizationId));
+  final cartState = ref.watch(CartsProviders.personal(organizationId));
+  final itemsState = ref.watch(CartItemsProviders.all((organizationId, cartState.requireValue.id)));
 
-  return (signStatus: signStatus, organization: organization, cart: cart, items: items);
+  return (
+    signStatus: signStatusState.requireValue,
+    organization: organizationState.requireValue,
+    cart: cartState.requireValue,
+    items: itemsState.requireValue,
+  );
 });
 
 class CartScreen extends SourceConsumerStatefulWidget {

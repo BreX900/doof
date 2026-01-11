@@ -7,13 +7,13 @@ import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 
-final _stateProvider = FutureProvider.autoDispose((ref) async {
-  final userId = await ref.watch(UsersProviders.currentId.future);
+final _stateProvider = FutureProvider.autoDispose((ref) {
+  final userId = ref.watch(UsersProviders.currentId).requireValue;
   if (userId == null) throw MissingCredentialsFailure();
 
-  final cart = await ref.watch(CartsProviders.public((Env.organizationId, Env.cartId)).future);
+  final cartState = ref.watch(CartsProviders.public((Env.organizationId, Env.cartId)));
 
-  return (userId: userId, cart: cart);
+  return (userId: userId, cart: cartState.requireValue);
 });
 
 class CartScreen extends SourceConsumerStatefulWidget {

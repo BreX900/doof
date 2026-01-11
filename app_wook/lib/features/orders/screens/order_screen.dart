@@ -13,20 +13,19 @@ import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
 
-final _screenProvider = FutureProvider.autoDispose.family((ref, String orderId) async {
-  final userId = await ref.watch(UsersProviders.currentId.future);
+final _screenProvider = FutureProvider.autoDispose.family((ref, String orderId) {
+  final userId = ref.watch(UsersProviders.currentId).requireValue;
   if (userId == null) throw MissingCredentialsFailure();
 
-  return (
-    userId: userId,
-    order: await ref.watch(
-      OrdersProviders.all((
-        Env.organizationId,
-        whereNotStatusIn: const [],
-      )).selectAsync((orders) => orders.firstWhereId(orderId)),
-    ),
-    orderItems: await ref.watch(OrderItemsProviders.all((Env.organizationId, orderId)).future),
+  final orderState = ref.watch(
+    OrdersProviders.all((
+      Env.organizationId,
+      whereNotStatusIn: const [],
+    )).selectData((orders) => orders.firstWhereId(orderId)),
   );
+  final orderItemsState = ref.watch(OrderItemsProviders.all((Env.organizationId, orderId)));
+
+  return (userId: userId, order: orderState.requireValue, orderItems: orderItemsState.requireValue);
 });
 
 class OrderScreen extends SourceConsumerStatefulWidget {

@@ -10,15 +10,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mek/mek.dart';
 
-final _stateProvider = FutureProvider.family((ref, (String organizationId,) arg) async {
+final _stateProvider = FutureProvider.family((ref, (String,) arg) {
   final (organizationId,) = arg;
 
-  final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
-  final orders = await ref.watch(
-    OrdersProviders.all((organizationId, whereNotStatusIn: [])).future,
-  );
+  final organizationState = ref.watch(OrganizationsProviders.single(organizationId));
+  final ordersState = ref.watch(OrdersProviders.all((organizationId, whereNotStatusIn: [])));
 
-  return (organization: organization, orders: orders);
+  return (organization: organizationState.requireValue, orders: ordersState.requireValue);
 });
 
 class OrdersScreen extends ConsumerStatefulWidget {

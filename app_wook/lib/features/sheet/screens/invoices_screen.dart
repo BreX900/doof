@@ -17,13 +17,15 @@ import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
 
-final _screenProvider = FutureProvider.autoDispose((ref) async {
-  final results = await (
-    ref.watch(InvoicesProviders.all.future),
-    ref.watch(UsersProviders.all.future),
-  ).wait;
+final _screenProvider = FutureProvider.autoDispose((ref) {
+  final invoicesState = ref.watch(InvoicesProviders.all);
+  final usersState = ref.watch(UsersProviders.all);
 
-  return (invoices: results.$1, users: results.$2, hearts: _calculate(results.$2, results.$1));
+  return (
+    invoices: invoicesState.requireValue,
+    users: usersState.requireValue,
+    hearts: _calculate(usersState.requireValue, invoicesState.requireValue),
+  );
 });
 
 class InvoicesScreen extends ConsumerStatefulWidget {

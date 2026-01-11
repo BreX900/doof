@@ -9,16 +9,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 
-final _stateProvider = FutureProvider.autoDispose.family((
-  ref,
-  (String organizationId, String orderId) args,
-) async {
+final _stateProvider = FutureProvider.autoDispose.family((ref, (String, String) args) {
   final (organizationId, orderId) = args;
 
-  final order = await ref.watch(OrdersProviders.single((organizationId, orderId)).future);
-  final orderItems = await ref.watch(OrderItemsProviders.all((organizationId, orderId)).future);
+  final orderState = ref.watch(OrdersProviders.single((organizationId, orderId)));
+  final orderItemsState = ref.watch(OrderItemsProviders.all((organizationId, orderId)));
 
-  return (order: order, orderItems: orderItems);
+  return (order: orderState.requireValue, orderItems: orderItemsState.requireValue);
 });
 
 class OrderItemsScreen extends ConsumerStatefulWidget {

@@ -11,24 +11,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mekart/mekart.dart';
 
-final _stateProvider = FutureProvider.family((ref, String organizationId) async {
-  final user = await ref.watch(UsersProviders.currentAuth.future);
-  final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
-  final products = await ref.watch(ProductsProviders.all(organizationId).future);
+final _stateProvider = FutureProvider.family((ref, String organizationId) {
+  final userState = ref.watch(UsersProviders.currentAuth);
+  final organizationState = ref.watch(OrganizationsProviders.single(organizationId));
+  final productsState = ref.watch(ProductsProviders.all(organizationId));
 
   IList<OrderModel> pendingOrders;
   try {
-    pendingOrders = await ref.watch(
-      OrdersProviders.all((organizationId, whereNotStatusIn: [OrderStatus.delivered])).future,
-    );
+    pendingOrders = ref
+        .watch(OrdersProviders.all((organizationId, whereNotStatusIn: [OrderStatus.delivered])))
+        .requireValue;
   } on MissingCredentialsFailure {
     pendingOrders = const IListConst([]);
   }
 
   return (
-    user: user,
-    organization: organization,
-    categorizedProducts: products
+    user: userState.requireValue,
+    organization: organizationState.requireValue,
+    categorizedProducts: productsState.requireValue
         .groupIListsBy((e) => e.category)
         .withConfig(const ConfigMap(sort: true))
         .map((key, value) => MapEntry(key, value.addAll(value))),

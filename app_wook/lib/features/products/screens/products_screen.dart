@@ -7,12 +7,15 @@ import 'package:mek_gasol/features/products/widgets/products_list.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
 
-final _screenProvider = FutureProvider.autoDispose((ref) async {
-  final categories = await ref.watch(CategoriesProviders.all(Env.organizationId).future);
-  final products = await ref.watch(ProductsProviders.all(Env.organizationId).future);
+final _screenProvider = FutureProvider.autoDispose((ref) {
+  final categoriesState = ref.watch(CategoriesProviders.all(Env.organizationId));
+  final productsState = ref.watch(ProductsProviders.all(Env.organizationId));
 
-  return categories.map((category) {
-    return MapEntry(category, products.where((e) => e.category.id == category.id).toList());
+  return categoriesState.requireValue.map((category) {
+    return MapEntry(
+      category,
+      productsState.requireValue.where((e) => e.category.id == category.id).toList(),
+    );
   }).toMap();
 });
 

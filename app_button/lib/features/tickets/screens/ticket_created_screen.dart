@@ -9,19 +9,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mek/mek.dart';
 
-final _stateProvider = FutureProvider.autoDispose.family((ref, String organizationId) async {
-  final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
+final _stateProvider = FutureProvider.autoDispose.family((ref, String organizationId) {
+  final organizationState = ref.watch(OrganizationsProviders.single(organizationId));
 
-  return (organization: organization);
+  return (organization: organizationState.requireValue);
 });
 
 class TicketCreatedScreen extends ConsumerStatefulWidget {
   final String organizationId;
 
-  const TicketCreatedScreen({
-    super.key,
-    required this.organizationId,
-  });
+  const TicketCreatedScreen({super.key, required this.organizationId});
 
   @override
   ConsumerState<TicketCreatedScreen> createState() => _PlaceSentScreenState();
@@ -53,13 +50,8 @@ class _PlaceSentScreenState extends ConsumerState<TicketCreatedScreen> {
     final data = state.value;
 
     return Scaffold(
-      appBar: AppBar(
-        title: DotsText.or(data?.organization.name),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 64.0),
-        child: _buildBody(),
-      ),
+      appBar: AppBar(title: DotsText.or(data?.organization.name)),
+      body: Padding(padding: const EdgeInsets.symmetric(horizontal: 64.0), child: _buildBody()),
     );
   }
 }

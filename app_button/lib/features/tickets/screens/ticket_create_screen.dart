@@ -7,10 +7,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mek/mek.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
-final _stateProvider = FutureProvider.autoDispose.family((ref, String organizationId) async {
-  final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
+final _stateProvider = FutureProvider.autoDispose.family((ref, String organizationId) {
+  final organizationState = ref.watch(OrganizationsProviders.single(organizationId));
 
-  return (organization: organization);
+  return (organization: organizationState.requireValue);
 });
 
 class TicketCreateScreen extends SourceConsumerStatefulWidget {

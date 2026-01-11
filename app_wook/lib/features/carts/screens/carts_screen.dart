@@ -9,15 +9,14 @@ import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
 
-final _screenProvider = FutureProvider.autoDispose((ref) async {
-  final userId = await ref.watch(UsersProviders.currentId.future);
+final _screenProvider = FutureProvider.autoDispose((ref) {
+  final userId = ref.watch(UsersProviders.currentId).requireValue;
   if (userId == null) throw MissingCredentialsFailure();
 
-  final cart = await ref.watch(CartsProviders.public((Env.organizationId, Env.cartId)).future);
+  final cart = ref.watch(CartsProviders.public((Env.organizationId, Env.cartId))).requireValue;
 
   final productsInCarts = {
-    for (final cart in [cart])
-      cart: await ref.watch(CartItemsProviders.all((Env.organizationId, cart.id)).future),
+    cart: ref.watch(CartItemsProviders.all((Env.organizationId, cart.id))).requireValue,
   }.toIMap();
 
   return (userId: userId, productsInCarts: productsInCarts);

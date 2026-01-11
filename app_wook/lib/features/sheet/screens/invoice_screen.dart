@@ -57,29 +57,34 @@ class _UpdateData extends _Data {
   Map<String, Object?> get props => super.props..['invoice'] = invoice;
 }
 
-final _screenProvider = FutureProvider.autoDispose.family((ref, _Args args) async {
-  final invoices = await ref.read(InvoicesProviders.all.future);
-  final users = await ref.watch(UsersProviders.all.future);
+final _screenProvider = FutureProvider.autoDispose.family((ref, _Args args) {
+  final invoicesState = ref.read(InvoicesProviders.all);
+  final usersState = ref.watch(UsersProviders.all);
 
-  return await args.when(
-    (orderId) async {
-      final order = orderId != null
-          ? await ref.watch(OrdersProviders.single((Env.organizationId, orderId)).future)
-          : null;
+  return args.when(
+    (orderId) {
+      AsyncValue<OrderModel>? orderState;
+      AsyncValue<IList<OrderItemModel>>? orderItemsState;
+      if (orderId != null) {
+        orderState = ref.watch(OrdersProviders.single((Env.organizationId, orderId)));
+        orderItemsState = ref.watch(OrderItemsProviders.all((Env.organizationId, orderId)));
+      }
 
       return _CreateData(
-        users: users,
-        invoices: invoices,
-        order: order,
-        orderItems: orderId != null
-            ? await ref.watch(OrderItemsProviders.all((Env.organizationId, orderId)).future)
-            : null,
+        users: usersState.requireValue,
+        invoices: invoicesState.requireValue,
+        order: orderState?.requireValue,
+        orderItems: orderItemsState?.requireValue,
       );
     },
-    (invoiceId) async {
-      final invoice = await ref.watch(InvoicesProviders.single(invoiceId).future);
+    (invoiceId) {
+      final invoiceState = ref.watch(InvoicesProviders.single(invoiceId));
 
-      return _UpdateData(users: users, invoices: invoices, invoice: invoice);
+      return _UpdateData(
+        users: usersState.requireValue,
+        invoices: invoicesState.requireValue,
+        invoice: invoiceState.requireValue,
+      );
     },
   );
 });

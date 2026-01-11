@@ -14,29 +14,30 @@ import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
-final _screenProvider = FutureProvider.autoDispose.family((
-  ref,
-  (String?, String?, String?) items,
-) async {
+final _screenProvider = FutureProvider.autoDispose.family((ref, (String?, String?, String?) items) {
   ProductModel product;
   CartModel? cart;
   CartItemModel? cartItem;
 
+  final cartState = ref.watch(CartsProviders.public((Env.organizationId, Env.cartId)));
+
   if (items.$1 != null) {
-    product = await ref.watch(ProductsProviders.first((Env.organizationId, items.$1!)).future);
+    product = ref.watch(ProductsProviders.first((Env.organizationId, items.$1!))).requireValue;
     cart = null;
     cartItem = null;
   } else {
-    cart = await ref.watch(CartsProviders.first((Env.organizationId, items.$2!)).future);
-    cartItem = await ref.watch(
-      CartItemsProviders.first((Env.organizationId, items.$2!, items.$3!)).future,
+    final cartState = ref.watch(CartsProviders.first((Env.organizationId, items.$2!)));
+    final cartItemState = ref.watch(
+      CartItemsProviders.first((Env.organizationId, items.$2!, items.$3!)),
     );
-    product = cartItem!.product;
+    cart = cartState.requireValue;
+    cartItem = cartItemState.requireValue;
+    product = cartItem.product;
   }
 
   return (
     product: product,
-    carts: IList([await ref.watch(CartsProviders.public((Env.organizationId, Env.cartId)).future)]),
+    carts: IList([cartState.requireValue]),
     cart: cart,
     cartItem: cartItem,
     user: ref.watch(UsersProviders.current).value,
@@ -277,7 +278,8 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
           if (carts.length > 1) buildCartField(),
           SourceBuilder(
             builder: (context, ref, _) {
-              final members = ref.watchSource(_cartFb.source.value)?.members ?? const IListConst([]);
+              final members =
+                  ref.watchSource(_cartFb.source.value)?.members ?? const IListConst([]);
               if (members.length <= 1) return const SizedBox.shrink();
               return buildBuyersField(members);
             },

@@ -7,20 +7,15 @@ import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mekart/mekart.dart';
 
-final _screenProvider = FutureProvider.autoDispose.family((
-  ref,
-  (_StatsScreenType, String) items,
-) async {
+final _screenProvider = FutureProvider.autoDispose.family((ref, (_StatsScreenType, String) items) {
   final id = items.$2;
 
   // ignore: omit_local_variable_types
   final IList<ProductItem> productsItems = switch (items.$1) {
-    _StatsScreenType.cart => await ref.watch(
-      CartItemsProviders.all((Env.organizationId, id)).future,
-    ),
-    _StatsScreenType.order => await ref.watch(
-      OrderItemsProviders.all((Env.organizationId, id)).future,
-    ),
+    _StatsScreenType.cart =>
+      ref.watch(CartItemsProviders.all((Env.organizationId, id))).requireValue,
+    _StatsScreenType.order =>
+      ref.watch(OrderItemsProviders.all((Env.organizationId, id))).requireValue,
   };
 
   final buyers = productsItems.expand((element) => element.buyers).toSet();

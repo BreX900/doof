@@ -6,19 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 
-final _stateProvider = FutureProvider.family((ref, String organizationId) async {
-  final organization = await ref.watch(OrganizationsProviders.single(organizationId).future);
+final _stateProvider = FutureProvider.family((ref, String organizationId) {
+  final organizationState = ref.watch(OrganizationsProviders.single(organizationId));
 
-  return (organization: organization);
+  return (organization: organizationState.requireValue);
 });
 
 class ServicesScreen extends ConsumerWidget {
   final String organizationId;
 
-  ServicesScreen({
-    super.key,
-    required this.organizationId,
-  });
+  ServicesScreen({super.key, required this.organizationId});
 
   late final stateProvider = _stateProvider(organizationId);
 
@@ -48,14 +45,10 @@ class ServicesScreen extends ConsumerWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: DotsText.or(data?.organization.name),
-      ),
+      appBar: AppBar(title: DotsText.or(data?.organization.name)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: services,
-        ),
+        child: Column(children: services),
       ),
     );
   }
@@ -91,21 +84,12 @@ class _ServiceCard extends StatelessWidget {
             Row(
               children: [
                 ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minHeight: 96.0,
-                    minWidth: 64.0,
-                  ),
+                  constraints: const BoxConstraints(minHeight: 96.0, minWidth: 64.0),
                   child: Center(
-                    child: IconTheme.merge(
-                      data: const IconThemeData(size: 40.0),
-                      child: leading,
-                    ),
+                    child: IconTheme.merge(data: const IconThemeData(size: 40.0), child: leading),
                   ),
                 ),
-                DefaultTextStyle(
-                  style: textTheme.titleLarge!,
-                  child: title,
-                ),
+                DefaultTextStyle(style: textTheme.titleLarge!, child: title),
               ],
             ),
             const Divider(height: 8.0),
@@ -116,10 +100,7 @@ class _ServiceCard extends StatelessWidget {
                 child: subtitle,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: description,
-            ),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 16.0), child: description),
             const SizedBox(height: 16.0),
           ],
         ),
