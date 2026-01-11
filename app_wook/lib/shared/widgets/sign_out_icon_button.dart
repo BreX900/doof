@@ -14,10 +14,7 @@ class SignOutIconButton extends StatelessWidget {
       icon: const Icon(Icons.logout),
       itemBuilder: (context) {
         return [
-          PopupMenuItem(
-            onTap: () async => Instances.auth.signOut(),
-            child: const Text('Sign Out'),
-          ),
+          PopupMenuItem(onTap: () => Instances.auth.signOut(), child: const Text('Sign Out')),
           if (Env.flavour != EnvFlavour.frontend && Env.flavour != EnvFlavour.backoffice)
             PopupMenuItem(
               onTap: () => unawaited(AppsGuard.of(context).select(null)),

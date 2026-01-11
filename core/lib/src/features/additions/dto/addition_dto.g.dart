@@ -10,6 +10,7 @@ part of 'addition_dto.dart';
 
 mixin _$IngredientDto {
   IngredientDto get _self => this as IngredientDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -19,6 +20,7 @@ mixin _$IngredientDto {
           _self.title == other.title &&
           _self.description == other.description &&
           _self.price == other.price;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -30,12 +32,13 @@ mixin _$IngredientDto {
   }
 
   @override
-  String toString() => (ClassToString('IngredientDto')
-        ..add('id', _self.id)
-        ..add('title', _self.title)
-        ..add('description', _self.description)
-        ..add('price', _self.price))
-      .toString();
+  String toString() =>
+      (ClassToString('IngredientDto')
+            ..add('id', _self.id)
+            ..add('title', _self.title)
+            ..add('description', _self.description)
+            ..add('price', _self.price))
+          .toString();
 }
 
 // **************************************************************************

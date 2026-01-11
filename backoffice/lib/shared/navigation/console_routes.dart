@@ -15,7 +15,7 @@ import 'package:mek/mek.dart';
 part 'console_routes.g.dart';
 
 @TypedGoRoute<SignInRoute>(path: '/sign-in')
-class SignInRoute extends GoRouteData {
+class SignInRoute extends GoRouteData with $SignInRoute {
   const SignInRoute();
 
   @override
@@ -27,6 +27,7 @@ class SignInRoute extends GoRouteData {
   }
 }
 
+// dart format off
 @TypedGoRoute<AdminAreaRoute>(path: '/:organizationId', routes: [
   TypedGoRoute<AdminIngredientCreateRoute>(path: 'ingredients'),
   TypedGoRoute<AdminIngredientRoute>(path: 'ingredients/:ingredientId'),
@@ -36,7 +37,8 @@ class SignInRoute extends GoRouteData {
   TypedGoRoute<AdminCategoryCreateRoute>(path: 'categories'),
   TypedGoRoute<AdminCategoryRoute>(path: 'categories/:categoryId'),
 ])
-class AdminAreaRoute extends GoRouteData {
+// dart format on
+class AdminAreaRoute extends GoRouteData with $AdminAreaRoute {
   final String organizationId;
 
   static const String noOrganizationId = '#';
@@ -54,7 +56,7 @@ class AdminAreaRoute extends GoRouteData {
   }
 }
 
-class AdminOrderRoute extends GoRouteData {
+class AdminOrderRoute extends GoRouteData with $AdminOrderRoute {
   final String organizationId;
   final String orderId;
 
@@ -64,15 +66,13 @@ class AdminOrderRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: admin_order_screen.loadLibrary,
-      builder: (context) => admin_order_screen.AdminOrderScreen(
-        organizationId: organizationId,
-        orderId: orderId,
-      ),
+      builder: (context) =>
+          admin_order_screen.AdminOrderScreen(organizationId: organizationId, orderId: orderId),
     );
   }
 }
 
-class AdminProductCreateRoute extends GoRouteData {
+class AdminProductCreateRoute extends GoRouteData with $AdminProductCreateRoute {
   final String organizationId;
 
   const AdminProductCreateRoute(this.organizationId);
@@ -86,7 +86,7 @@ class AdminProductCreateRoute extends GoRouteData {
   }
 }
 
-class AdminProductRoute extends GoRouteData {
+class AdminProductRoute extends GoRouteData with $AdminProductRoute {
   final String organizationId;
   final String productId;
 
@@ -104,7 +104,7 @@ class AdminProductRoute extends GoRouteData {
   }
 }
 
-class AdminCategoryCreateRoute extends GoRouteData {
+class AdminCategoryCreateRoute extends GoRouteData with $AdminCategoryCreateRoute {
   final String organizationId;
 
   const AdminCategoryCreateRoute(this.organizationId);
@@ -113,14 +113,13 @@ class AdminCategoryCreateRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: admin_category_screen.loadLibrary,
-      builder: (context) => admin_category_screen.AdminCategoryScreen(
-        organizationId: organizationId,
-      ),
+      builder: (context) =>
+          admin_category_screen.AdminCategoryScreen(organizationId: organizationId),
     );
   }
 }
 
-class AdminCategoryRoute extends GoRouteData {
+class AdminCategoryRoute extends GoRouteData with $AdminCategoryRoute {
   final String organizationId;
   final String categoryId;
 
@@ -138,7 +137,7 @@ class AdminCategoryRoute extends GoRouteData {
   }
 }
 
-class AdminIngredientCreateRoute extends GoRouteData {
+class AdminIngredientCreateRoute extends GoRouteData with $AdminIngredientCreateRoute {
   final String organizationId;
 
   const AdminIngredientCreateRoute(this.organizationId);
@@ -147,14 +146,13 @@ class AdminIngredientCreateRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: admin_ingredient_screen.loadLibrary,
-      builder: (context) => admin_ingredient_screen.AdminIngredientScreen(
-        organizationId: organizationId,
-      ),
+      builder: (context) =>
+          admin_ingredient_screen.AdminIngredientScreen(organizationId: organizationId),
     );
   }
 }
 
-class AdminIngredientRoute extends GoRouteData {
+class AdminIngredientRoute extends GoRouteData with $AdminIngredientRoute {
   final String organizationId;
   final String ingredientId;
 

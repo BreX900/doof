@@ -300,7 +300,7 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
                       'Did he pay? ${formats.formatPrice(formControl.toValue().amount)}',
                     ),
                     secondary: IconButton(
-                      onPressed: () async => _showItemUpsertDialog(formControl),
+                      onPressed: () => _showItemUpsertDialog(formControl),
                       icon: const Icon(Icons.edit),
                     ),
                   ),

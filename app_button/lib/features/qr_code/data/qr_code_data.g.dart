@@ -9,11 +9,7 @@ part of 'qr_code_data.dart';
 // **************************************************************************
 
 QrCodeOrganizationData _$QrCodeOrganizationDataFromJson(
-        Map<String, dynamic> json) =>
-    QrCodeOrganizationData(
-      organizationId: json['organizationId'] as String,
-    );
+  Map<String, dynamic> json,
+) => QrCodeOrganizationData(organizationId: json['organizationId'] as String);
 
-const _$_QrCodeGroupEnumMap = {
-  _QrCodeGroup.organizations: 'organizations',
-};
+const _$_QrCodeGroupEnumMap = {_QrCodeGroup.organizations: 'organizations'};

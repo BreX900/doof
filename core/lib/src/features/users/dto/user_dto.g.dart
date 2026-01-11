@@ -10,6 +10,7 @@ part of 'user_dto.dart';
 
 mixin _$AuthUserDto {
   AuthUserDto get _self => this as AuthUserDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -17,6 +18,7 @@ mixin _$AuthUserDto {
           runtimeType == other.runtimeType &&
           _self.id == other.id &&
           _self.phoneNumber == other.phoneNumber;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -26,14 +28,16 @@ mixin _$AuthUserDto {
   }
 
   @override
-  String toString() => (ClassToString('AuthUserDto')
-        ..add('id', _self.id)
-        ..add('phoneNumber', _self.phoneNumber))
-      .toString();
+  String toString() =>
+      (ClassToString('AuthUserDto')
+            ..add('id', _self.id)
+            ..add('phoneNumber', _self.phoneNumber))
+          .toString();
 }
 
 mixin _$UserDto {
   UserDto get _self => this as UserDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -42,6 +46,7 @@ mixin _$UserDto {
           _self.id == other.id &&
           _self.displayName == other.displayName &&
           _self.phoneNumber == other.phoneNumber;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -52,11 +57,12 @@ mixin _$UserDto {
   }
 
   @override
-  String toString() => (ClassToString('UserDto')
-        ..add('id', _self.id)
-        ..add('displayName', _self.displayName)
-        ..add('phoneNumber', _self.phoneNumber))
-      .toString();
+  String toString() =>
+      (ClassToString('UserDto')
+            ..add('id', _self.id)
+            ..add('displayName', _self.displayName)
+            ..add('phoneNumber', _self.phoneNumber))
+          .toString();
 }
 
 // **************************************************************************
@@ -64,13 +70,13 @@ mixin _$UserDto {
 // **************************************************************************
 
 UserDto _$UserDtoFromJson(Map<String, dynamic> json) => UserDto(
-      id: json['id'] as String,
-      displayName: json['displayName'] as String?,
-      phoneNumber: json['phoneNumber'] as String?,
-    );
+  id: json['id'] as String,
+  displayName: json['displayName'] as String?,
+  phoneNumber: json['phoneNumber'] as String?,
+);
 
 Map<String, dynamic> _$UserDtoToJson(UserDto instance) => <String, dynamic>{
-      'id': instance.id,
-      'displayName': instance.displayName,
-      'phoneNumber': instance.phoneNumber,
-    };
+  'id': instance.id,
+  'displayName': instance.displayName,
+  'phoneNumber': instance.phoneNumber,
+};

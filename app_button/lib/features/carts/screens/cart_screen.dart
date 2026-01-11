@@ -44,8 +44,7 @@ class _CartScreenState extends SourceConsumerState<CartScreen> {
   get _provider => _stateProvider(widget.organizationId);
 
   late final _removeItem = ref.mutation(
-    (ref, (String cartId, String itemId) args) async =>
-        CartItemsProviders.remove(ref, args.$1, args.$2),
+    (ref, (String cartId, String itemId) args) => CartItemsProviders.remove(ref, args.$1, args.$2),
     onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
   );
 

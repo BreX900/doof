@@ -9,145 +9,174 @@ part of 'routes.dart';
 // **************************************************************************
 
 List<RouteBase> get $appRoutes => [
-      $qrCodeRoute,
-      $servicesRoute,
-      $signInPhoneNumberRoute,
-      $storeRoute,
-    ];
+  $qrCodeRoute,
+  $servicesRoute,
+  $signInPhoneNumberRoute,
+  $storeRoute,
+];
 
-RouteBase get $qrCodeRoute => GoRouteData.$route(
-      path: '/',
-      factory: $QrCodeRouteExtension._fromState,
-    );
+RouteBase get $qrCodeRoute =>
+    GoRouteData.$route(path: '/', factory: $QrCodeRoute._fromState);
 
-extension $QrCodeRouteExtension on QrCodeRoute {
+mixin $QrCodeRoute on GoRouteData {
   static QrCodeRoute _fromState(GoRouterState state) => const QrCodeRoute();
 
-  String get location => GoRouteData.$location(
-        '/',
-      );
+  @override
+  String get location => GoRouteData.$location('/');
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
 RouteBase get $servicesRoute => GoRouteData.$route(
-      path: '/services/:organizationId',
-      factory: $ServicesRouteExtension._fromState,
-      routes: [
-        GoRouteData.$route(
-          path: 'table-service',
-          factory: $TicketCreateRouteExtension._fromState,
-        ),
-        GoRouteData.$route(
-          path: 'table-service-requested',
-          factory: $TicketCreatedRouteExtension._fromState,
-        ),
-      ],
-    );
+  path: '/services/:organizationId',
+  factory: $ServicesRoute._fromState,
+  routes: [
+    GoRouteData.$route(
+      path: 'table-service',
+      factory: $TicketCreateRoute._fromState,
+    ),
+    GoRouteData.$route(
+      path: 'table-service-requested',
+      factory: $TicketCreatedRoute._fromState,
+    ),
+  ],
+);
 
-extension $ServicesRouteExtension on ServicesRoute {
-  static ServicesRoute _fromState(GoRouterState state) => ServicesRoute(
-        state.pathParameters['organizationId']!,
-      );
+mixin $ServicesRoute on GoRouteData {
+  static ServicesRoute _fromState(GoRouterState state) =>
+      ServicesRoute(state.pathParameters['organizationId']!);
 
+  ServicesRoute get _self => this as ServicesRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/services/${Uri.encodeComponent(organizationId)}',
-      );
+    '/services/${Uri.encodeComponent(_self.organizationId)}',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $TicketCreateRouteExtension on TicketCreateRoute {
-  static TicketCreateRoute _fromState(GoRouterState state) => TicketCreateRoute(
-        state.pathParameters['organizationId']!,
-      );
+mixin $TicketCreateRoute on GoRouteData {
+  static TicketCreateRoute _fromState(GoRouterState state) =>
+      TicketCreateRoute(state.pathParameters['organizationId']!);
 
+  TicketCreateRoute get _self => this as TicketCreateRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/services/${Uri.encodeComponent(organizationId)}/table-service',
-      );
+    '/services/${Uri.encodeComponent(_self.organizationId)}/table-service',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $TicketCreatedRouteExtension on TicketCreatedRoute {
+mixin $TicketCreatedRoute on GoRouteData {
   static TicketCreatedRoute _fromState(GoRouterState state) =>
-      TicketCreatedRoute(
-        state.pathParameters['organizationId']!,
-      );
+      TicketCreatedRoute(state.pathParameters['organizationId']!);
 
+  TicketCreatedRoute get _self => this as TicketCreatedRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/services/${Uri.encodeComponent(organizationId)}/table-service-requested',
-      );
+    '/services/${Uri.encodeComponent(_self.organizationId)}/table-service-requested',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
 RouteBase get $signInPhoneNumberRoute => GoRouteData.$route(
-      path: '/sign-in',
-      factory: $SignInPhoneNumberRouteExtension._fromState,
-    );
+  path: '/sign-in',
+  factory: $SignInPhoneNumberRoute._fromState,
+);
 
-extension $SignInPhoneNumberRouteExtension on SignInPhoneNumberRoute {
+mixin $SignInPhoneNumberRoute on GoRouteData {
   static SignInPhoneNumberRoute _fromState(GoRouterState state) =>
       SignInPhoneNumberRoute(
         organizationId: state.uri.queryParameters['organization-id'],
         verificationId: state.uri.queryParameters['verification-id'],
-        shouldPop: _$convertMapValue(
-                'should-pop', state.uri.queryParameters, _$boolConverter) ??
+        shouldPop:
+            _$convertMapValue(
+              'should-pop',
+              state.uri.queryParameters,
+              _$boolConverter,
+            ) ??
             false,
       );
 
-  String get location => GoRouteData.$location(
-        '/sign-in',
-        queryParams: {
-          if (organizationId != null) 'organization-id': organizationId,
-          if (verificationId != null) 'verification-id': verificationId,
-          if (shouldPop != false) 'should-pop': shouldPop.toString(),
-        },
-      );
+  SignInPhoneNumberRoute get _self => this as SignInPhoneNumberRoute;
 
+  @override
+  String get location => GoRouteData.$location(
+    '/sign-in',
+    queryParams: {
+      if (_self.organizationId != null) 'organization-id': _self.organizationId,
+      if (_self.verificationId != null) 'verification-id': _self.verificationId,
+      if (_self.shouldPop != false) 'should-pop': _self.shouldPop.toString(),
+    },
+  );
+
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
 T? _$convertMapValue<T>(
   String key,
   Map<String, String> map,
-  T Function(String) converter,
+  T? Function(String) converter,
 ) {
   final value = map[key];
   return value == null ? null : converter(value);
@@ -165,181 +194,223 @@ bool _$boolConverter(String value) {
 }
 
 RouteBase get $storeRoute => ShellRouteData.$route(
-      factory: $StoreRouteExtension._fromState,
+  factory: $StoreRouteExtension._fromState,
+  routes: [
+    GoRouteData.$route(
+      path: '/store/:organizationId/products',
+      factory: $ProductsRoute._fromState,
       routes: [
         GoRouteData.$route(
-          path: '/store/:organizationId/products',
-          factory: $ProductsRouteExtension._fromState,
-          routes: [
-            GoRouteData.$route(
-              path: ':productId',
-              factory: $ProductRouteExtension._fromState,
-            ),
-          ],
-        ),
-        GoRouteData.$route(
-          path: '/store/:organizationId/cart',
-          factory: $CartRouteExtension._fromState,
-          routes: [
-            GoRouteData.$route(
-              path: 'checkout',
-              factory: $CartCheckoutRouteExtension._fromState,
-            ),
-            GoRouteData.$route(
-              path: ':itemId',
-              factory: $CartItemRouteExtension._fromState,
-            ),
-          ],
-        ),
-        GoRouteData.$route(
-          path: '/store/:organizationId/orders',
-          factory: $OrdersRouteExtension._fromState,
-          routes: [
-            GoRouteData.$route(
-              path: ':orderId',
-              factory: $OrderItemsRouteExtension._fromState,
-            ),
-          ],
+          path: ':productId',
+          factory: $ProductRoute._fromState,
         ),
       ],
-    );
+    ),
+    GoRouteData.$route(
+      path: '/store/:organizationId/cart',
+      factory: $CartRoute._fromState,
+      routes: [
+        GoRouteData.$route(
+          path: 'checkout',
+          factory: $CartCheckoutRoute._fromState,
+        ),
+        GoRouteData.$route(path: ':itemId', factory: $CartItemRoute._fromState),
+      ],
+    ),
+    GoRouteData.$route(
+      path: '/store/:organizationId/orders',
+      factory: $OrdersRoute._fromState,
+      routes: [
+        GoRouteData.$route(
+          path: ':orderId',
+          factory: $OrderItemsRoute._fromState,
+        ),
+      ],
+    ),
+  ],
+);
 
 extension $StoreRouteExtension on StoreRoute {
   static StoreRoute _fromState(GoRouterState state) => const StoreRoute();
 }
 
-extension $ProductsRouteExtension on ProductsRoute {
-  static ProductsRoute _fromState(GoRouterState state) => ProductsRoute(
-        state.pathParameters['organizationId']!,
-      );
+mixin $ProductsRoute on GoRouteData {
+  static ProductsRoute _fromState(GoRouterState state) =>
+      ProductsRoute(state.pathParameters['organizationId']!);
 
+  ProductsRoute get _self => this as ProductsRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/store/${Uri.encodeComponent(organizationId)}/products',
-      );
+    '/store/${Uri.encodeComponent(_self.organizationId)}/products',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $ProductRouteExtension on ProductRoute {
+mixin $ProductRoute on GoRouteData {
   static ProductRoute _fromState(GoRouterState state) => ProductRoute(
-        state.pathParameters['organizationId']!,
-        state.pathParameters['productId']!,
-      );
+    state.pathParameters['organizationId']!,
+    state.pathParameters['productId']!,
+  );
 
+  ProductRoute get _self => this as ProductRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/store/${Uri.encodeComponent(organizationId)}/products/${Uri.encodeComponent(productId)}',
-      );
+    '/store/${Uri.encodeComponent(_self.organizationId)}/products/${Uri.encodeComponent(_self.productId)}',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $CartRouteExtension on CartRoute {
-  static CartRoute _fromState(GoRouterState state) => CartRoute(
-        state.pathParameters['organizationId']!,
-      );
+mixin $CartRoute on GoRouteData {
+  static CartRoute _fromState(GoRouterState state) =>
+      CartRoute(state.pathParameters['organizationId']!);
 
+  CartRoute get _self => this as CartRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/store/${Uri.encodeComponent(organizationId)}/cart',
-      );
+    '/store/${Uri.encodeComponent(_self.organizationId)}/cart',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $CartCheckoutRouteExtension on CartCheckoutRoute {
-  static CartCheckoutRoute _fromState(GoRouterState state) => CartCheckoutRoute(
-        state.pathParameters['organizationId']!,
-      );
+mixin $CartCheckoutRoute on GoRouteData {
+  static CartCheckoutRoute _fromState(GoRouterState state) =>
+      CartCheckoutRoute(state.pathParameters['organizationId']!);
 
+  CartCheckoutRoute get _self => this as CartCheckoutRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/store/${Uri.encodeComponent(organizationId)}/cart/checkout',
-      );
+    '/store/${Uri.encodeComponent(_self.organizationId)}/cart/checkout',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $CartItemRouteExtension on CartItemRoute {
+mixin $CartItemRoute on GoRouteData {
   static CartItemRoute _fromState(GoRouterState state) => CartItemRoute(
-        state.pathParameters['organizationId']!,
-        state.pathParameters['itemId']!,
-      );
+    state.pathParameters['organizationId']!,
+    state.pathParameters['itemId']!,
+  );
 
+  CartItemRoute get _self => this as CartItemRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/store/${Uri.encodeComponent(organizationId)}/cart/${Uri.encodeComponent(itemId)}',
-      );
+    '/store/${Uri.encodeComponent(_self.organizationId)}/cart/${Uri.encodeComponent(_self.itemId)}',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $OrdersRouteExtension on OrdersRoute {
-  static OrdersRoute _fromState(GoRouterState state) => OrdersRoute(
-        state.pathParameters['organizationId']!,
-      );
+mixin $OrdersRoute on GoRouteData {
+  static OrdersRoute _fromState(GoRouterState state) =>
+      OrdersRoute(state.pathParameters['organizationId']!);
 
+  OrdersRoute get _self => this as OrdersRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/store/${Uri.encodeComponent(organizationId)}/orders',
-      );
+    '/store/${Uri.encodeComponent(_self.organizationId)}/orders',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $OrderItemsRouteExtension on OrderItemsRoute {
+mixin $OrderItemsRoute on GoRouteData {
   static OrderItemsRoute _fromState(GoRouterState state) => OrderItemsRoute(
-        state.pathParameters['organizationId']!,
-        state.pathParameters['orderId']!,
-      );
+    state.pathParameters['organizationId']!,
+    state.pathParameters['orderId']!,
+  );
 
+  OrderItemsRoute get _self => this as OrderItemsRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/store/${Uri.encodeComponent(organizationId)}/orders/${Uri.encodeComponent(orderId)}',
-      );
+    '/store/${Uri.encodeComponent(_self.organizationId)}/orders/${Uri.encodeComponent(_self.orderId)}',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }

@@ -35,7 +35,7 @@ class ProductsRepository {
   }
 
   Future<IList<ProductDto>> fetchAll(String organizationId) async {
-    final snapshot = await _ref(organizationId).orderBy(ProductDto.fields.title).get();
+    final snapshot = await _ref(organizationId).orderBy(ProductDtoFields.title).get();
     return snapshot.docs.map((e) => e.data()).toIList();
   }
 

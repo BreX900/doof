@@ -10,6 +10,7 @@ part of 'cart_dto.dart';
 
 mixin _$CartDto {
   CartDto get _self => this as CartDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -20,6 +21,7 @@ mixin _$CartDto {
           _self.membersIds == other.membersIds &&
           _self.isPublic == other.isPublic &&
           _self.title == other.title;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -32,17 +34,24 @@ mixin _$CartDto {
   }
 
   @override
-  String toString() => (ClassToString('CartDto')
-        ..add('id', _self.id)
-        ..add('ownerId', _self.ownerId)
-        ..add('membersIds', _self.membersIds)
-        ..add('isPublic', _self.isPublic)
-        ..add('title', _self.title))
-      .toString();
+  String toString() =>
+      (ClassToString('CartDto')
+            ..add('id', _self.id)
+            ..add('ownerId', _self.ownerId)
+            ..add('membersIds', _self.membersIds)
+            ..add('isPublic', _self.isPublic)
+            ..add('title', _self.title))
+          .toString();
 }
 
 mixin _$CartItemDto {
   CartItemDto get _self => this as CartItemDto;
+
+  CartItemDto change(void Function(CartItemDtoChanges c) updates) =>
+      (toChanges()..update(updates)).build();
+
+  CartItemDtoChanges toChanges() => CartItemDtoChanges._(_self);
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -55,6 +64,7 @@ mixin _$CartItemDto {
           _self.ingredientsRemoved == other.ingredientsRemoved &&
           _self.ingredientsAdded == other.ingredientsAdded &&
           _self.levels == other.levels;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -69,55 +79,50 @@ mixin _$CartItemDto {
   }
 
   @override
-  String toString() => (ClassToString('CartItemDto')
-        ..add('id', _self.id)
-        ..add('productId', _self.productId)
-        ..add('quantity', _self.quantity)
-        ..add('buyers', _self.buyers)
-        ..add('ingredientsRemoved', _self.ingredientsRemoved)
-        ..add('ingredientsAdded', _self.ingredientsAdded)
-        ..add('levels', _self.levels))
-      .toString();
-  CartItemDto change(void Function(_CartItemDtoChanges c) updates) =>
-      (_CartItemDtoChanges._(_self)..update(updates)).build();
-  _CartItemDtoChanges toChanges() => _CartItemDtoChanges._(_self);
+  String toString() =>
+      (ClassToString('CartItemDto')
+            ..add('id', _self.id)
+            ..add('productId', _self.productId)
+            ..add('quantity', _self.quantity)
+            ..add('buyers', _self.buyers)
+            ..add('ingredientsRemoved', _self.ingredientsRemoved)
+            ..add('ingredientsAdded', _self.ingredientsAdded)
+            ..add('levels', _self.levels))
+          .toString();
 }
 
-class _CartItemDtoChanges {
-  _CartItemDtoChanges._(CartItemDto dc)
-      : id = dc.id,
-        productId = dc.productId,
-        quantity = dc.quantity,
-        buyers = dc.buyers,
-        ingredientsRemoved = dc.ingredientsRemoved,
-        ingredientsAdded = dc.ingredientsAdded,
-        levels = dc.levels;
+class CartItemDtoChanges {
+  CartItemDtoChanges._(this._original);
 
-  String id;
+  final CartItemDto _original;
 
-  String productId;
+  late String id = _original.id;
 
-  int quantity;
+  late String productId = _original.productId;
 
-  IList<String> buyers;
+  late int quantity = _original.quantity;
 
-  IList<String> ingredientsRemoved;
+  late IList<String> buyers = _original.buyers;
 
-  IList<String> ingredientsAdded;
+  late IList<String> ingredientsRemoved = _original.ingredientsRemoved;
 
-  IMap<String, double> levels;
+  late IList<String> ingredientsAdded = _original.ingredientsAdded;
 
-  void update(void Function(_CartItemDtoChanges c) updates) => updates(this);
+  late IMap<String, double> levels = _original.levels;
 
-  CartItemDto build() => CartItemDto(
-        id: id,
-        productId: productId,
-        quantity: quantity,
-        buyers: buyers,
-        ingredientsRemoved: ingredientsRemoved,
-        ingredientsAdded: ingredientsAdded,
-        levels: levels,
-      );
+  void update(void Function(CartItemDtoChanges c) updates) => updates(this);
+
+  CartItemDto build() {
+    return CartItemDto(
+      id: id,
+      productId: productId,
+      quantity: quantity,
+      buyers: buyers,
+      ingredientsRemoved: ingredientsRemoved,
+      ingredientsAdded: ingredientsAdded,
+      levels: levels,
+    );
+  }
 }
 
 // **************************************************************************
@@ -125,13 +130,15 @@ class _CartItemDtoChanges {
 // **************************************************************************
 
 CartDto _$CartDtoFromJson(Map<String, dynamic> json) => CartDto(
-      id: json['id'] as String,
-      ownerId: json['ownerId'] as String,
-      membersIds: IList<String>.fromJson(
-          json['membersIds'], (value) => value as String),
-      isPublic: json['isPublic'] as bool,
-      title: json['title'] as String?,
-    );
+  id: json['id'] as String,
+  ownerId: json['ownerId'] as String,
+  membersIds: IList<String>.fromJson(
+    json['membersIds'],
+    (value) => value as String,
+  ),
+  isPublic: json['isPublic'] as bool,
+  title: json['title'] as String?,
+);
 
 abstract final class _$CartDtoJsonKeys {
   static const String id = 'id';
@@ -142,47 +149,41 @@ abstract final class _$CartDtoJsonKeys {
 }
 
 Map<String, dynamic> _$CartDtoToJson(CartDto instance) => <String, dynamic>{
-      'id': instance.id,
-      'ownerId': instance.ownerId,
-      'membersIds': instance.membersIds.toJson(
-        (value) => value,
-      ),
-      'isPublic': instance.isPublic,
-      'title': instance.title,
-    };
+  'id': instance.id,
+  'ownerId': instance.ownerId,
+  'membersIds': instance.membersIds.toJson((value) => value),
+  'isPublic': instance.isPublic,
+  'title': instance.title,
+};
 
 CartItemDto _$CartItemDtoFromJson(Map<String, dynamic> json) => CartItemDto(
-      id: json['id'] as String,
-      productId: json['productId'] as String,
-      quantity: (json['quantity'] as num).toInt(),
-      buyers:
-          IList<String>.fromJson(json['buyers'], (value) => value as String),
-      ingredientsRemoved: IList<String>.fromJson(
-          json['ingredientsRemoved'], (value) => value as String),
-      ingredientsAdded: IList<String>.fromJson(
-          json['ingredientsAdded'], (value) => value as String),
-      levels: IMap<String, double>.fromJson(
-          json['levels'] as Map<String, dynamic>,
-          (value) => value as String,
-          (value) => (value as num).toDouble()),
-    );
+  id: json['id'] as String,
+  productId: json['productId'] as String,
+  quantity: (json['quantity'] as num).toInt(),
+  buyers: IList<String>.fromJson(json['buyers'], (value) => value as String),
+  ingredientsRemoved: IList<String>.fromJson(
+    json['ingredientsRemoved'],
+    (value) => value as String,
+  ),
+  ingredientsAdded: IList<String>.fromJson(
+    json['ingredientsAdded'],
+    (value) => value as String,
+  ),
+  levels: IMap<String, double>.fromJson(
+    json['levels'] as Map<String, dynamic>,
+    (value) => value as String,
+    (value) => (value as num).toDouble(),
+  ),
+);
 
-Map<String, dynamic> _$CartItemDtoToJson(CartItemDto instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'productId': instance.productId,
-      'quantity': instance.quantity,
-      'buyers': instance.buyers.toJson(
-        (value) => value,
-      ),
-      'ingredientsRemoved': instance.ingredientsRemoved.toJson(
-        (value) => value,
-      ),
-      'ingredientsAdded': instance.ingredientsAdded.toJson(
-        (value) => value,
-      ),
-      'levels': instance.levels.toJson(
-        (value) => value,
-        (value) => value,
-      ),
-    };
+Map<String, dynamic> _$CartItemDtoToJson(
+  CartItemDto instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'productId': instance.productId,
+  'quantity': instance.quantity,
+  'buyers': instance.buyers.toJson((value) => value),
+  'ingredientsRemoved': instance.ingredientsRemoved.toJson((value) => value),
+  'ingredientsAdded': instance.ingredientsAdded.toJson((value) => value),
+  'levels': instance.levels.toJson((value) => value, (value) => value),
+};

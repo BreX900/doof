@@ -10,6 +10,7 @@ part of 'category_dto.dart';
 
 mixin _$CategoryDto {
   CategoryDto get _self => this as CategoryDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -18,6 +19,7 @@ mixin _$CategoryDto {
           _self.id == other.id &&
           _self.weight == other.weight &&
           _self.title == other.title;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -28,11 +30,12 @@ mixin _$CategoryDto {
   }
 
   @override
-  String toString() => (ClassToString('CategoryDto')
-        ..add('id', _self.id)
-        ..add('weight', _self.weight)
-        ..add('title', _self.title))
-      .toString();
+  String toString() =>
+      (ClassToString('CategoryDto')
+            ..add('id', _self.id)
+            ..add('weight', _self.weight)
+            ..add('title', _self.title))
+          .toString();
 }
 
 // **************************************************************************
@@ -40,10 +43,10 @@ mixin _$CategoryDto {
 // **************************************************************************
 
 CategoryDto _$CategoryDtoFromJson(Map<String, dynamic> json) => CategoryDto(
-      id: json['id'] as String,
-      weight: (json['weight'] as num).toInt(),
-      title: json['title'] as String,
-    );
+  id: json['id'] as String,
+  weight: (json['weight'] as num).toInt(),
+  title: json['title'] as String,
+);
 
 abstract final class _$CategoryDtoJsonKeys {
   static const String id = 'id';

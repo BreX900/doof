@@ -10,6 +10,7 @@ part of 'product_model.dart';
 
 mixin _$ProductModel {
   ProductModel get _self => this as ProductModel;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -25,6 +26,7 @@ mixin _$ProductModel {
           _self.removableIngredients == other.removableIngredients &&
           _self.addableIngredients == other.addableIngredients &&
           _self.levels == other.levels;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -42,16 +44,17 @@ mixin _$ProductModel {
   }
 
   @override
-  String toString() => (ClassToString('ProductModel')
-        ..add('id', _self.id)
-        ..add('category', _self.category)
-        ..add('imageUrl', _self.imageUrl)
-        ..add('title', _self.title)
-        ..add('description', _self.description)
-        ..add('price', _self.price)
-        ..add('ingredients', _self.ingredients)
-        ..add('removableIngredients', _self.removableIngredients)
-        ..add('addableIngredients', _self.addableIngredients)
-        ..add('levels', _self.levels))
-      .toString();
+  String toString() =>
+      (ClassToString('ProductModel')
+            ..add('id', _self.id)
+            ..add('category', _self.category)
+            ..add('imageUrl', _self.imageUrl)
+            ..add('title', _self.title)
+            ..add('description', _self.description)
+            ..add('price', _self.price)
+            ..add('ingredients', _self.ingredients)
+            ..add('removableIngredients', _self.removableIngredients)
+            ..add('addableIngredients', _self.addableIngredients)
+            ..add('levels', _self.levels))
+          .toString();
 }

@@ -25,7 +25,7 @@ import 'package:mek/mek.dart';
 part 'routes.g.dart';
 
 @TypedGoRoute<QrCodeRoute>(path: '/')
-class QrCodeRoute extends GoRouteData {
+class QrCodeRoute extends GoRouteData with $QrCodeRoute {
   const QrCodeRoute();
 
   @override
@@ -37,14 +37,13 @@ class QrCodeRoute extends GoRouteData {
   }
 }
 
-@TypedGoRoute<ServicesRoute>(
-  path: '/services/:organizationId',
-  routes: [
-    TypedGoRoute<TicketCreateRoute>(path: 'table-service'),
-    TypedGoRoute<TicketCreatedRoute>(path: 'table-service-requested'),
-  ],
-)
-class ServicesRoute extends GoRouteData {
+// dart format off
+@TypedGoRoute<ServicesRoute>(path: '/services/:organizationId', routes: [
+  TypedGoRoute<TicketCreateRoute>(path: 'table-service'),
+  TypedGoRoute<TicketCreatedRoute>(path: 'table-service-requested'),
+])
+// dart format on
+class ServicesRoute extends GoRouteData with $ServicesRoute {
   final String organizationId;
 
   const ServicesRoute(this.organizationId);
@@ -58,7 +57,7 @@ class ServicesRoute extends GoRouteData {
   }
 }
 
-class TicketCreateRoute extends GoRouteData {
+class TicketCreateRoute extends GoRouteData with $TicketCreateRoute {
   final String organizationId;
 
   const TicketCreateRoute(this.organizationId);
@@ -72,7 +71,7 @@ class TicketCreateRoute extends GoRouteData {
   }
 }
 
-class TicketCreatedRoute extends GoRouteData {
+class TicketCreatedRoute extends GoRouteData with $TicketCreatedRoute {
   final String organizationId;
 
   const TicketCreatedRoute(this.organizationId);
@@ -87,7 +86,7 @@ class TicketCreatedRoute extends GoRouteData {
 }
 
 @TypedGoRoute<SignInPhoneNumberRoute>(path: '/sign-in')
-class SignInPhoneNumberRoute extends GoRouteData {
+class SignInPhoneNumberRoute extends GoRouteData with $SignInPhoneNumberRoute {
   final String? organizationId;
   final String? verificationId;
   final bool shouldPop;
@@ -107,25 +106,20 @@ class SignInPhoneNumberRoute extends GoRouteData {
   }
 }
 
-@TypedShellRoute<StoreRoute>(
-  routes: [
-    TypedGoRoute<ProductsRoute>(
-      path: '/store/:organizationId/products',
-      routes: [TypedGoRoute<ProductRoute>(path: ':productId')],
-    ),
-    TypedGoRoute<CartRoute>(
-      path: '/store/:organizationId/cart',
-      routes: [
-        TypedGoRoute<CartCheckoutRoute>(path: 'checkout'),
-        TypedGoRoute<CartItemRoute>(path: ':itemId'),
-      ],
-    ),
-    TypedGoRoute<OrdersRoute>(
-      path: '/store/:organizationId/orders',
-      routes: [TypedGoRoute<OrderItemsRoute>(path: ':orderId')],
-    ),
-  ],
-)
+// dart format off
+@TypedShellRoute<StoreRoute>(routes: [
+  TypedGoRoute<ProductsRoute>(path: '/store/:organizationId/products', routes: [
+    TypedGoRoute<ProductRoute>(path: ':productId'),
+  ]),
+  TypedGoRoute<CartRoute>(path: '/store/:organizationId/cart', routes: [
+    TypedGoRoute<CartCheckoutRoute>(path: 'checkout'),
+    TypedGoRoute<CartItemRoute>(path: ':itemId'),
+  ]),
+  TypedGoRoute<OrdersRoute>(path: '/store/:organizationId/orders', routes: [
+    TypedGoRoute<OrderItemsRoute>(path: ':orderId'),
+  ]),
+])
+// dart format on
 class StoreRoute extends ShellRouteData {
   const StoreRoute();
 
@@ -146,7 +140,7 @@ class StoreRoute extends ShellRouteData {
   }
 }
 
-class ProductsRoute extends GoRouteData {
+class ProductsRoute extends GoRouteData with $ProductsRoute {
   final String organizationId;
 
   const ProductsRoute(this.organizationId);
@@ -164,7 +158,7 @@ class ProductsRoute extends GoRouteData {
   }
 }
 
-class ProductRoute extends GoRouteData {
+class ProductRoute extends GoRouteData with $ProductRoute {
   final String organizationId;
   final String productId;
 
@@ -180,7 +174,7 @@ class ProductRoute extends GoRouteData {
   }
 }
 
-class CartRoute extends GoRouteData {
+class CartRoute extends GoRouteData with $CartRoute {
   final String organizationId;
 
   const CartRoute(this.organizationId);
@@ -198,7 +192,7 @@ class CartRoute extends GoRouteData {
   }
 }
 
-class CartItemRoute extends GoRouteData {
+class CartItemRoute extends GoRouteData with $CartItemRoute {
   final String organizationId;
   final String itemId;
 
@@ -214,7 +208,7 @@ class CartItemRoute extends GoRouteData {
   }
 }
 
-class CartCheckoutRoute extends GoRouteData {
+class CartCheckoutRoute extends GoRouteData with $CartCheckoutRoute {
   final String organizationId;
 
   const CartCheckoutRoute(this.organizationId);
@@ -228,7 +222,7 @@ class CartCheckoutRoute extends GoRouteData {
   }
 }
 
-class OrdersRoute extends GoRouteData {
+class OrdersRoute extends GoRouteData with $OrdersRoute {
   final String organizationId;
 
   const OrdersRoute(this.organizationId);
@@ -246,7 +240,7 @@ class OrdersRoute extends GoRouteData {
   }
 }
 
-class OrderItemsRoute extends GoRouteData {
+class OrderItemsRoute extends GoRouteData with $OrderItemsRoute {
   final String organizationId;
   final String orderId;
 

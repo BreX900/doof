@@ -17,6 +17,7 @@ import 'package:mek_gasol/shared/navigation/areas/user_area.dart' deferred as us
 
 part 'app_routes.g.dart';
 
+// dart format off
 @TypedStatefulShellRoute<UserAreaRoute>(branches: [
   TypedStatefulShellBranch(routes: [
     TypedGoRoute<InvoicesRoute>(path: '/invoices', routes: [
@@ -45,6 +46,7 @@ part 'app_routes.g.dart';
     ]),
   ]),
 ])
+// dart format on
 class UserAreaRoute extends StatefulShellRouteData {
   const UserAreaRoute();
 
@@ -58,10 +60,8 @@ class UserAreaRoute extends StatefulShellRouteData {
       loader: user_area.loadLibrary,
       builder: (context) => user_area.UserArea(
         destinationIndex: navigationShell.currentIndex,
-        onTapDestination: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: navigationShell.currentIndex == index,
-        ),
+        onTapDestination: (index) =>
+            navigationShell.goBranch(index, initialLocation: navigationShell.currentIndex == index),
         child: navigationShell,
       ),
     );
@@ -70,7 +70,7 @@ class UserAreaRoute extends StatefulShellRouteData {
 
 /// ==================== PRODUCTS
 
-class ProductsRoute extends GoRouteData {
+class ProductsRoute extends GoRouteData with $ProductsRoute {
   const ProductsRoute();
 
   @override
@@ -82,8 +82,9 @@ class ProductsRoute extends GoRouteData {
   }
 }
 
-class ProductRoute extends GoRouteData {
+class ProductRoute extends GoRouteData with $ProductRoute {
   final String productId;
+
   // TODO: Pass a String ids
   final (OrderModel, OrderItemModel)? $extra;
 
@@ -104,7 +105,7 @@ class ProductRoute extends GoRouteData {
 
 /// ==================== CART
 
-class CartsRoute extends GoRouteData {
+class CartsRoute extends GoRouteData with $CartsRoute {
   const CartsRoute();
 
   @override
@@ -128,7 +129,7 @@ class CartsRoute extends GoRouteData {
 //   }
 // }
 
-class CartItemRoute extends GoRouteData {
+class CartItemRoute extends GoRouteData with $CartItemRoute {
   final String cartItemId;
 
   const CartItemRoute(this.cartItemId);
@@ -142,7 +143,7 @@ class CartItemRoute extends GoRouteData {
   }
 }
 
-class CartStatsRoute extends GoRouteData {
+class CartStatsRoute extends GoRouteData with $CartStatsRoute {
   const CartStatsRoute();
 
   @override
@@ -156,7 +157,7 @@ class CartStatsRoute extends GoRouteData {
 
 /// ==================== ORDER
 
-class OrdersRoute extends GoRouteData {
+class OrdersRoute extends GoRouteData with $OrdersRoute {
   const OrdersRoute();
 
   @override
@@ -168,7 +169,7 @@ class OrdersRoute extends GoRouteData {
   }
 }
 
-class OrderCheckoutRoute extends GoRouteData {
+class OrderCheckoutRoute extends GoRouteData with $OrderCheckoutRoute {
   const OrderCheckoutRoute();
 
   @override
@@ -180,7 +181,7 @@ class OrderCheckoutRoute extends GoRouteData {
   }
 }
 
-class OrderRoute extends GoRouteData {
+class OrderRoute extends GoRouteData with $OrderRoute {
   final String orderId;
   final bool isNew;
 
@@ -195,7 +196,7 @@ class OrderRoute extends GoRouteData {
   }
 }
 
-class OrderStatRoute extends GoRouteData {
+class OrderStatRoute extends GoRouteData with $OrderStatRoute {
   final String orderId;
 
   const OrderStatRoute(this.orderId);
@@ -211,7 +212,7 @@ class OrderStatRoute extends GoRouteData {
 
 /// ==================== INVOICES
 
-class InvoicesRoute extends GoRouteData {
+class InvoicesRoute extends GoRouteData with $InvoicesRoute {
   const InvoicesRoute();
 
   @override
@@ -223,7 +224,7 @@ class InvoicesRoute extends GoRouteData {
   }
 }
 
-class InvoiceRoute extends GoRouteData {
+class InvoiceRoute extends GoRouteData with $InvoiceRoute {
   final String invoiceId;
 
   const InvoiceRoute(this.invoiceId);
@@ -237,7 +238,7 @@ class InvoiceRoute extends GoRouteData {
   }
 }
 
-class InvoiceCreateRoute extends GoRouteData {
+class InvoiceCreateRoute extends GoRouteData with $InvoiceCreateRoute {
   const InvoiceCreateRoute();
 
   @override
@@ -249,7 +250,7 @@ class InvoiceCreateRoute extends GoRouteData {
   }
 }
 
-class OrderInvoiceRoute extends GoRouteData {
+class OrderInvoiceRoute extends GoRouteData with $OrderInvoiceRoute {
   final String orderId;
 
   const OrderInvoiceRoute(this.orderId);

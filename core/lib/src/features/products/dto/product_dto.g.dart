@@ -59,35 +59,6 @@ mixin _$ProductDto {
           .toString();
 }
 
-class ProductDtoFields {
-  const ProductDtoFields([this._path = '']);
-
-  final String _path;
-
-  String get id => '${_path}id';
-
-  String get categoryId => '${_path}categoryId';
-
-  String get imageUrl => '${_path}imageUrl';
-
-  String get title => '${_path}title';
-
-  String get description => '${_path}description';
-
-  String get price => '${_path}price';
-
-  String get ingredients => '${_path}ingredients';
-
-  String get removableIngredients => '${_path}removableIngredients';
-
-  String get addableIngredients => '${_path}addableIngredients';
-
-  String get levels => '${_path}levels';
-
-  @override
-  String toString() => _path.isEmpty ? 'ProductDtoFields()' : _path;
-}
-
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
@@ -99,7 +70,10 @@ ProductDto _$ProductDtoFromJson(Map<String, dynamic> json) => ProductDto(
   title: json['title'] as String,
   description: json['description'] as String,
   price: Fixed.fromJson(json['price'] as String),
-  ingredients: IList<String>.fromJson(json['ingredients'], (value) => value as String),
+  ingredients: IList<String>.fromJson(
+    json['ingredients'],
+    (value) => value as String,
+  ),
   removableIngredients: IList<String>.fromJson(
     json['removableIngredients'],
     (value) => value as String,
@@ -111,7 +85,22 @@ ProductDto _$ProductDtoFromJson(Map<String, dynamic> json) => ProductDto(
   levels: IList<String>.fromJson(json['levels'], (value) => value as String),
 );
 
-Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) => <String, dynamic>{
+abstract final class _$ProductDtoJsonKeys {
+  static const String id = 'id';
+  static const String categoryId = 'categoryId';
+  static const String imageUrl = 'imageUrl';
+  static const String title = 'title';
+  static const String description = 'description';
+  static const String price = 'price';
+  static const String ingredients = 'ingredients';
+  static const String removableIngredients = 'removableIngredients';
+  static const String addableIngredients = 'addableIngredients';
+  static const String levels = 'levels';
+}
+
+Map<String, dynamic> _$ProductDtoToJson(
+  ProductDto instance,
+) => <String, dynamic>{
   'id': instance.id,
   'categoryId': instance.categoryId,
   'imageUrl': instance.imageUrl,
@@ -119,7 +108,9 @@ Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) => <String, dynamic
   'description': instance.description,
   'price': instance.price.toJson(),
   'ingredients': instance.ingredients.toJson((value) => value),
-  'removableIngredients': instance.removableIngredients.toJson((value) => value),
+  'removableIngredients': instance.removableIngredients.toJson(
+    (value) => value,
+  ),
   'addableIngredients': instance.addableIngredients.toJson((value) => value),
   'levels': instance.levels.toJson((value) => value),
 };

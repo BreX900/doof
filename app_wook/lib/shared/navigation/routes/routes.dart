@@ -16,7 +16,7 @@ import 'package:mek_gasol/features/users/screens/sign_up_screen.dart' deferred a
 part 'routes.g.dart';
 
 @TypedGoRoute<SignInRoute>(path: '/sign-in')
-class SignInRoute extends GoRouteData {
+class SignInRoute extends GoRouteData with $SignInRoute {
   const SignInRoute();
 
   @override
@@ -32,7 +32,7 @@ class SignInRoute extends GoRouteData {
 }
 
 @TypedGoRoute<SignUpRoute>(path: '/sign-up')
-class SignUpRoute extends GoRouteData {
+class SignUpRoute extends GoRouteData with $SignUpRoute {
   const SignUpRoute();
 
   @override
@@ -45,7 +45,7 @@ class SignUpRoute extends GoRouteData {
 }
 
 @TypedGoRoute<SignEmailRoute>(path: '/sign-email')
-class SignEmailRoute extends GoRouteData {
+class SignEmailRoute extends GoRouteData with $SignEmailRoute {
   const SignEmailRoute();
 
   @override
@@ -58,7 +58,7 @@ class SignEmailRoute extends GoRouteData {
 }
 
 @TypedGoRoute<SignUpDetailsRoute>(path: '/sign-details')
-class SignUpDetailsRoute extends GoRouteData {
+class SignUpDetailsRoute extends GoRouteData with $SignUpDetailsRoute {
   const SignUpDetailsRoute();
 
   @override
@@ -71,7 +71,7 @@ class SignUpDetailsRoute extends GoRouteData {
 }
 
 @TypedGoRoute<SignInPhoneNumberRoute>(path: '/sign-in-phone-number')
-class SignInPhoneNumberRoute extends GoRouteData {
+class SignInPhoneNumberRoute extends GoRouteData with $SignInPhoneNumberRoute {
   final String? verificationId;
 
   const SignInPhoneNumberRoute({this.verificationId});
@@ -80,9 +80,8 @@ class SignInPhoneNumberRoute extends GoRouteData {
   Widget build(BuildContext context, GoRouterState state) {
     return DeferredLibraryBuilder(
       loader: sign_in_phone_number_screen.loadLibrary,
-      builder: (context) => sign_in_phone_number_screen.SignInPhoneNumberScreen(
-        verificationId: verificationId,
-      ),
+      builder: (context) =>
+          sign_in_phone_number_screen.SignInPhoneNumberScreen(verificationId: verificationId),
     );
   }
 }

@@ -59,7 +59,9 @@ mixin _$OrderItemDto {
 
 OrderItemDto _$OrderItemDtoFromJson(Map<String, dynamic> json) => OrderItemDto(
   id: json['id'] as String,
-  createdAt: const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
+  createdAt: const TimestampJsonConvert().fromJson(
+    json['createdAt'] as Timestamp,
+  ),
   buyers: IList<String>.fromJson(json['buyers'], (value) => value as String),
   product: ProductDto.fromJson(json['product'] as Map<String, dynamic>),
   quantity: (json['quantity'] as num).toInt(),
@@ -85,13 +87,14 @@ abstract final class _$OrderItemDtoJsonKeys {
   static const String payedAmount = 'payedAmount';
 }
 
-Map<String, dynamic> _$OrderItemDtoToJson(OrderItemDto instance) => <String, dynamic>{
-  'id': instance.id,
-  'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
-  'buyers': instance.buyers.toJson((value) => value),
-  'product': instance.product.toJson(),
-  'quantity': instance.quantity,
-  'ingredients': instance.ingredients.toJson((value) => value.toJson()),
-  'levels': instance.levels.toJson((value) => value.toJson()),
-  'payedAmount': instance.payedAmount.toJson(),
-};
+Map<String, dynamic> _$OrderItemDtoToJson(OrderItemDto instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
+      'buyers': instance.buyers.toJson((value) => value),
+      'product': instance.product.toJson(),
+      'quantity': instance.quantity,
+      'ingredients': instance.ingredients.toJson((value) => value.toJson()),
+      'levels': instance.levels.toJson((value) => value.toJson()),
+      'payedAmount': instance.payedAmount.toJson(),
+    };

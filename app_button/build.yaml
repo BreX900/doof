@@ -28,10 +28,6 @@ targets:
           - '**/*_model.dart'
           - '**/*blocs.dart'
           - '**/*_data.dart'
-        options:
-          page_width: 100
-          changes_visible: false
-          fields_class_visible: false
 
       json_serializable:json_serializable:
         generate_for:

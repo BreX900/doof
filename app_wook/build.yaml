@@ -13,15 +13,13 @@ targets:
         options:
           ignore_for_file:
             - unused_field
+            - cast_nullable_to_non_nullable
 
       mek_data_class_generator:
         generate_for:
           - '**/*_dto.dart'
           - '**/*_dvo.dart'
           - '**/*_model.dart'
-        options:
-          changes_visible: false
-          fields_class_visible: false
 
       json_serializable:json_serializable:
         generate_for:

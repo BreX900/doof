@@ -25,9 +25,6 @@ targets:
           - '**/*_dto.dart'
           - '**/*_dvo.dart'
           - '**/*_model.dart'
-        options:
-          changes_visible: false
-          fields_class_visible: false
 
       json_serializable:json_serializable:
         generate_for:

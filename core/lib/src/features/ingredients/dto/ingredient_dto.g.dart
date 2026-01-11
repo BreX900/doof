@@ -10,6 +10,7 @@ part of 'ingredient_dto.dart';
 
 mixin _$LevelDto {
   LevelDto get _self => this as LevelDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -21,6 +22,7 @@ mixin _$LevelDto {
           _self.min == other.min &&
           _self.initial == other.initial &&
           _self.max == other.max;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -34,14 +36,15 @@ mixin _$LevelDto {
   }
 
   @override
-  String toString() => (ClassToString('LevelDto')
-        ..add('id', _self.id)
-        ..add('title', _self.title)
-        ..add('description', _self.description)
-        ..add('min', _self.min)
-        ..add('initial', _self.initial)
-        ..add('max', _self.max))
-      .toString();
+  String toString() =>
+      (ClassToString('LevelDto')
+            ..add('id', _self.id)
+            ..add('title', _self.title)
+            ..add('description', _self.description)
+            ..add('min', _self.min)
+            ..add('initial', _self.initial)
+            ..add('max', _self.max))
+          .toString();
 }
 
 // **************************************************************************
@@ -49,13 +52,13 @@ mixin _$LevelDto {
 // **************************************************************************
 
 LevelDto _$LevelDtoFromJson(Map<String, dynamic> json) => LevelDto(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      min: (json['min'] as num).toInt(),
-      initial: (json['initial'] as num?)?.toInt(),
-      max: (json['max'] as num).toInt(),
-    );
+  id: json['id'] as String,
+  title: json['title'] as String,
+  description: json['description'] as String,
+  min: (json['min'] as num).toInt(),
+  initial: (json['initial'] as num?)?.toInt(),
+  max: (json['max'] as num).toInt(),
+);
 
 abstract final class _$LevelDtoJsonKeys {
   static const String id = 'id';
@@ -67,10 +70,10 @@ abstract final class _$LevelDtoJsonKeys {
 }
 
 Map<String, dynamic> _$LevelDtoToJson(LevelDto instance) => <String, dynamic>{
-      'id': instance.id,
-      'title': instance.title,
-      'description': instance.description,
-      'min': instance.min,
-      'initial': instance.initial,
-      'max': instance.max,
-    };
+  'id': instance.id,
+  'title': instance.title,
+  'description': instance.description,
+  'min': instance.min,
+  'initial': instance.initial,
+  'max': instance.max,
+};

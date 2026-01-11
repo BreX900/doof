@@ -141,9 +141,7 @@ class _OrderScreenState extends SourceConsumerState<OrderScreen> {
           ),
           IconButton(
             tooltip: 'Select items to insert into cart.',
-            onPressed: data != null
-                ? () async => _toggleSelection(data.userId, data.orderItems)
-                : null,
+            onPressed: data != null ? () => _toggleSelection(data.userId, data.orderItems) : null,
             icon: const Icon(Icons.repeat),
           ),
         ],

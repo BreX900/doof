@@ -10,6 +10,7 @@ part of 'cart_model.dart';
 
 mixin _$CartModel {
   CartModel get _self => this as CartModel;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -20,6 +21,7 @@ mixin _$CartModel {
           _self.members == other.members &&
           _self.isPublic == other.isPublic &&
           _self.title == other.title;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -32,17 +34,19 @@ mixin _$CartModel {
   }
 
   @override
-  String toString() => (ClassToString('CartModel')
-        ..add('id', _self.id)
-        ..add('owner', _self.owner)
-        ..add('members', _self.members)
-        ..add('isPublic', _self.isPublic)
-        ..add('title', _self.title))
-      .toString();
+  String toString() =>
+      (ClassToString('CartModel')
+            ..add('id', _self.id)
+            ..add('owner', _self.owner)
+            ..add('members', _self.members)
+            ..add('isPublic', _self.isPublic)
+            ..add('title', _self.title))
+          .toString();
 }
 
 mixin _$CartItemModel {
   CartItemModel get _self => this as CartItemModel;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -55,6 +59,7 @@ mixin _$CartItemModel {
           _self.ingredientsRemoved == other.ingredientsRemoved &&
           _self.ingredientsAdded == other.ingredientsAdded &&
           _self.levels == other.levels;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -69,13 +74,14 @@ mixin _$CartItemModel {
   }
 
   @override
-  String toString() => (ClassToString('CartItemModel')
-        ..add('id', _self.id)
-        ..add('product', _self.product)
-        ..add('quantity', _self.quantity)
-        ..add('buyers', _self.buyers)
-        ..add('ingredientsRemoved', _self.ingredientsRemoved)
-        ..add('ingredientsAdded', _self.ingredientsAdded)
-        ..add('levels', _self.levels))
-      .toString();
+  String toString() =>
+      (ClassToString('CartItemModel')
+            ..add('id', _self.id)
+            ..add('product', _self.product)
+            ..add('quantity', _self.quantity)
+            ..add('buyers', _self.buyers)
+            ..add('ingredientsRemoved', _self.ingredientsRemoved)
+            ..add('ingredientsAdded', _self.ingredientsAdded)
+            ..add('levels', _self.levels))
+          .toString();
 }

@@ -10,6 +10,7 @@ part of 'organization_dto.dart';
 
 mixin _$OrganizationDto {
   OrganizationDto get _self => this as OrganizationDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -17,6 +18,7 @@ mixin _$OrganizationDto {
           runtimeType == other.runtimeType &&
           _self.id == other.id &&
           _self.name == other.name;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -26,10 +28,11 @@ mixin _$OrganizationDto {
   }
 
   @override
-  String toString() => (ClassToString('OrganizationDto')
-        ..add('id', _self.id)
-        ..add('name', _self.name))
-      .toString();
+  String toString() =>
+      (ClassToString('OrganizationDto')
+            ..add('id', _self.id)
+            ..add('name', _self.name))
+          .toString();
 }
 
 // **************************************************************************
@@ -37,13 +40,7 @@ mixin _$OrganizationDto {
 // **************************************************************************
 
 OrganizationDto _$OrganizationDtoFromJson(Map<String, dynamic> json) =>
-    OrganizationDto(
-      id: json['id'] as String,
-      name: json['title'] as String,
-    );
+    OrganizationDto(id: json['id'] as String, name: json['title'] as String);
 
 Map<String, dynamic> _$OrganizationDtoToJson(OrganizationDto instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'title': instance.name,
-    };
+    <String, dynamic>{'id': instance.id, 'title': instance.name};

@@ -10,6 +10,7 @@ part of 'order_ingredient_dto.dart';
 
 mixin _$OrderLevelDto {
   OrderLevelDto get _self => this as OrderLevelDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -17,6 +18,7 @@ mixin _$OrderLevelDto {
           runtimeType == other.runtimeType &&
           _self.level == other.level &&
           _self.value == other.value;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -26,10 +28,11 @@ mixin _$OrderLevelDto {
   }
 
   @override
-  String toString() => (ClassToString('OrderLevelDto')
-        ..add('level', _self.level)
-        ..add('value', _self.value))
-      .toString();
+  String toString() =>
+      (ClassToString('OrderLevelDto')
+            ..add('level', _self.level)
+            ..add('value', _self.value))
+          .toString();
 }
 
 // **************************************************************************

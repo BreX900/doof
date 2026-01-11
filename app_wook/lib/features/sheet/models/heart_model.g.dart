@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: unused_field
+// ignore_for_file: unused_field, cast_nullable_to_non_nullable
 
 part of 'heart_model.dart';
 
@@ -10,6 +10,7 @@ part of 'heart_model.dart';
 
 mixin _$LifeBar {
   LifeBar get _self => this as LifeBar;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -23,6 +24,7 @@ mixin _$LifeBar {
           _self.hasManyPresences == other.hasManyPresences &&
           _self.hasMorePoints == other.hasMorePoints &&
           _self.hasLessPoints == other.hasLessPoints;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -38,20 +40,22 @@ mixin _$LifeBar {
   }
 
   @override
-  String toString() => (ClassToString('LifeBar')
-        ..add('user', _self.user)
-        ..add('data', _self.data)
-        ..add('full', _self.full)
-        ..add('missed', _self.missed)
-        ..add('kingJobs', _self.kingJobs)
-        ..add('hasManyPresences', _self.hasManyPresences)
-        ..add('hasMorePoints', _self.hasMorePoints)
-        ..add('hasLessPoints', _self.hasLessPoints))
-      .toString();
+  String toString() =>
+      (ClassToString('LifeBar')
+            ..add('user', _self.user)
+            ..add('data', _self.data)
+            ..add('full', _self.full)
+            ..add('missed', _self.missed)
+            ..add('kingJobs', _self.kingJobs)
+            ..add('hasManyPresences', _self.hasManyPresences)
+            ..add('hasMorePoints', _self.hasMorePoints)
+            ..add('hasLessPoints', _self.hasLessPoints))
+          .toString();
 }
 
 mixin _$Life {
   Life get _self => this as Life;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -59,6 +63,7 @@ mixin _$Life {
           runtimeType == other.runtimeType &&
           _self.presenceCount == other.presenceCount &&
           _self.jobs == other.jobs;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -68,8 +73,9 @@ mixin _$Life {
   }
 
   @override
-  String toString() => (ClassToString('Life')
-        ..add('presenceCount', _self.presenceCount)
-        ..add('jobs', _self.jobs))
-      .toString();
+  String toString() =>
+      (ClassToString('Life')
+            ..add('presenceCount', _self.presenceCount)
+            ..add('jobs', _self.jobs))
+          .toString();
 }

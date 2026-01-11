@@ -42,16 +42,16 @@ dependencies:
   flutter: { sdk: flutter }
 
   # DATA
-  firebase_core: ^4.2.1
-  firebase_auth: ^6.1.2
-  cloud_firestore: ^6.1.0
-  firebase_storage: ^13.0.4
+  firebase_core: ^4.3.0
+  firebase_auth: ^6.1.3
+  cloud_firestore: ^6.1.1
+  firebase_storage: ^13.0.5
 
   # DOMAIN
-  mek_data_class: ^2.1.0
+  mek_data_class: ^2.2.0
   json_annotation: ^4.9.0
 
-  collection: ^1.18.0
+  collection: ^1.19.1
   rxdart: ^0.28.0
   intl: ^0.20.2
   logging: ^1.3.0
@@ -59,14 +59,14 @@ dependencies:
   fast_immutable_collections: ^11.1.0
 
   # PRESENTATION
-  flutter_riverpod: ^3.0.3
-  go_router: ^16.3.0
-  flutter_svg: ^2.2.1
+  flutter_riverpod: ^3.1.0
+  go_router: ^17.0.1
+  flutter_svg: ^2.2.3
 
-  mobile_scanner: ^7.1.3
+  mobile_scanner: ^7.1.4
 
   # Move to external package
-  reactive_forms: ^18.1.1
+  reactive_forms: ^18.2.2
   reactive_phone_form_field: ^5.0.2
 
   core: { path: ../core }
@@ -74,12 +74,12 @@ dependencies:
   mekart: { path: ../../packages/mekart }
 
 dev_dependencies:
-  mek_lints: ^5.0.0
+  mek_lints: ^6.0.1
 
-  build_runner: ^2.7.1
-  mek_data_class_generator: ^4.1.0
-  json_serializable: ^6.11.1
-  go_router_builder: ^4.1.1
+  build_runner: ^2.10.4
+  mek_data_class_generator: ^4.2.0
+  json_serializable: ^6.11.2
+  go_router_builder: ^4.1.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

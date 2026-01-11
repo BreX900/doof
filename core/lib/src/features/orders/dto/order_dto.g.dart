@@ -72,15 +72,22 @@ mixin _$OrderDto {
 OrderDto _$OrderDtoFromJson(Map<String, dynamic> json) => OrderDto(
   id: json['id'] as String,
   originCartId: json['originCartId'] as String?,
-  createdAt: const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
-  updatedAt: const TimestampJsonConvert().fromJson(json['updatedAt'] as Timestamp),
+  createdAt: const TimestampJsonConvert().fromJson(
+    json['createdAt'] as Timestamp,
+  ),
+  updatedAt: const TimestampJsonConvert().fromJson(
+    json['updatedAt'] as Timestamp,
+  ),
   at: _$JsonConverterFromJson<Timestamp, DateTime>(
     json['at'],
     const TimestampJsonConvert().fromJson,
   ),
   organizationId: json['organizationId'] as String,
   payerId: json['payerId'] as String,
-  membersIds: IList<String>.fromJson(json['membersIds'], (value) => value as String),
+  membersIds: IList<String>.fromJson(
+    json['membersIds'],
+    (value) => value as String,
+  ),
   status: $enumDecode(_$OrderStatusEnumMap, json['status']),
   shippable: json['shippable'] as bool,
   place: json['place'] as String?,
@@ -120,8 +127,10 @@ Map<String, dynamic> _$OrderDtoToJson(OrderDto instance) => <String, dynamic>{
   'payedAmount': instance.payedAmount.toJson(),
 };
 
-Value? _$JsonConverterFromJson<Json, Value>(Object? json, Value? Function(Json json) fromJson) =>
-    json == null ? null : fromJson(json as Json);
+Value? _$JsonConverterFromJson<Json, Value>(
+  Object? json,
+  Value? Function(Json json) fromJson,
+) => json == null ? null : fromJson(json as Json);
 
 const _$OrderStatusEnumMap = {
   OrderStatus.accepting: 'accepting',
@@ -135,10 +144,13 @@ const _$OrderStatusEnumMap = {
   OrderStatus.delivered: 'delivered',
 };
 
-Json? _$JsonConverterToJson<Json, Value>(Value? value, Json? Function(Value value) toJson) =>
-    value == null ? null : toJson(value);
+Json? _$JsonConverterToJson<Json, Value>(
+  Value? value,
+  Json? Function(Value value) toJson,
+) => value == null ? null : toJson(value);
 
-Map<String, dynamic> _$OrderUpdateDtoToJson(OrderUpdateDto instance) => <String, dynamic>{
-  'updateAt': const TimestampJsonConvert().toJson(instance.updateAt),
-  'status': _$OrderStatusEnumMap[instance.status]!,
-};
+Map<String, dynamic> _$OrderUpdateDtoToJson(OrderUpdateDto instance) =>
+    <String, dynamic>{
+      'updateAt': const TimestampJsonConvert().toJson(instance.updateAt),
+      'status': _$OrderStatusEnumMap[instance.status]!,
+    };

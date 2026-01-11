@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: unused_field
+// ignore_for_file: unused_field, cast_nullable_to_non_nullable
 
 part of 'invoice_dto.dart';
 
@@ -88,8 +88,12 @@ InvoiceDto _$InvoiceDtoFromJson(Map<String, dynamic> json) => InvoiceDto(
   id: json['id'] as String,
   orderId: json['orderId'] as String?,
   payerId: json['payerId'] as String,
-  payedAmount: json['payedAmount'] == null ? null : Fixed.fromJson(json['payedAmount'] as String),
-  createdAt: const TimestampJsonConvert().fromJson(json['createdAt'] as Timestamp),
+  payedAmount: json['payedAmount'] == null
+      ? null
+      : Fixed.fromJson(json['payedAmount'] as String),
+  createdAt: const TimestampJsonConvert().fromJson(
+    json['createdAt'] as Timestamp,
+  ),
   items: IMap<String, InvoiceItemDto>.fromJson(
     json['items'] as Map<String, dynamic>,
     (value) => value as String,
@@ -115,7 +119,9 @@ abstract final class _$InvoiceDtoJsonKeys {
   static const String vaultOutcomes = 'vaultOutcomes';
 }
 
-Map<String, dynamic> _$InvoiceDtoToJson(InvoiceDto instance) => <String, dynamic>{
+Map<String, dynamic> _$InvoiceDtoToJson(
+  InvoiceDto instance,
+) => <String, dynamic>{
   'id': instance.id,
   'orderId': instance.orderId,
   'payerId': instance.payerId,
@@ -123,19 +129,31 @@ Map<String, dynamic> _$InvoiceDtoToJson(InvoiceDto instance) => <String, dynamic
   'createdAt': const TimestampJsonConvert().toJson(instance.createdAt),
   'items': instance.items.toJson((value) => value, (value) => value.toJson()),
   'membersIds': instance.membersIds,
-  'vaultOutcomes': instance.vaultOutcomes?.toJson((value) => value, (value) => value.toJson()),
+  'vaultOutcomes': instance.vaultOutcomes?.toJson(
+    (value) => value,
+    (value) => value.toJson(),
+  ),
 };
 
-InvoiceItemDto _$InvoiceItemDtoFromJson(Map<String, dynamic> json) => InvoiceItemDto(
-  isPayed: json['isPayed'] as bool,
-  amount: Fixed.fromJson(json['amount'] as String),
-  jobs: IList<Job>.fromJson(json['jobs'], (value) => $enumDecode(_$JobEnumMap, value)),
-);
+InvoiceItemDto _$InvoiceItemDtoFromJson(Map<String, dynamic> json) =>
+    InvoiceItemDto(
+      isPayed: json['isPayed'] as bool,
+      amount: Fixed.fromJson(json['amount'] as String),
+      jobs: IList<Job>.fromJson(
+        json['jobs'],
+        (value) => $enumDecode(_$JobEnumMap, value),
+      ),
+    );
 
-Map<String, dynamic> _$InvoiceItemDtoToJson(InvoiceItemDto instance) => <String, dynamic>{
-  'isPayed': instance.isPayed,
-  'amount': instance.amount.toJson(),
-  'jobs': instance.jobs.toJson((value) => _$JobEnumMap[value]!),
+Map<String, dynamic> _$InvoiceItemDtoToJson(InvoiceItemDto instance) =>
+    <String, dynamic>{
+      'isPayed': instance.isPayed,
+      'amount': instance.amount.toJson(),
+      'jobs': instance.jobs.toJson((value) => _$JobEnumMap[value]!),
+    };
+
+const _$JobEnumMap = {
+  Job.garbageMan: 'garbageMan',
+  Job.partner: 'partner',
+  Job.driver: 'driver',
 };
-
-const _$JobEnumMap = {Job.garbageMan: 'garbageMan', Job.partner: 'partner', Job.driver: 'driver'};

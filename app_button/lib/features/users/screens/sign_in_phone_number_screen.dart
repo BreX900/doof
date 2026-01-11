@@ -42,7 +42,7 @@ class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumbe
   );
 
   late final _signIn = ref.mutation(
-    (ref, None _) async {
+    (ref, None _) {
       final phoneNumber = _phoneNumberFb.value!;
       return UsersProviders.signInWithPhoneNumber(ref, phoneNumber.international);
     },
@@ -56,7 +56,7 @@ class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumbe
     },
   );
   late final _confirmVerification = ref.mutation(
-    (ref, String verificationId) async {
+    (ref, String verificationId) {
       return UsersProviders.confirmPhoneNumberVerification(
         ref,
         verificationId,

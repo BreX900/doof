@@ -10,6 +10,12 @@ part of 'ticket_dto.dart';
 
 mixin _$TicketDto {
   TicketDto get _self => this as TicketDto;
+
+  TicketDto change(void Function(TicketDtoChanges c) updates) =>
+      (toChanges()..update(updates)).build();
+
+  TicketDtoChanges toChanges() => TicketDtoChanges._(_self);
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -20,6 +26,7 @@ mixin _$TicketDto {
           _self.updatedAt == other.updatedAt &&
           _self.status == other.status &&
           _self.place == other.place;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -32,45 +39,42 @@ mixin _$TicketDto {
   }
 
   @override
-  String toString() => (ClassToString('TicketDto')
-        ..add('id', _self.id)
-        ..add('createAt', _self.createAt)
-        ..add('updatedAt', _self.updatedAt)
-        ..add('status', _self.status)
-        ..add('place', _self.place))
-      .toString();
-  TicketDto change(void Function(_TicketDtoChanges c) updates) =>
-      (_TicketDtoChanges._(_self)..update(updates)).build();
-  _TicketDtoChanges toChanges() => _TicketDtoChanges._(_self);
+  String toString() =>
+      (ClassToString('TicketDto')
+            ..add('id', _self.id)
+            ..add('createAt', _self.createAt)
+            ..add('updatedAt', _self.updatedAt)
+            ..add('status', _self.status)
+            ..add('place', _self.place))
+          .toString();
 }
 
-class _TicketDtoChanges {
-  _TicketDtoChanges._(TicketDto dc)
-      : id = dc.id,
-        createAt = dc.createAt,
-        updatedAt = dc.updatedAt,
-        status = dc.status,
-        place = dc.place;
+class TicketDtoChanges {
+  TicketDtoChanges._(this._original);
 
-  String id;
+  final TicketDto _original;
 
-  DateTime createAt;
+  late String id = _original.id;
 
-  DateTime updatedAt;
+  late DateTime createAt = _original.createAt;
 
-  TicketStatus status;
+  late DateTime updatedAt = _original.updatedAt;
 
-  String place;
+  late TicketStatus status = _original.status;
 
-  void update(void Function(_TicketDtoChanges c) updates) => updates(this);
+  late String place = _original.place;
 
-  TicketDto build() => TicketDto(
-        id: id,
-        createAt: createAt,
-        updatedAt: updatedAt,
-        status: status,
-        place: place,
-      );
+  void update(void Function(TicketDtoChanges c) updates) => updates(this);
+
+  TicketDto build() {
+    return TicketDto(
+      id: id,
+      createAt: createAt,
+      updatedAt: updatedAt,
+      status: status,
+      place: place,
+    );
+  }
 }
 
 // **************************************************************************
@@ -78,14 +82,16 @@ class _TicketDtoChanges {
 // **************************************************************************
 
 TicketDto _$TicketDtoFromJson(Map<String, dynamic> json) => TicketDto(
-      id: json['id'] as String,
-      createAt:
-          const TimestampJsonConvert().fromJson(json['createAt'] as Timestamp),
-      updatedAt:
-          const TimestampJsonConvert().fromJson(json['updatedAt'] as Timestamp),
-      status: $enumDecode(_$TicketStatusEnumMap, json['status']),
-      place: json['place'] as String,
-    );
+  id: json['id'] as String,
+  createAt: const TimestampJsonConvert().fromJson(
+    json['createAt'] as Timestamp,
+  ),
+  updatedAt: const TimestampJsonConvert().fromJson(
+    json['updatedAt'] as Timestamp,
+  ),
+  status: $enumDecode(_$TicketStatusEnumMap, json['status']),
+  place: json['place'] as String,
+);
 
 abstract final class _$TicketDtoJsonKeys {
   static const String id = 'id';
@@ -96,12 +102,12 @@ abstract final class _$TicketDtoJsonKeys {
 }
 
 Map<String, dynamic> _$TicketDtoToJson(TicketDto instance) => <String, dynamic>{
-      'id': instance.id,
-      'createAt': const TimestampJsonConvert().toJson(instance.createAt),
-      'updatedAt': const TimestampJsonConvert().toJson(instance.updatedAt),
-      'status': _$TicketStatusEnumMap[instance.status]!,
-      'place': instance.place,
-    };
+  'id': instance.id,
+  'createAt': const TimestampJsonConvert().toJson(instance.createAt),
+  'updatedAt': const TimestampJsonConvert().toJson(instance.updatedAt),
+  'status': _$TicketStatusEnumMap[instance.status]!,
+  'place': instance.place,
+};
 
 const _$TicketStatusEnumMap = {
   TicketStatus.pending: 'pending',

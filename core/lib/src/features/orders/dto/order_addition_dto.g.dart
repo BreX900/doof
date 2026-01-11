@@ -10,6 +10,7 @@ part of 'order_addition_dto.dart';
 
 mixin _$OrderIngredientDto {
   OrderIngredientDto get _self => this as OrderIngredientDto;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -17,6 +18,7 @@ mixin _$OrderIngredientDto {
           runtimeType == other.runtimeType &&
           _self.ingredient == other.ingredient &&
           _self.value == other.value;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -26,10 +28,11 @@ mixin _$OrderIngredientDto {
   }
 
   @override
-  String toString() => (ClassToString('OrderIngredientDto')
-        ..add('ingredient', _self.ingredient)
-        ..add('value', _self.value))
-      .toString();
+  String toString() =>
+      (ClassToString('OrderIngredientDto')
+            ..add('ingredient', _self.ingredient)
+            ..add('value', _self.value))
+          .toString();
 }
 
 // **************************************************************************
@@ -38,8 +41,9 @@ mixin _$OrderIngredientDto {
 
 OrderIngredientDto _$OrderIngredientDtoFromJson(Map<String, dynamic> json) =>
     OrderIngredientDto(
-      ingredient:
-          IngredientDto.fromJson(json['ingredient'] as Map<String, dynamic>),
+      ingredient: IngredientDto.fromJson(
+        json['ingredient'] as Map<String, dynamic>,
+      ),
       value: json['value'] as bool,
     );
 

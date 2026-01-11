@@ -6,10 +6,11 @@ import 'package:mekart/mekart.dart';
 
 part 'product_dto.g.dart';
 
+typedef ProductDtoFields = _$ProductDtoJsonKeys;
+
 @DataClass()
-@DtoSerializable()
+@DtoSerializable(createJsonKeys: true)
 class ProductDto with Identifiable, _$ProductDto {
-  static const fields = ProductDtoFields();
   @override
   final String id;
 

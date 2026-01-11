@@ -10,6 +10,7 @@ part of 'order_model.dart';
 
 mixin _$OrderModel {
   OrderModel get _self => this as OrderModel;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -25,6 +26,7 @@ mixin _$OrderModel {
           _self.status == other.status &&
           _self.place == other.place &&
           _self.payedAmount == other.payedAmount;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -42,22 +44,24 @@ mixin _$OrderModel {
   }
 
   @override
-  String toString() => (ClassToString('OrderModel')
-        ..add('id', _self.id)
-        ..add('originCartId', _self.originCartId)
-        ..add('createdAt', _self.createdAt)
-        ..add('updatedAt', _self.updatedAt)
-        ..add('payer', _self.payer)
-        ..add('members', _self.members)
-        ..add('shippable', _self.shippable)
-        ..add('status', _self.status)
-        ..add('place', _self.place)
-        ..add('payedAmount', _self.payedAmount))
-      .toString();
+  String toString() =>
+      (ClassToString('OrderModel')
+            ..add('id', _self.id)
+            ..add('originCartId', _self.originCartId)
+            ..add('createdAt', _self.createdAt)
+            ..add('updatedAt', _self.updatedAt)
+            ..add('payer', _self.payer)
+            ..add('members', _self.members)
+            ..add('shippable', _self.shippable)
+            ..add('status', _self.status)
+            ..add('place', _self.place)
+            ..add('payedAmount', _self.payedAmount))
+          .toString();
 }
 
 mixin _$OrderItemModel {
   OrderItemModel get _self => this as OrderItemModel;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -71,6 +75,7 @@ mixin _$OrderItemModel {
           _self.ingredientsAdded == other.ingredientsAdded &&
           _self.levels == other.levels &&
           _self.payedAmount == other.payedAmount;
+
   @override
   int get hashCode {
     var hashCode = 0;
@@ -86,14 +91,15 @@ mixin _$OrderItemModel {
   }
 
   @override
-  String toString() => (ClassToString('OrderItemModel')
-        ..add('id', _self.id)
-        ..add('product', _self.product)
-        ..add('quantity', _self.quantity)
-        ..add('buyers', _self.buyers)
-        ..add('ingredientsRemoved', _self.ingredientsRemoved)
-        ..add('ingredientsAdded', _self.ingredientsAdded)
-        ..add('levels', _self.levels)
-        ..add('payedAmount', _self.payedAmount))
-      .toString();
+  String toString() =>
+      (ClassToString('OrderItemModel')
+            ..add('id', _self.id)
+            ..add('product', _self.product)
+            ..add('quantity', _self.quantity)
+            ..add('buyers', _self.buyers)
+            ..add('ingredientsRemoved', _self.ingredientsRemoved)
+            ..add('ingredientsAdded', _self.ingredientsAdded)
+            ..add('levels', _self.levels)
+            ..add('payedAmount', _self.payedAmount))
+          .toString();
 }

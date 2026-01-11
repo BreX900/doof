@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: unused_field
+// ignore_for_file: unused_field, cast_nullable_to_non_nullable
 
 part of 'app_routes.dart';
 
@@ -8,341 +8,400 @@ part of 'app_routes.dart';
 // GoRouterGenerator
 // **************************************************************************
 
-List<RouteBase> get $appRoutes => [
-      $userAreaRoute,
-    ];
+List<RouteBase> get $appRoutes => [$userAreaRoute];
 
 RouteBase get $userAreaRoute => StatefulShellRouteData.$route(
-      factory: $UserAreaRouteExtension._fromState,
-      branches: [
-        StatefulShellBranchData.$branch(
+  factory: $UserAreaRouteExtension._fromState,
+  branches: [
+    StatefulShellBranchData.$branch(
+      routes: [
+        GoRouteData.$route(
+          path: '/invoices',
+          factory: $InvoicesRoute._fromState,
           routes: [
             GoRouteData.$route(
-              path: '/invoices',
-              factory: $InvoicesRouteExtension._fromState,
-              routes: [
-                GoRouteData.$route(
-                  path: 'create',
-                  factory: $InvoiceCreateRouteExtension._fromState,
-                ),
-                GoRouteData.$route(
-                  path: ':invoiceId',
-                  factory: $InvoiceRouteExtension._fromState,
-                ),
-              ],
+              path: 'create',
+              factory: $InvoiceCreateRoute._fromState,
+            ),
+            GoRouteData.$route(
+              path: ':invoiceId',
+              factory: $InvoiceRoute._fromState,
             ),
           ],
         ),
-        StatefulShellBranchData.$branch(
+      ],
+    ),
+    StatefulShellBranchData.$branch(
+      routes: [
+        GoRouteData.$route(
+          path: '/orders',
+          factory: $OrdersRoute._fromState,
           routes: [
             GoRouteData.$route(
-              path: '/orders',
-              factory: $OrdersRouteExtension._fromState,
+              path: ':orderId',
+              factory: $OrderRoute._fromState,
               routes: [
                 GoRouteData.$route(
-                  path: ':orderId',
-                  factory: $OrderRouteExtension._fromState,
-                  routes: [
-                    GoRouteData.$route(
-                      path: 'stat',
-                      factory: $OrderStatRouteExtension._fromState,
-                    ),
-                    GoRouteData.$route(
-                      path: 'invoice',
-                      factory: $OrderInvoiceRouteExtension._fromState,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-        StatefulShellBranchData.$branch(
-          routes: [
-            GoRouteData.$route(
-              path: '/cart',
-              factory: $CartsRouteExtension._fromState,
-              routes: [
-                GoRouteData.$route(
-                  path: 'checkout',
-                  factory: $OrderCheckoutRouteExtension._fromState,
+                  path: 'stat',
+                  factory: $OrderStatRoute._fromState,
                 ),
                 GoRouteData.$route(
-                  path: 'stats',
-                  factory: $CartStatsRouteExtension._fromState,
-                ),
-                GoRouteData.$route(
-                  path: 'items/:cartItemId',
-                  factory: $CartItemRouteExtension._fromState,
-                ),
-              ],
-            ),
-          ],
-        ),
-        StatefulShellBranchData.$branch(
-          routes: [
-            GoRouteData.$route(
-              path: '/products',
-              factory: $ProductsRouteExtension._fromState,
-              routes: [
-                GoRouteData.$route(
-                  path: ':productId',
-                  factory: $ProductRouteExtension._fromState,
+                  path: 'invoice',
+                  factory: $OrderInvoiceRoute._fromState,
                 ),
               ],
             ),
           ],
         ),
       ],
-    );
+    ),
+    StatefulShellBranchData.$branch(
+      routes: [
+        GoRouteData.$route(
+          path: '/cart',
+          factory: $CartsRoute._fromState,
+          routes: [
+            GoRouteData.$route(
+              path: 'checkout',
+              factory: $OrderCheckoutRoute._fromState,
+            ),
+            GoRouteData.$route(
+              path: 'stats',
+              factory: $CartStatsRoute._fromState,
+            ),
+            GoRouteData.$route(
+              path: 'items/:cartItemId',
+              factory: $CartItemRoute._fromState,
+            ),
+          ],
+        ),
+      ],
+    ),
+    StatefulShellBranchData.$branch(
+      routes: [
+        GoRouteData.$route(
+          path: '/products',
+          factory: $ProductsRoute._fromState,
+          routes: [
+            GoRouteData.$route(
+              path: ':productId',
+              factory: $ProductRoute._fromState,
+            ),
+          ],
+        ),
+      ],
+    ),
+  ],
+);
 
 extension $UserAreaRouteExtension on UserAreaRoute {
   static UserAreaRoute _fromState(GoRouterState state) => const UserAreaRoute();
 }
 
-extension $InvoicesRouteExtension on InvoicesRoute {
+mixin $InvoicesRoute on GoRouteData {
   static InvoicesRoute _fromState(GoRouterState state) => const InvoicesRoute();
 
-  String get location => GoRouteData.$location(
-        '/invoices',
-      );
+  @override
+  String get location => GoRouteData.$location('/invoices');
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $InvoiceCreateRouteExtension on InvoiceCreateRoute {
+mixin $InvoiceCreateRoute on GoRouteData {
   static InvoiceCreateRoute _fromState(GoRouterState state) =>
       const InvoiceCreateRoute();
 
-  String get location => GoRouteData.$location(
-        '/invoices/create',
-      );
+  @override
+  String get location => GoRouteData.$location('/invoices/create');
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $InvoiceRouteExtension on InvoiceRoute {
-  static InvoiceRoute _fromState(GoRouterState state) => InvoiceRoute(
-        state.pathParameters['invoiceId']!,
-      );
+mixin $InvoiceRoute on GoRouteData {
+  static InvoiceRoute _fromState(GoRouterState state) =>
+      InvoiceRoute(state.pathParameters['invoiceId']!);
 
+  InvoiceRoute get _self => this as InvoiceRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/invoices/${Uri.encodeComponent(invoiceId)}',
-      );
+    '/invoices/${Uri.encodeComponent(_self.invoiceId)}',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $OrdersRouteExtension on OrdersRoute {
+mixin $OrdersRoute on GoRouteData {
   static OrdersRoute _fromState(GoRouterState state) => const OrdersRoute();
 
-  String get location => GoRouteData.$location(
-        '/orders',
-      );
+  @override
+  String get location => GoRouteData.$location('/orders');
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $OrderRouteExtension on OrderRoute {
+mixin $OrderRoute on GoRouteData {
   static OrderRoute _fromState(GoRouterState state) => OrderRoute(
-        state.pathParameters['orderId']!,
-        isNew: _$convertMapValue(
-                'is-new', state.uri.queryParameters, _$boolConverter) ??
-            false,
-      );
+    state.pathParameters['orderId']!,
+    isNew:
+        _$convertMapValue(
+          'is-new',
+          state.uri.queryParameters,
+          _$boolConverter,
+        ) ??
+        false,
+  );
 
+  OrderRoute get _self => this as OrderRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/orders/${Uri.encodeComponent(orderId)}',
-        queryParams: {
-          if (isNew != false) 'is-new': isNew.toString(),
-        },
-      );
+    '/orders/${Uri.encodeComponent(_self.orderId)}',
+    queryParams: {if (_self.isNew != false) 'is-new': _self.isNew.toString()},
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $OrderStatRouteExtension on OrderStatRoute {
-  static OrderStatRoute _fromState(GoRouterState state) => OrderStatRoute(
-        state.pathParameters['orderId']!,
-      );
+mixin $OrderStatRoute on GoRouteData {
+  static OrderStatRoute _fromState(GoRouterState state) =>
+      OrderStatRoute(state.pathParameters['orderId']!);
 
+  OrderStatRoute get _self => this as OrderStatRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/orders/${Uri.encodeComponent(orderId)}/stat',
-      );
+    '/orders/${Uri.encodeComponent(_self.orderId)}/stat',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $OrderInvoiceRouteExtension on OrderInvoiceRoute {
-  static OrderInvoiceRoute _fromState(GoRouterState state) => OrderInvoiceRoute(
-        state.pathParameters['orderId']!,
-      );
+mixin $OrderInvoiceRoute on GoRouteData {
+  static OrderInvoiceRoute _fromState(GoRouterState state) =>
+      OrderInvoiceRoute(state.pathParameters['orderId']!);
 
+  OrderInvoiceRoute get _self => this as OrderInvoiceRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/orders/${Uri.encodeComponent(orderId)}/invoice',
-      );
+    '/orders/${Uri.encodeComponent(_self.orderId)}/invoice',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $CartsRouteExtension on CartsRoute {
+mixin $CartsRoute on GoRouteData {
   static CartsRoute _fromState(GoRouterState state) => const CartsRoute();
 
-  String get location => GoRouteData.$location(
-        '/cart',
-      );
+  @override
+  String get location => GoRouteData.$location('/cart');
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $OrderCheckoutRouteExtension on OrderCheckoutRoute {
+mixin $OrderCheckoutRoute on GoRouteData {
   static OrderCheckoutRoute _fromState(GoRouterState state) =>
       const OrderCheckoutRoute();
 
-  String get location => GoRouteData.$location(
-        '/cart/checkout',
-      );
+  @override
+  String get location => GoRouteData.$location('/cart/checkout');
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $CartStatsRouteExtension on CartStatsRoute {
+mixin $CartStatsRoute on GoRouteData {
   static CartStatsRoute _fromState(GoRouterState state) =>
       const CartStatsRoute();
 
-  String get location => GoRouteData.$location(
-        '/cart/stats',
-      );
+  @override
+  String get location => GoRouteData.$location('/cart/stats');
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $CartItemRouteExtension on CartItemRoute {
-  static CartItemRoute _fromState(GoRouterState state) => CartItemRoute(
-        state.pathParameters['cartItemId']!,
-      );
+mixin $CartItemRoute on GoRouteData {
+  static CartItemRoute _fromState(GoRouterState state) =>
+      CartItemRoute(state.pathParameters['cartItemId']!);
 
+  CartItemRoute get _self => this as CartItemRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/cart/items/${Uri.encodeComponent(cartItemId)}',
-      );
+    '/cart/items/${Uri.encodeComponent(_self.cartItemId)}',
+  );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $ProductsRouteExtension on ProductsRoute {
+mixin $ProductsRoute on GoRouteData {
   static ProductsRoute _fromState(GoRouterState state) => const ProductsRoute();
 
-  String get location => GoRouteData.$location(
-        '/products',
-      );
+  @override
+  String get location => GoRouteData.$location('/products');
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $ProductRouteExtension on ProductRoute {
+mixin $ProductRoute on GoRouteData {
   static ProductRoute _fromState(GoRouterState state) => ProductRoute(
-        state.pathParameters['productId']!,
-        $extra: state.extra as (OrderModel, OrderItemModel)?,
-      );
+    state.pathParameters['productId']!,
+    $extra: state.extra as (OrderModel, OrderItemModel)?,
+  );
 
+  ProductRoute get _self => this as ProductRoute;
+
+  @override
   String get location => GoRouteData.$location(
-        '/products/${Uri.encodeComponent(productId)}',
-      );
+    '/products/${Uri.encodeComponent(_self.productId)}',
+  );
 
-  void go(BuildContext context) => context.go(location, extra: $extra);
+  @override
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
 
+  @override
   Future<T?> push<T>(BuildContext context) =>
-      context.push<T>(location, extra: $extra);
+      context.push<T>(location, extra: _self.$extra);
 
+  @override
   void pushReplacement(BuildContext context) =>
-      context.pushReplacement(location, extra: $extra);
+      context.pushReplacement(location, extra: _self.$extra);
 
+  @override
   void replace(BuildContext context) =>
-      context.replace(location, extra: $extra);
+      context.replace(location, extra: _self.$extra);
 }
 
 T? _$convertMapValue<T>(
