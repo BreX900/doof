@@ -7,9 +7,9 @@ import 'package:mekart/mekart.dart';
 
 abstract class ProductsProviders {
   static final all = FutureProvider.family((ref, String organizationId) async {
-    final categories = await ref.watch(CategoriesProviders.all(organizationId).future);
-    final ingredients = await ref.watch(IngredientsProviders.all(organizationId).future);
-    final levels = await ref.watch(LevelsProviders.all((organizationId,)).future);
+    final categories = ref.watch(CategoriesProviders.all(organizationId)).requireValue;
+    final ingredients = ref.watch(IngredientsProviders.all(organizationId)).requireValue;
+    final levels = ref.watch(LevelsProviders.all((organizationId,))).requireValue;
     final products = await ProductsRepository.instance.fetchAll(organizationId);
 
     return products
@@ -17,12 +17,9 @@ abstract class ProductsProviders {
         .toList();
   });
 
-  static final first = FutureProvider.family((
-    ref,
-    (String organizationId, String productId) args,
-  ) async {
+  static final first = FutureProvider.family((ref, (String organizationId, String productId) args) {
     final (organizationId, productId) = args;
-    final products = await ref.watch(all(organizationId).future);
+    final products = ref.watch(all(organizationId)).requireValue;
     return products.firstWhere((e) => e.id == productId);
   });
 

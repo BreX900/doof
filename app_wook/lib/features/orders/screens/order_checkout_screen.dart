@@ -77,12 +77,8 @@ class _OrderCheckoutScreenState extends SourceConsumerState<OrderCheckoutScreen>
         items: data.items,
       );
     },
-    onStart: (_) {
-      _isCartOrdering = true;
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
+    onStart: (_) => _isCartOrdering = true,
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
     onSuccess: (_, orderId) {
       _isCartOrdering = false;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order sent!')));

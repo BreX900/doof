@@ -27,30 +27,16 @@ class _OrdersScreenState extends SourceConsumerState<OrdersScreen> {
       await CartItemsProviders.upsertFromOrder(ref, Env.organizationId, Env.cartId, items);
       await OrdersProviders.delete(ref, Env.organizationId, order);
     },
-    onStart: (OrderModel order) {
-      _removedOrderIds.add(order.id);
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
-    onFinish: (order, _, __) {
-      _removedOrderIds.remove(order.id);
-    },
+    onStart: (OrderModel order) => _removedOrderIds.add(order.id),
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+    onFinish: (order, _, __) => _removedOrderIds.remove(order.id),
   );
 
   late final _deleteOrder = ref.mutation(
-    (ref, OrderModel order) async {
-      await OrdersProviders.delete(ref, Env.organizationId, order);
-    },
-    onStart: (OrderModel order) {
-      _removedOrderIds.add(order.id);
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
-    onFinish: (order, _, __) {
-      _removedOrderIds.remove(order.id);
-    },
+    (ref, OrderModel order) async => await OrdersProviders.delete(ref, Env.organizationId, order),
+    onStart: (OrderModel order) => _removedOrderIds.add(order.id),
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+    onFinish: (order, _, __) => _removedOrderIds.remove(order.id),
   );
 
   Widget _buildBody(IList<OrderModel> orders) {

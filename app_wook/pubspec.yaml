@@ -1,6 +1,6 @@
 name: mek_gasol
 description: A new Flutter project.
-version: 2.5.14+27
+version: 2.5.15+28
 publish_to: "none"
 
 environment:
@@ -29,7 +29,7 @@ scripts:
     dart pub global run flutter_launcher_icons
 
   deploy: mek build version-check &&
-    mek build web --dart-define-from-file=./_/.env.prod &&
+    mek build web --wasm --dart-define-from-file=./_/.env.prod &&
     firebase deploy --only=hosting &&
     mek build version-update
 
@@ -62,7 +62,7 @@ dependencies:
   fast_immutable_collections: ^11.1.0
 
 # PRESENTATION
-  flutter_riverpod: ^3.1.0
+  flutter_riverpod: ^3.2.0
   go_router: ^17.0.1
   url_launcher: ^6.3.2
   package_info_plus: ^9.0.0

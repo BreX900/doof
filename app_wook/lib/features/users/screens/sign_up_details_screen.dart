@@ -24,12 +24,9 @@ class _SignUpDetailsScreenState extends SourceConsumerState<SignUpDetailsScreen>
   }
 
   late final _signUp = ref.mutation(
-    (ref, None _) async {
-      await UsersRepository.instance.create(phoneNumber: null, displayName: _displayNameFb.value);
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
+    (ref, None _) async =>
+        await UsersRepository.instance.create(phoneNumber: null, displayName: _displayNameFb.value),
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
   );
 
   @override

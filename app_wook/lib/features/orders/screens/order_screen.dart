@@ -74,26 +74,17 @@ class _OrderScreenState extends SourceConsumerState<OrderScreen> {
         );
       }
     },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
     onSuccess: (_, __) {
-      setState(() {
-        _selection = null;
-      });
+      setState(() => _selection = null);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added to cart!')));
     },
   );
 
-  late final _sendMessage = ref.mutation(
-    (ref, IList<OrderItemModel> items) async {
-      final message = OrdersUtils.generateMessage(items);
-      await PlatformUtils.shareToWhatsApp(Env.phoneNumber, message);
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
-  );
+  late final _sendMessage = ref.mutation((ref, IList<OrderItemModel> items) async {
+    final message = OrdersUtils.generateMessage(items);
+    await PlatformUtils.shareToWhatsApp(Env.phoneNumber, message);
+  }, onError: (_, error) => CoreUtils.showErrorSnackBar(context, error));
 
   void _toggleSelection(String userId, IList<OrderItemModel> items) {
     setState(() {

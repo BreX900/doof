@@ -41,9 +41,7 @@ class _CartsScreenState extends SourceConsumerState<CartsScreen> {
       setState(() => _pendingItems = _pendingItems.add((cart.id, item.id)));
       await CartItemsProviders.remove(ref, cart.id, item.id);
     },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
     onFinish: (__, _, ___) {
       final (cart, item) = __;
       setState(() => _pendingItems = _pendingItems.remove((cart.id, item.id)));

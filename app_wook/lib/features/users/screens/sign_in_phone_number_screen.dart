@@ -30,31 +30,22 @@ class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumbe
   }
 
   late final _signIn = ref.mutation(
-    (ref, None _) async {
-      return await UsersProviders.signInWithPhoneNumber(ref, _phoneNumberFb.value);
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
+    (ref, None _) async => await UsersProviders.signInWithPhoneNumber(ref, _phoneNumberFb.value),
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
     onSuccess: (_, verificationId) {
       final route = SignInPhoneNumberRoute(verificationId: verificationId);
       context.pushReplacement(route.location, extra: route);
     },
   );
 
-  late final _confirmVerification = ref.mutation(
-    (ref, None _) async {
-      await UsersProviders.confirmPhoneNumberVerification(
-        ref,
-        _verificationId!,
-        organizationId: Env.organizationId,
-        code: _sentCodeFb.value,
-      );
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
-  );
+  late final _confirmVerification = ref.mutation((ref, None _) async {
+    await UsersProviders.confirmPhoneNumberVerification(
+      ref,
+      _verificationId!,
+      organizationId: Env.organizationId,
+      code: _sentCodeFb.value,
+    );
+  }, onError: (_, error) => CoreUtils.showErrorSnackBar(context, error));
 
   @override
   Widget build(BuildContext context) {

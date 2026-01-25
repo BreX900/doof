@@ -49,12 +49,8 @@ class _CartScreenState extends SourceConsumerState<CartScreen> {
   }
 
   late final _join = ref.mutation(
-    (ref, arg) async {
-      await CartsProviders.join(ref, Env.organizationId, Env.cartId);
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
+    (ref, arg) async => await CartsProviders.join(ref, Env.organizationId, Env.cartId),
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
   );
 
   @override

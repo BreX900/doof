@@ -12,12 +12,10 @@ class SignEmailScreen extends SourceConsumerStatefulWidget {
 
 class _SignEmailScreenState extends SourceConsumerState<SignEmailScreen> {
   late final _sendEmailVerification = ref.mutation(
-        (ref, arg) async {
+    (ref, arg) async {
       await Instances.auth.currentUser!.sendEmailVerification();
     },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
     onSuccess: (_, __) {
       ScaffoldMessenger.of(context).showMaterialBanner(
         const MaterialBanner(
@@ -28,15 +26,10 @@ class _SignEmailScreenState extends SourceConsumerState<SignEmailScreen> {
     },
   );
 
-  late final _reload = ref.mutation(
-        (ref, arg) async {
-      await Instances.auth.currentUser!.reload();
-      ref.invalidate(UsersProviders.currentAuth);
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
-  );
+  late final _reload = ref.mutation((ref, arg) async {
+    await Instances.auth.currentUser!.reload();
+    ref.invalidate(UsersProviders.currentAuth);
+  }, onError: (_, error) => CoreUtils.showErrorSnackBar(context, error));
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +51,7 @@ class _SignEmailScreenState extends SourceConsumerState<SignEmailScreen> {
         icon: const Icon(Icons.mark_email_unread_outlined),
         title: Text(
           'Please verify your email:\n'
-              '${Instances.auth.currentUser!.email}',
+          '${Instances.auth.currentUser!.email}',
         ),
         description: const Text('Tap to verify that you have reset the email'),
       ),

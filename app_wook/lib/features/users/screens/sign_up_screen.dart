@@ -28,18 +28,14 @@ class _SignUpScreenState extends SourceConsumerState<SignUpScreen> {
   }
 
   late final _signUp = ref.mutation(
-    (ref, None _) async {
-      await UsersProviders.signUp(
-        ref,
-        email: _emailFb.value,
-        password: _passwordFb.value,
-        passwordConfirmation: _passwordConfirmationFb.value,
-        organizationId: Env.organizationId,
-      );
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
+    (ref, None _) async => await UsersProviders.signUp(
+      ref,
+      email: _emailFb.value,
+      password: _passwordFb.value,
+      passwordConfirmation: _passwordConfirmationFb.value,
+      organizationId: Env.organizationId,
+    ),
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
   );
 
   @override

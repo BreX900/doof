@@ -201,12 +201,8 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
         items: _itemsFb.controls.map((e) => MapEntry(e.userId, e.toValue())).toIMap(),
       );
     },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
-    onSuccess: (_, __) {
-      context.pop();
-    },
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+    onSuccess: (_, __) => context.pop(),
   );
 
   late final _updateInvoice = ref.mutation(
@@ -221,12 +217,8 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
         items: _itemsFb.controls.map((e) => MapEntry(e.userId, e.toValue())).toIMap(),
       );
     },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
-    onSuccess: (_, __) {
-      context.pop();
-    },
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+    onSuccess: (_, __) => context.pop(),
   );
 
   Future<void> _showItemUpsertDialog([_ItemFieldBloc? formControl]) async {

@@ -147,9 +147,7 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
         levels: _levelsFb.value.lockUnsafe.cast(),
       );
     },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
+    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
     onSuccess: (product, __) {
       final router = GoRouter.of(context);
       ScaffoldMessenger.of(context).showSnackBar(

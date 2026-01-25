@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/apis/doof_migrations.dart';
@@ -17,58 +18,58 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
+  GoRouter.optionURLReflectsImperativeAPIs = true;
+
   Logger.root.reportRecords();
   Observers.attachAll();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   if (Env.flavour == EnvFlavour.frontend) {
-    runApp(VersionGuard(
-      child: buildUserApp(),
-    ));
+    runApp(VersionGuard(child: buildUserApp()));
     // } else if (Env.flavour == EnvFlavour.backoffice) {
     //   _runApp(VersionGuard(
     //     child: buildAdminApp(),
     //   ));
   } else {
-    runApp(AppsGuard(
-      values: EnvFlavour.values,
-      pickerBuilder: (context, isLoading) {
-        return AppsApp(
-          isLoading: isLoading,
-          values: EnvFlavour.values,
-          bottom: Column(
-            children: [
-              if (kDebugMode)
-                ListTile(
-                  onTap: () => DoofDatabaseMigrations.instance.createCart(),
-                  title: const Text('Create Kuama Cart'),
-                ),
-              if (kDebugMode)
-                ListTile(
-                  onTap: () => DoofDatabaseMigrations.instance.migrateMenu(),
-                  title: const Text('Migrate Doof Menu'),
-                ),
-              if (kDebugMode)
-                ListTile(
-                  onTap: () => DoofDatabaseMigrations.instance.deleteCartsOrders(),
-                  title: const Text('Delete Doof Carts/Orders'),
-                ),
-              Text('Env: ${Env.mode.name}'),
-            ],
-          ),
-        );
-      },
-      builder: (context, value) {
-        switch (value) {
-          case EnvFlavour.frontend:
-          case EnvFlavour.backoffice:
-            return buildUserApp();
-          // return buildAdminApp();
-        }
-      },
-    ));
+    runApp(
+      AppsGuard(
+        values: EnvFlavour.values,
+        pickerBuilder: (context, isLoading) {
+          return AppsApp(
+            isLoading: isLoading,
+            values: EnvFlavour.values,
+            bottom: Column(
+              children: [
+                if (kDebugMode)
+                  ListTile(
+                    onTap: () => DoofDatabaseMigrations.instance.createCart(),
+                    title: const Text('Create Kuama Cart'),
+                  ),
+                if (kDebugMode)
+                  ListTile(
+                    onTap: () => DoofDatabaseMigrations.instance.migrateMenu(),
+                    title: const Text('Migrate Doof Menu'),
+                  ),
+                if (kDebugMode)
+                  ListTile(
+                    onTap: () => DoofDatabaseMigrations.instance.deleteCartsOrders(),
+                    title: const Text('Delete Doof Carts/Orders'),
+                  ),
+                Text('Env: ${Env.mode.name}'),
+              ],
+            ),
+          );
+        },
+        builder: (context, value) {
+          switch (value) {
+            case EnvFlavour.frontend:
+            case EnvFlavour.backoffice:
+              return buildUserApp();
+            // return buildAdminApp();
+          }
+        },
+      ),
+    );
   }
 }
