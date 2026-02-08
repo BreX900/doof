@@ -5,7 +5,6 @@ import 'package:core/core.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/features/sheet/dto/invoice_dto.dart';
@@ -202,7 +201,7 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
       );
     },
     onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, __) => context.pop(),
+    onSuccess: (_, __) => Navigator.pop(context),
   );
 
   late final _updateInvoice = ref.mutation(
@@ -218,7 +217,7 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
       );
     },
     onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, __) => context.pop(),
+    onSuccess: (_, __) => Navigator.pop(context),
   );
 
   Future<void> _showItemUpsertDialog([_ItemFieldBloc? formControl]) async {

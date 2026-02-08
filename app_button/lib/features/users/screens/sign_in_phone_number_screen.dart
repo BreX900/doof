@@ -3,7 +3,6 @@ import 'package:app_button/shared/navigation/routes.dart';
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 import 'package:reactive_phone_form_field/reactive_phone_form_field.dart';
 
@@ -68,7 +67,7 @@ class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumbe
     onSuccess: (_, __) {
       final organizationId = widget.organizationId;
       if (widget.shouldPop) {
-        context.pop(true);
+        Navigator.pop(context, true);
       } else if (organizationId != null) {
         ServicesRoute(organizationId).go(context);
       } else {

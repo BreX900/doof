@@ -11,8 +11,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 
-final _stateProvider =
-    FutureProvider.autoDispose.family((ref, (String organizationId, String orderId) args) async {
+final _stateProvider = FutureProvider.autoDispose.family((
+  ref,
+  (String organizationId, String orderId) args,
+) async {
   final (organizationId, orderId) = args;
   return (
     order: await ref.watch(OrdersProviders.single((organizationId, orderId)).future),
@@ -24,11 +26,7 @@ class AdminOrderScreen extends ConsumerStatefulWidget with AsyncConsumerStateful
   final String organizationId;
   final String orderId;
 
-  AdminOrderScreen({
-    super.key,
-    required this.organizationId,
-    required this.orderId,
-  });
+  AdminOrderScreen({super.key, required this.organizationId, required this.orderId});
 
   late final stateProvider = _stateProvider((organizationId, orderId));
 
@@ -73,9 +71,7 @@ class _AdminProductScreenState extends ConsumerState<AdminOrderScreen> with Asyn
       widget.orderId,
       status: _statusFb.state.value!,
     );
-  }, onSuccess: (_, __) {
-    context.pop();
-  });
+  }, onSuccess: (_, __) => Navigator.pop(context));
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +92,7 @@ class _AdminProductScreenState extends ConsumerState<AdminOrderScreen> with Asyn
               onPressed: isIdle ? ref.handleSubmit(_form, () => _update(null)) : null,
               child: const Text('Update'),
             ),
-          )
+          ),
         ],
       ),
       body: AsyncViewBuilder(
@@ -128,7 +124,7 @@ class _AdminProductScreenState extends ConsumerState<AdminOrderScreen> with Asyn
               OrderStatus.notAccepted,
               OrderStatus.processing,
               OrderStatus.delivering,
-              OrderStatus.delivered
+              OrderStatus.delivered,
             }.contains(e),
             child: Text(e.name),
           );
@@ -186,12 +182,8 @@ class _AdminProductScreenState extends ConsumerState<AdminOrderScreen> with Asyn
 
     return AdminBodyLayout(
       slivers: [
-        SliverFieldsLayout(
-          children: fields,
-        ),
-        SliverCardsLayout(
-          children: products,
-        ),
+        SliverFieldsLayout(children: fields),
+        SliverCardsLayout(children: products),
       ],
     );
   }

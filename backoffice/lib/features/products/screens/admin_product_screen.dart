@@ -11,8 +11,10 @@ import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
-final _stateProvider =
-    FutureProvider.autoDispose.family((ref, (String organizationId, String? productId) args) async {
+final _stateProvider = FutureProvider.autoDispose.family((
+  ref,
+  (String organizationId, String? productId) args,
+) async {
   final (organizationId, productId) = args;
   ProductModel? product;
   if (productId != null) {
@@ -28,11 +30,7 @@ class AdminProductScreen extends ConsumerStatefulWidget with AsyncConsumerStatef
   final String organizationId;
   final String? productId;
 
-  AdminProductScreen({
-    super.key,
-    required this.organizationId,
-    this.productId,
-  });
+  AdminProductScreen({super.key, required this.organizationId, this.productId});
 
   late final stateProvider = _stateProvider((organizationId, productId));
 
@@ -52,25 +50,18 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
     initialValue: '',
     validator: const TextValidation(minLength: 3),
   );
-  final _descriptionFb = FieldBloc<String>(
-    initialValue: '',
-  );
+  final _descriptionFb = FieldBloc<String>(initialValue: '');
   final _priceFb = FieldBloc<Decimal?>(
     initialValue: null,
     validator: const RequiredValidation<Decimal>(),
   );
-  final _ingredientsFb = FieldBloc<ISet<IngredientDto>>(
-    initialValue: const ISet.empty(),
-  );
-  final _removableIngredientsFb = FieldBloc<ISet<IngredientDto>>(
-    initialValue: const ISet.empty(),
-  );
-  final _addableIngredientsFb = FieldBloc<ISet<IngredientDto>>(
-    initialValue: const ISet.empty(),
-  );
+  final _ingredientsFb = FieldBloc<ISet<IngredientDto>>(initialValue: const ISet.empty());
+  final _removableIngredientsFb = FieldBloc<ISet<IngredientDto>>(initialValue: const ISet.empty());
+  final _addableIngredientsFb = FieldBloc<ISet<IngredientDto>>(initialValue: const ISet.empty());
 
-  late final _form =
-      ListFieldBloc<void>(fieldBlocs: [_categoryFb, _titleFb, _descriptionFb, _priceFb]);
+  late final _form = ListFieldBloc<void>(
+    fieldBlocs: [_categoryFb, _titleFb, _descriptionFb, _priceFb],
+  );
 
   late final _upsertProduct = ref.mutation((ref, arg) async {
     return await ProductsProviders.upsert(
@@ -82,9 +73,7 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
       description: _descriptionFb.state.value,
       price: _priceFb.state.value!,
     );
-  }, onSuccess: (_, __) {
-    context.pop();
-  });
+  }, onSuccess: (_, __) => Navigator.pop(context));
 
   @override
   void initState() {
@@ -122,9 +111,7 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
   }) {
     return FieldMultiDropdown<ISet<IngredientDto>, IngredientDto>.withChip(
       fieldBloc: fieldBloc,
-      decoration: decoration.copyWith(
-        labelStyle: const TextStyle(height: 0.0),
-      ),
+      decoration: decoration.copyWith(labelStyle: const TextStyle(height: 0.0)),
       converter: const DefaultFieldConverter(),
       itemsBuilder: (context, selection) => ingredients.map((ingredient) {
         return CheckedPopupMenuItem(
@@ -146,10 +133,7 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
         fieldBloc: _categoryFb,
         decoration: const InputDecoration(labelText: 'Category'),
         items: categories.map((e) {
-          return DropdownMenuItem(
-            value: e,
-            child: Text(e.title),
-          );
+          return DropdownMenuItem(value: e, child: Text(e.title));
         }).toList(),
       ),
       ReactiveTextField(
@@ -178,40 +162,39 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
         decoration: const InputDecoration(labelText: 'Ingredients'),
       ),
       // if (false)
-      Consumer(builder: (context, ref, child) {
-        final consumableIngredients = ref.watch(_ingredientsFb.select((state) => state.value));
+      Consumer(
+        builder: (context, ref, child) {
+          final consumableIngredients = ref.watch(_ingredientsFb.select((state) => state.value));
 
-        return _buildIngredientsField(
-          fieldBloc: _removableIngredientsFb,
-          ingredients: consumableIngredients.toIList(),
-          decoration: const InputDecoration(labelText: 'Removable ingredients'),
-        );
-      }),
+          return _buildIngredientsField(
+            fieldBloc: _removableIngredientsFb,
+            ingredients: consumableIngredients.toIList(),
+            decoration: const InputDecoration(labelText: 'Removable ingredients'),
+          );
+        },
+      ),
       // if (false)
-      Consumer(builder: (context, ref, child) {
-        final consumableIngredients =
-            ref.watch(_ingredientsFb.select((state) => ingredients.removeAll(state.value)));
+      Consumer(
+        builder: (context, ref, child) {
+          final consumableIngredients = ref.watch(
+            _ingredientsFb.select((state) => ingredients.removeAll(state.value)),
+          );
 
-        return _buildIngredientsField(
-          fieldBloc: _addableIngredientsFb,
-          ingredients: consumableIngredients,
-          decoration: const InputDecoration(
-            label: Padding(
-              padding: EdgeInsets.only(bottom: 20.0),
-              child: Text('Addable ingredients'),
+          return _buildIngredientsField(
+            fieldBloc: _addableIngredientsFb,
+            ingredients: consumableIngredients,
+            decoration: const InputDecoration(
+              label: Padding(
+                padding: EdgeInsets.only(bottom: 20.0),
+                child: Text('Addable ingredients'),
+              ),
             ),
-          ),
-        );
-      })
+          );
+        },
+      ),
     ];
 
-    return AdminBodyLayout(
-      slivers: [
-        SliverFieldsLayout(
-          children: fields,
-        ),
-      ],
-    );
+    return AdminBodyLayout(slivers: [SliverFieldsLayout(children: fields)]);
   }
 
   @override
@@ -223,9 +206,7 @@ class _AdminProductScreenState extends ConsumerState<AdminProductScreen> with As
     final canSubmit = ref.watchCanSubmit(_form);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Product: ${items?.product?.title ?? '...'}'),
-      ),
+      appBar: AppBar(title: Text('Product: ${items?.product?.title ?? '...'}')),
       bottomNavigationBar: BottomButtonBar(
         children: [
           Expanded(

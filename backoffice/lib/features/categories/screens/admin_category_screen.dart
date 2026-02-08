@@ -9,8 +9,10 @@ import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
-final _stateProvider = FutureProvider.autoDispose
-    .family((ref, (String organizationId, String? categoryId) args) async {
+final _stateProvider = FutureProvider.autoDispose.family((
+  ref,
+  (String organizationId, String? categoryId) args,
+) async {
   final (organizationId, categoryId) = args;
   CategoryDto? category;
   if (categoryId != null) {
@@ -23,11 +25,7 @@ class AdminCategoryScreen extends ConsumerStatefulWidget with AsyncConsumerState
   final String organizationId;
   final String? categoryId;
 
-  AdminCategoryScreen({
-    super.key,
-    required this.organizationId,
-    this.categoryId,
-  });
+  AdminCategoryScreen({super.key, required this.organizationId, this.categoryId});
 
   late final stateProvider = _stateProvider((organizationId, categoryId));
 
@@ -43,9 +41,7 @@ class _AdminCategoryScreenState extends ConsumerState<AdminCategoryScreen> with 
     initialValue: '',
     validators: [ValidatorsTyped.required(), ValidatorsTyped.text(minLength: 3)],
   );
-  final _weightFb = FormControlTyped<int>(
-    initialValue: 0,
-  );
+  final _weightFb = FormControlTyped<int>(initialValue: 0);
 
   late final _form = FormArray<void>([_titleFb, _weightFb]);
 
@@ -75,9 +71,7 @@ class _AdminCategoryScreenState extends ConsumerState<AdminCategoryScreen> with 
       title: _titleFb.state.value,
       weight: _weightFb.state.value,
     );
-  }, onSuccess: (_, __) {
-    context.pop();
-  });
+  }, onSuccess: (_, __) => Navigator.pop(context));
 
   @override
   Widget build(BuildContext context) {
@@ -86,9 +80,7 @@ class _AdminCategoryScreenState extends ConsumerState<AdminCategoryScreen> with 
     final isIdle = !ref.watchIsMutating([_upsertCategory]);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Category: ${items?.title ?? '...'}'),
-      ),
+      appBar: AppBar(title: Text('Category: ${items?.title ?? '...'}')),
       bottomNavigationBar: BottomButtonBar(
         children: [
           Expanded(
@@ -96,13 +88,10 @@ class _AdminCategoryScreenState extends ConsumerState<AdminCategoryScreen> with 
               onPressed: isIdle ? ref.handleSubmit(_form, () => _upsertCategory(null)) : null,
               child: Text(widget.categoryId == null ? 'Create' : 'Update'),
             ),
-          )
+          ),
         ],
       ),
-      body: AsyncViewBuilder(
-        state: state,
-        builder: (context, items) => _buildBody(context),
-      ),
+      body: AsyncViewBuilder(state: state, builder: (context, items) => _buildBody(context)),
     );
   }
 
@@ -122,12 +111,6 @@ class _AdminCategoryScreenState extends ConsumerState<AdminCategoryScreen> with 
       ),
     ];
 
-    return AdminBodyLayout(
-      slivers: [
-        SliverFieldsLayout(
-          children: fields,
-        ),
-      ],
-    );
+    return AdminBodyLayout(slivers: [SliverFieldsLayout(children: fields)]);
   }
 }

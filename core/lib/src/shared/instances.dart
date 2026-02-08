@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // ignore: depend_on_referenced_packages
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mekart/mekart.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -21,6 +22,7 @@ abstract final class Instances {
 class _BinEngine extends BinEngineBase {
   @override
   Future<String?> getDirectoryPath() async {
+    if (kIsWeb) return null;
     final directory = await getApplicationDocumentsDirectory();
     return directory.path;
   }

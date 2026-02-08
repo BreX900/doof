@@ -10,16 +10,17 @@ import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
-final _stateProvider = FutureProvider.autoDispose
-    .family((ref, (String organizationId, String? ingredientId) args) async {
+final _stateProvider = FutureProvider.autoDispose.family((
+  ref,
+  (String organizationId, String? ingredientId) args,
+) async {
   final (organizationId, ingredientId) = args;
 
   IngredientDto? ingredient;
   if (ingredientId != null) {
-    ingredient = await ref.watch(IngredientsProviders.single((
-      organizationId,
-      ingredientId,
-    )).future);
+    ingredient = await ref.watch(
+      IngredientsProviders.single((organizationId, ingredientId)).future,
+    );
   }
 
   return (ingredient: ingredient);
@@ -29,11 +30,7 @@ class AdminIngredientScreen extends ConsumerStatefulWidget with AsyncConsumerSta
   final String organizationId;
   final String? ingredientId;
 
-  AdminIngredientScreen({
-    super.key,
-    required this.organizationId,
-    this.ingredientId,
-  });
+  AdminIngredientScreen({super.key, required this.organizationId, this.ingredientId});
 
   late final stateProvider = _stateProvider((organizationId, ingredientId));
 
@@ -50,9 +47,7 @@ class _AdminProductScreenState extends ConsumerState<AdminIngredientScreen>
     initialValue: '',
     validator: const TextValidation(minLength: 3),
   );
-  final _descriptionFb = FormControlTyped<String>(
-    initialValue: '',
-  );
+  final _descriptionFb = FormControlTyped<String>(initialValue: '');
   final _priceFb = FormControlTypedOptional<Decimal>(
     initialValue: null,
     validator: const RequiredValidation<Decimal>(),
@@ -69,9 +64,7 @@ class _AdminProductScreenState extends ConsumerState<AdminIngredientScreen>
       description: _descriptionFb.value,
       price: _priceFb.value!,
     );
-  }, onSuccess: (_, __) {
-    context.pop();
-  });
+  }, onSuccess: (_, __) => Navigator.pop(context));
 
   @override
   void initState() {
@@ -117,13 +110,7 @@ class _AdminProductScreenState extends ConsumerState<AdminIngredientScreen>
       ),
     ];
 
-    return AdminBodyLayout(
-      slivers: [
-        SliverFieldsLayout(
-          children: fields,
-        ),
-      ],
-    );
+    return AdminBodyLayout(slivers: [SliverFieldsLayout(children: fields)]);
   }
 
   @override
@@ -134,9 +121,7 @@ class _AdminProductScreenState extends ConsumerState<AdminIngredientScreen>
     final isIdle = !ref.watchIsMutating([_upsertIngredient]);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Ingredient: ${data?.ingredient?.title ?? '...'}'),
-      ),
+      appBar: AppBar(title: Text('Ingredient: ${data?.ingredient?.title ?? '...'}')),
       bottomNavigationBar: BottomButtonBar(
         children: [
           Expanded(
@@ -147,10 +132,7 @@ class _AdminProductScreenState extends ConsumerState<AdminIngredientScreen>
           ),
         ],
       ),
-      body: AsyncViewBuilder(
-        state: state,
-        builder: (context, data) => _buildBody(),
-      ),
+      body: AsyncViewBuilder(state: state, builder: (context, data) => _buildBody()),
     );
   }
 }

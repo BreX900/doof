@@ -159,7 +159,7 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
           ),
         ),
       );
-      context.pop();
+      Navigator.pop(context);
     },
   );
 

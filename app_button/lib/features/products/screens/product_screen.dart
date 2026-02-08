@@ -7,7 +7,6 @@ import 'package:core/core.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 import 'package:mekart/mekart.dart';
 import 'package:reactive_forms/reactive_forms.dart';
@@ -82,9 +81,7 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
       );
     },
     onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, __) {
-      context.pop();
-    },
+    onSuccess: (_, __) => Navigator.pop(context),
   );
 
   @override
