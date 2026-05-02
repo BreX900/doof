@@ -13,24 +13,19 @@ import 'package:rxdart/rxdart.dart';
 
 class UsersRepository {
   FirebaseAuth get _auth => Instances.auth;
+
   FirebaseFirestore get _firestore => Instances.firestore;
 
   static final UsersRepository instance = UsersRepository._();
+
   UsersRepository._();
 
   CollectionReference<UserDto> _ref() {
     return _firestore.collection('users').withJsonConverter(UserDto.fromJson);
   }
 
-  Future<void> create({
-    required String? displayName,
-    required String? phoneNumber,
-  }) async {
-    final user = UserDto(
-      id: '',
-      phoneNumber: phoneNumber,
-      displayName: displayName,
-    );
+  Future<void> create({required String? displayName, required String? phoneNumber}) async {
+    final user = UserDto(id: '', phoneNumber: phoneNumber, displayName: displayName);
     await _ref().doc(_auth.currentUser!.uid).set(user);
   }
 
@@ -70,7 +65,8 @@ class UsersRepository {
         },
         codeAutoRetrievalTimeout: (verificationId) {
           lg.warning(
-              'FirebaseAuth.verifyPhoneNumber.codeAutoRetrievalTimeout(verificationId:$verificationId)');
+            'FirebaseAuth.verifyPhoneNumber.codeAutoRetrievalTimeout(verificationId:$verificationId)',
+          );
         },
       );
       return sentToken.future;
@@ -91,9 +87,8 @@ class UsersRepository {
         .map((snapshot) => snapshot.data());
   }
 
-  Stream<IList<UserDto>> watchAll() {
-    return _ref().snapshots().map((snapshot) {
-      return snapshot.docs.map((e) => e.data()).toIList();
-    });
+  Future<IList<UserDto>> fetchAll() async {
+    final snapshot = await _ref().get();
+    return snapshot.docs.map((e) => e.data()).toIList();
   }
 }

@@ -24,8 +24,10 @@ abstract class CategoriesProviders {
     return page;
   });
 
-  static final single = FutureProvider.autoDispose
-      .family((ref, (String organizationId, String categoryId) args) async {
+  static final single = FutureProvider.autoDispose.family((
+    ref,
+    (String organizationId, String categoryId) args,
+  ) async {
     final (organizationId, categoryId) = args;
 
     return await CategoriesRepository.instance.fetch(organizationId, categoryId);
@@ -40,13 +42,12 @@ abstract class CategoriesProviders {
   }) async {
     await CategoriesRepository.instance.upsert(
       organizationId,
-      CategoryDto(
-        id: id ?? '',
-        title: title,
-        weight: weight,
-      ),
+      CategoryDto(id: id ?? '', title: title, weight: weight),
     );
 
+    ref.invalidate(all);
+    ref.invalidate(pageCursor);
     ref.invalidate(page);
+    ref.invalidate(single);
   }
 }

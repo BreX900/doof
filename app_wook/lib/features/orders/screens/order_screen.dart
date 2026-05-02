@@ -28,19 +28,21 @@ final _screenProvider = FutureProvider.autoDispose.family((ref, String orderId) 
   return (userId: userId, order: orderState.requireValue, orderItems: orderItemsState.requireValue);
 });
 
-class OrderScreen extends SourceConsumerStatefulWidget {
+class OrderScreen extends ConsumerStatefulWidget {
   final String orderId;
   final bool isNew;
 
   const OrderScreen({super.key, required this.orderId, required this.isNew});
 
   @override
-  SourceConsumerState<OrderScreen> createState() => _OrderScreenState();
+  ConsumerState<OrderScreen> createState() => _OrderScreenState();
 }
 
-class _OrderScreenState extends SourceConsumerState<OrderScreen> {
+class _OrderScreenState extends ConsumerState<OrderScreen> {
   FutureProvider<({OrderModel order, IList<OrderItemModel> orderItems, String userId})>
   get _provider => _screenProvider(widget.orderId);
+
+  late final _mutation = MutationController(ref);
 
   IList<OrderItemModel>? _selection;
 
@@ -50,13 +52,19 @@ class _OrderScreenState extends SourceConsumerState<OrderScreen> {
     unawaited(_init());
   }
 
+  @override
+  void dispose() {
+    _mutation.dispose();
+    super.dispose();
+  }
+
   Future<void> _init() async {
     final data = await ref.futureOfData(_provider);
     if (widget.isNew) _sendMessage(data.orderItems);
   }
 
-  late final _addItemsToCart = ref.mutation(
-    (ref, IList<OrderItemModel> items) async {
+  void _addItemsToCart(IList<OrderItemModel> items) => _mutation(
+    (ref) async {
       final userId = await ref.read(UsersProviders.currentId.future);
       for (final item in items) {
         final buyer = item.buyers.singleOrNull;
@@ -74,14 +82,14 @@ class _OrderScreenState extends SourceConsumerState<OrderScreen> {
         );
       }
     },
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, __) {
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+    onSuccess: (_) {
       setState(() => _selection = null);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added to cart!')));
     },
   );
 
-  late final _sendMessage = ref.mutation((ref, IList<OrderItemModel> items) async {
+  void _sendMessage(IList<OrderItemModel> items) => _mutation((ref) async {
     final message = OrdersUtils.generateMessage(items);
     await PlatformUtils.shareToWhatsApp(Env.phoneNumber, message);
   }, onError: (_, error) => CoreUtils.showErrorSnackBar(context, error));
@@ -103,7 +111,7 @@ class _OrderScreenState extends SourceConsumerState<OrderScreen> {
     final formats = AppFormats.of(context);
     final selection = _selection;
 
-    final isIdle = !ref.watchIsMutating([_addItemsToCart, _sendMessage]);
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
 
     Widget? floatingActionButton;
     if (selection != null) {

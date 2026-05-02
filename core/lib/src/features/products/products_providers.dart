@@ -83,7 +83,10 @@ abstract class ProductsProviders {
       ),
     );
 
+    ref.invalidate(all);
+    ref.invalidate(first);
     ref.invalidate(page);
+    ref.invalidate(single);
   }
 }
 

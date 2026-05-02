@@ -21,8 +21,8 @@ class MissingCredentialsFailure extends Failure {
 }
 
 abstract class UsersProviders {
-  static final all = StreamProvider((ref) {
-    return UsersRepository.instance.watchAll();
+  static final all = FutureProvider((ref) async {
+    return await UsersRepository.instance.fetchAll();
   });
 
   static final current = FutureProvider<UserDto?>((ref) async {

@@ -83,6 +83,8 @@ abstract class CartsProviders {
     required String title,
   }) async {
     await CartsRepository.instance.create(organizationId, isPublic: true, title: title);
+
+    _invalidate(ref);
   }
 
   static Future<String> sendOrder(
@@ -128,20 +130,33 @@ abstract class CartsProviders {
       }),
     );
 
+    _invalidate(ref);
+
     return orderId;
   }
 
   static Future<void> join(MutationRef ref, String organizationId, String cartId) async {
     final user = await ref.read(UsersProviders.current.future);
     if (user == null) throw MissingCredentialsFailure();
+
     await CartsRepository.instance.addMember(organizationId, cartId, userId: user.id);
+
+    _invalidate(ref);
   }
 
-  static final _all = StreamProvider.family((ref, String organizationId) async* {
+  static final _all = FutureProvider.family((ref, String organizationId) async {
     final user = await ref.watch(UsersProviders.current.future);
     if (user == null) throw MissingCredentialsFailure();
-    yield* CartsRepository.instance.watchAll(organizationId, userId: user.id);
+    return await CartsRepository.instance.fetchAll(organizationId, userId: user.id);
   });
+
+  static void _invalidate(MutationRef ref) {
+    ref.invalidate(personal);
+    ref.invalidate(first);
+    ref.invalidate(all);
+    ref.invalidate(public);
+    ref.invalidate(_all);
+  }
 }
 
 abstract class CartItemsProviders {
@@ -227,6 +242,8 @@ abstract class CartItemsProviders {
       );
     }
     await CartItemsRepository.instance.upsert(targetCartId, item);
+
+    _invalidate(ref);
   }
 
   static Future<void> remove(MutationRef ref, String cartId, String itemId) async {
@@ -236,6 +253,8 @@ abstract class CartItemsProviders {
     }
     assert(cartId != CartModel.temporaryId, 'Item not exist in cart because it is temporary item');
     await CartItemsRepository.instance.remove(cartId, itemId);
+
+    _invalidate(ref);
   }
 
   static Future<void> upsertFromOrder(
@@ -257,15 +276,24 @@ abstract class CartItemsProviders {
         quantity: item.quantity,
       );
     }
+    _invalidate(ref);
   }
 
-  static final _all = StreamProvider.family((ref, String cartId) {
+  static final _all = StreamProvider.family((ref, String cartId) async* {
     if (cartId == CartModel.localId) {
-      return LocalCartItemsRepository.instance.watchAll();
+      yield* LocalCartItemsRepository.instance.watchAll();
+      return;
     }
     if (cartId == CartModel.temporaryId) {
-      return Stream.value(const IListConst<CartItemDto>([]));
+      yield* Stream.value(const IListConst<CartItemDto>([]));
+      return;
     }
-    return CartItemsRepository.instance.watchAll(cartId);
+    yield await CartItemsRepository.instance.fetchAll(cartId);
   });
+
+  static void _invalidate(MutationRef ref) {
+    ref.invalidate(first);
+    ref.invalidate(all);
+    ref.invalidate(_all);
+  }
 }

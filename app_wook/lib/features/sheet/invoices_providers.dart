@@ -8,8 +8,8 @@ import 'package:mek_gasol/features/sheet/repositories/invoices_repository.dart';
 import 'package:mekart/mekart.dart';
 
 abstract class InvoicesProviders {
-  static final all = StreamProvider((ref) {
-    return InvoicesRepository.instance.watchAll();
+  static final all = FutureProvider((ref) async {
+    return await InvoicesRepository.instance.readAll();
   });
 
   static final single = FutureProvider.family.autoDispose((ref, String invoiceId) async {
@@ -19,7 +19,8 @@ abstract class InvoicesProviders {
     return invoice;
   });
 
-  static Future<void> create(MutationRef ref, {
+  static Future<void> create(
+    MutationRef ref, {
     required OrderModel? order,
     required String payerId,
     required Fixed? payedAmount,
@@ -51,6 +52,8 @@ abstract class InvoicesProviders {
         vaultOutcomes: vaultOutcomes?.where((_, value) => value > Fixed.zero),
       ),
     );
+    ref.invalidate(InvoicesProviders.all);
+    ref.invalidate(InvoicesProviders.single);
 
     if (order == null) return;
     await OrdersRepository.instance.update(
@@ -60,7 +63,8 @@ abstract class InvoicesProviders {
     );
   }
 
-  static Future<void> update(MutationRef ref, {
+  static Future<void> update(
+    MutationRef ref, {
     required InvoiceDto invoice,
     required String payerId,
     Fixed? payedAmount,
@@ -85,5 +89,7 @@ abstract class InvoicesProviders {
         vaultOutcomes: vaultOutcomes?.where((_, value) => value > Fixed.zero),
       ),
     );
+    ref.invalidate(InvoicesProviders.all);
+    ref.invalidate(InvoicesProviders.single);
   }
 }

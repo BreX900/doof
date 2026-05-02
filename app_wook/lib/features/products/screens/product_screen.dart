@@ -44,7 +44,7 @@ final _screenProvider = FutureProvider.autoDispose.family((ref, (String?, String
   );
 });
 
-class ProductScreen extends SourceConsumerStatefulWidget {
+class ProductScreen extends ConsumerStatefulWidget {
   final String? productId;
   final String? cartId;
   final String? cartItemId;
@@ -62,10 +62,10 @@ class ProductScreen extends SourceConsumerStatefulWidget {
       cartId = Env.cartId;
 
   @override
-  SourceConsumerState<ProductScreen> createState() => _ProductScreenState();
+  ConsumerState<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _ProductScreenState extends SourceConsumerState<ProductScreen> {
+class _ProductScreenState extends ConsumerState<ProductScreen> {
   FutureProvider<
     ({
       CartModel? cart,
@@ -76,6 +76,8 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
     })
   >
   get _provider => _screenProvider((widget.productId, widget.cartId, widget.cartItemId));
+
+  late final _mutation = MutationController(ref);
 
   final _cartFb = FormControlTypedOptional<CartModel>(validators: [ValidatorsTyped.required()]);
   final _buyersFb = FormControlTyped<ISet<UserDto>>(
@@ -99,6 +101,7 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
   @override
   void dispose() {
     _form.dispose();
+    _mutation.dispose();
     super.dispose();
   }
 
@@ -133,8 +136,8 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
     if (user != null) _form.add(_buyersFb);
   }
 
-  late final _upsertProduct = ref.mutation(
-    (ref, ProductModel product) async {
+  void _upsertProduct(ProductModel product) => _mutation(
+    (ref) async {
       await CartItemsProviders.upsert(
         ref,
         Env.organizationId,
@@ -147,8 +150,8 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
         levels: _levelsFb.value.lockUnsafe.cast(),
       );
     },
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (product, __) {
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+    onSuccess: (_) {
       final router = GoRouter.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -167,7 +170,7 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
     final items = state.value;
-    final isIdle = !ref.watchIsMutating([_upsertProduct]);
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
 
     return Scaffold(
       appBar: AppBar(title: Text(state.value?.product.title ?? 'Product...')),
@@ -274,18 +277,17 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
       child: Column(
         children: [
           if (carts.length > 1) buildCartField(),
-          SourceBuilder(
+          Consumer(
             builder: (context, ref, _) {
-              final members =
-                  ref.watchSource(_cartFb.source.value)?.members ?? const IListConst([]);
+              final members = ref.watch(_cartFb.provider.value)?.members ?? const IListConst([]);
               if (members.length <= 1) return const SizedBox.shrink();
               return buildBuyersField(members);
             },
           ),
           buildQuantityField(),
-          SourceBuilder(
+          Consumer(
             builder: (context, ref, _) {
-              final fieldBlocs = ref.watchSource(_levelsFb.source.controlsTyped);
+              final fieldBlocs = ref.watch(_levelsFb.provider.controlsTyped);
               return buildLevelsFields(fieldBlocs.cast());
             },
           ),

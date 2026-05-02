@@ -1,17 +1,20 @@
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
-class SignUpScreen extends SourceConsumerStatefulWidget {
+class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
   @override
-  SourceConsumerState<SignUpScreen> createState() => _SignUpScreenState();
+  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends SourceConsumerState<SignUpScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+  late final _mutation = MutationController(ref);
+
   final _emailFb = FormControlTyped(initialValue: '', validators: [ValidatorsTyped.email()]);
   final _passwordFb = FormControlTyped(initialValue: '', validators: [ValidatorsTyped.password()]);
   final _passwordConfirmationFb = FormControlTyped(
@@ -24,24 +27,25 @@ class _SignUpScreenState extends SourceConsumerState<SignUpScreen> {
   @override
   void dispose() {
     _form.dispose();
+    _mutation.dispose();
     super.dispose();
   }
 
-  late final _signUp = ref.mutation(
-    (ref, None _) async => await UsersProviders.signUp(
+  void _signUp() => _mutation(
+    (ref) async => await UsersProviders.signUp(
       ref,
       email: _emailFb.value,
       password: _passwordFb.value,
       passwordConfirmation: _passwordConfirmationFb.value,
       organizationId: Env.organizationId,
     ),
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
   );
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = !ref.watchIsMutating([_signUp]);
-    final signUp = _form.handleSubmit(() => _signUp(none));
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final signUp = _form.handleSubmit(_signUp);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sign Up!')),

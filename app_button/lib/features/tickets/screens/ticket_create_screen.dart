@@ -13,7 +13,7 @@ final _stateProvider = FutureProvider.autoDispose.family((ref, String organizati
   return (organization: organizationState.requireValue);
 });
 
-class TicketCreateScreen extends SourceConsumerStatefulWidget {
+class TicketCreateScreen extends ConsumerStatefulWidget {
   final String organizationId;
 
   TicketCreateScreen({super.key, required this.organizationId});
@@ -21,31 +21,30 @@ class TicketCreateScreen extends SourceConsumerStatefulWidget {
   late final stateProvider = _stateProvider(organizationId);
 
   @override
-  SourceConsumerState<TicketCreateScreen> createState() => _TicketCreateScreenState();
+  ConsumerState<TicketCreateScreen> createState() => _TicketCreateScreenState();
 }
 
-class _TicketCreateScreenState extends SourceConsumerState<TicketCreateScreen> {
+class _TicketCreateScreenState extends ConsumerState<TicketCreateScreen> {
+  late final _mutation = MutationController(ref);
+
   final _placeFb = FormControlTyped<String>(
     initialValue: '',
     validators: [ValidatorsTyped.required()],
   );
 
-  late final _createTicket = ref.mutation(
-    (ref, arg) async {
-      return await TicketsProviders.create(
-        organizationId: widget.organizationId,
-        place: _placeFb.value,
-      );
-    },
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, __) {
-      TicketCreatedRoute(widget.organizationId).go(context);
+  void _createTicket() => _mutation(
+    (ref) async =>
+        await TicketsProviders.create(organizationId: widget.organizationId, place: _placeFb.value),
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+    onSettled: (_, result) {
+      if (result != null) TicketCreatedRoute(widget.organizationId).go(context);
     },
   );
 
   @override
   void dispose() {
     _placeFb.dispose();
+    _mutation.dispose();
     super.dispose();
   }
 
@@ -54,7 +53,7 @@ class _TicketCreateScreenState extends SourceConsumerState<TicketCreateScreen> {
     final textTheme = theme.textTheme;
     final colors = theme.colorScheme;
 
-    final isIdle = !ref.watchIsMutating([_createTicket]);
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
 
     return Column(
       children: [
@@ -79,10 +78,7 @@ class _TicketCreateScreenState extends SourceConsumerState<TicketCreateScreen> {
                 ),
               ),
             ),
-            OutlinedButton(
-              onPressed: isIdle ? () => _createTicket(null) : null,
-              child: const Text('SEND'),
-            ),
+            OutlinedButton(onPressed: isIdle ? _createTicket : null, child: const Text('SEND')),
           ],
         ),
         const Spacer(flex: 4),

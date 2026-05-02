@@ -18,16 +18,18 @@ final _screenProvider = FutureProvider.autoDispose((ref) {
   return (cart: cartState.requireValue, items: itemsState.requireValue, message: message);
 });
 
-class OrderCheckoutScreen extends SourceConsumerStatefulWidget {
+class OrderCheckoutScreen extends ConsumerStatefulWidget {
   const OrderCheckoutScreen({super.key});
 
   @override
-  SourceConsumerState<OrderCheckoutScreen> createState() => _OrderCheckoutScreenState();
+  ConsumerState<OrderCheckoutScreen> createState() => _OrderCheckoutScreenState();
 }
 
-class _OrderCheckoutScreenState extends SourceConsumerState<OrderCheckoutScreen> {
+class _OrderCheckoutScreenState extends ConsumerState<OrderCheckoutScreen> {
   FutureProvider<({CartModel cart, IList<CartItemModel> items, String message})> get _provider =>
       _screenProvider;
+
+  late final _mutation = MutationController(ref);
 
   VoidCallback? _bannerCartChangedCloser;
   bool _isCartOrdering = false;
@@ -44,6 +46,7 @@ class _OrderCheckoutScreenState extends SourceConsumerState<OrderCheckoutScreen>
   void dispose() {
     _bannerCartChangedCloser?.call();
     _bannerCartChangedCloser = null;
+    _mutation.dispose();
     super.dispose();
   }
 
@@ -67,39 +70,43 @@ class _OrderCheckoutScreenState extends SourceConsumerState<OrderCheckoutScreen>
     setState(() => _bannerCartChangedCloser = null);
   }
 
-  late final _placeOrder = ref.mutation(
-    (ref, arg) async {
-      final data = await ref.read(_screenProvider.future);
-      return await CartsProviders.sendOrder(
-        ref,
-        Env.organizationId,
-        cart: data.cart,
-        items: data.items,
-      );
-    },
-    onStart: (_) => _isCartOrdering = true,
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, orderId) {
-      _isCartOrdering = false;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order sent!')));
-      Navigator.pop(context);
-      OrderRoute(orderId, isNew: true).go(context);
-    },
-  );
+  void _placeOrder() {
+    setState(() => _isCartOrdering = true);
+    _mutation(
+      (ref) async {
+        final data = await ref.read(_screenProvider.future);
+        return await CartsProviders.sendOrder(
+          ref,
+          Env.organizationId,
+          cart: data.cart,
+          items: data.items,
+        );
+      },
+      onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+      onSettled: (_, result) {
+        if (result != null) {
+          setState(() => _isCartOrdering = false);
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order sent!')));
+          Navigator.pop(context);
+          OrderRoute(result, isNew: true).go(context);
+        } else {
+          setState(() => _isCartOrdering = false);
+        }
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
     final items = state.value;
 
-    final isIdle = !ref.watchIsMutating([_placeOrder]);
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Conferma invio ordine')),
       floatingActionButton: FixedFloatingActionButton.extended(
-        onPressed: isIdle && items != null && _bannerCartChangedCloser == null
-            ? () => _placeOrder(null)
-            : null,
+        onPressed: isIdle && items != null && _bannerCartChangedCloser == null ? _placeOrder : null,
         icon: const Icon(Icons.send),
         label: const Text('Invia'),
       ),

@@ -1,20 +1,23 @@
 import 'package:core/core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
-class SignInScreen extends SourceConsumerStatefulWidget {
+class SignInScreen extends ConsumerStatefulWidget {
   final String? organizationId;
   final VoidCallback? onSignUp;
 
   const SignInScreen({super.key, this.organizationId, this.onSignUp});
 
   @override
-  SourceConsumerState<SignInScreen> createState() => _SignInScreenState();
+  ConsumerState<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends SourceConsumerState<SignInScreen> {
+class _SignInScreenState extends ConsumerState<SignInScreen> {
+  late final _mutation = MutationController(ref);
+
   final _emailFb = FormControlTyped<String>(
     initialValue: '',
     validators: [ValidatorsTyped.required(), ValidatorsTyped.email()],
@@ -26,34 +29,6 @@ class _SignInScreenState extends SourceConsumerState<SignInScreen> {
 
   late final _form = FormArray<void>([_emailFb, _passwordFb]);
 
-  late final _signIn = ref.mutation(
-    (ref, None _) async {
-      await UsersProviders.signIn(
-        ref,
-        email: _emailFb.value,
-        password: _passwordFb.value,
-        organizationId: widget.organizationId,
-      );
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
-  );
-
-  late final _sendPasswordResetEmail = ref.mutation(
-    (ref, None _) async {
-      await UsersProviders.sendPasswordResetEmail(ref, _emailFb.value);
-    },
-    onError: (_, error) {
-      CoreUtils.showErrorSnackBar(context, error);
-    },
-    onSuccess: (_, __) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Sent password reset email to ${_emailFb.value}!')));
-    },
-  );
-
   @override
   void initState() {
     super.initState();
@@ -64,10 +39,39 @@ class _SignInScreenState extends SourceConsumerState<SignInScreen> {
   }
 
   @override
+  void dispose() {
+    _mutation.dispose();
+    super.dispose();
+  }
+
+  void _signIn() => _mutation((ref) async {
+    await UsersProviders.signIn(
+      ref,
+      email: _emailFb.value,
+      password: _passwordFb.value,
+      organizationId: widget.organizationId,
+    );
+  }, onError: (error, _) => CoreUtils.showErrorSnackBar(context, error));
+
+  void _sendPasswordResetEmail() => _mutation(
+    (ref) async {
+      await UsersProviders.sendPasswordResetEmail(ref, _emailFb.value);
+    },
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+    onSettled: (_, result) {
+      if (result == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Sent password reset email to ${_emailFb.value}!')));
+      }
+    },
+  );
+
+  @override
   Widget build(BuildContext context) {
-    final isIdle = !ref.watchIsMutating([_signIn, _sendPasswordResetEmail]);
-    final signIn = _form.handleSubmit(() => _signIn(none));
-    final sendPasswordResetEmail = _emailFb.handleSubmit(() => _sendPasswordResetEmail(none));
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final signIn = _form.handleSubmit(_signIn);
+    final sendPasswordResetEmail = _emailFb.handleSubmit(_sendPasswordResetEmail);
 
     List<Widget> buildFields() {
       return [

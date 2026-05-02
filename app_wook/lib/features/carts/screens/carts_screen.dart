@@ -22,31 +22,37 @@ final _screenProvider = FutureProvider.autoDispose((ref) {
   return (userId: userId, productsInCarts: productsInCarts);
 });
 
-class CartsScreen extends SourceConsumerStatefulWidget {
+class CartsScreen extends ConsumerStatefulWidget {
   const CartsScreen({super.key});
 
   @override
-  SourceConsumerState<CartsScreen> createState() => _CartsScreenState();
+  ConsumerState<CartsScreen> createState() => _CartsScreenState();
 }
 
-class _CartsScreenState extends SourceConsumerState<CartsScreen> {
+class _CartsScreenState extends ConsumerState<CartsScreen> {
   FutureProvider<({IMap<CartModel, IList<CartItemModel>> productsInCarts, String userId})>
   get _provider => _screenProvider;
 
+  late final _mutation = MutationController(ref);
+
   var _pendingItems = const ISet<(String, String)>.empty();
 
-  late final _removeItem = ref.mutation(
-    (ref, (CartModel cart, CartItemModel item) __) async {
-      final (cart, item) = __;
-      setState(() => _pendingItems = _pendingItems.add((cart.id, item.id)));
-      await CartItemsProviders.remove(ref, cart.id, item.id);
-    },
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onFinish: (__, _, ___) {
-      final (cart, item) = __;
-      setState(() => _pendingItems = _pendingItems.remove((cart.id, item.id)));
-    },
-  );
+  @override
+  void dispose() {
+    _mutation.dispose();
+    super.dispose();
+  }
+
+  void _removeItem(CartModel cart, CartItemModel item) {
+    setState(() => _pendingItems = _pendingItems.add((cart.id, item.id)));
+    _mutation(
+      (ref) async => await CartItemsProviders.remove(ref, cart.id, item.id),
+      onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+      onSettled: (_, __) {
+        setState(() => _pendingItems = _pendingItems.remove((cart.id, item.id)));
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +80,7 @@ class _CartsScreenState extends SourceConsumerState<CartsScreen> {
   }
 }
 
-class _CartsBody extends SourceWidget {
+class _CartsBody extends ConsumerWidget {
   final _CartsScreenState state;
   final String? userId;
   final IMap<CartModel, IList<CartItemModel>> carts;
@@ -82,13 +88,13 @@ class _CartsBody extends SourceWidget {
   const _CartsBody({required this.state, required this.userId, required this.carts});
 
   @override
-  Widget build(BuildContext context, SourceRef ref) {
-    final isMutating = ref.watchIsMutating([state._removeItem]);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isMutating = ref.watch(state._mutation.provider.isMutating);
 
     final tabController = DefaultTabController.of(context);
     final formats = AppFormats.of(context);
 
-    final tabIndex = ref.watchSource(tabController.source.index);
+    final tabIndex = ref.watch(tabController.asProvider.index);
     final cartEntry = carts.entries.elementAt(tabIndex);
     final cart = cartEntry.key;
     final items = cartEntry.value;
@@ -125,7 +131,7 @@ class _CartsBody extends SourceWidget {
       items: items.unlockView,
       builder: (context, item) => Dismissible(
         key: ValueKey(item),
-        onDismissed: !isMutating ? (_) => state._removeItem((cart, item)) : null,
+        onDismissed: !isMutating ? (_) => state._removeItem(cart, item) : null,
         child: ProductItemListTile(onTap: () => CartItemRoute(item.id).go(context), item: item),
       ),
     );

@@ -4,7 +4,6 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mek/mek.dart';
 import 'package:mekart/mekart.dart';
-import 'package:rxdart/rxdart.dart';
 
 class OrdersRepository {
   static OrdersRepository get instance => OrdersRepository._();
@@ -71,11 +70,11 @@ class OrdersRepository {
     return snapshot.data()!;
   }
 
-  Stream<IList<OrderDto>> watchAll(
+  Future<IList<OrderDto>> fetchAll(
     String organizationId, {
     required String userId,
     List<OrderStatus> whereNotStatusIn = const [],
-  }) {
+  }) async {
     var query = _ref(organizationId).where(OrderDtoFields.membersIds, arrayContains: userId);
     // if (organizationId != null) {
     //   query = query.where(OrderDto.fields.organizationId, isEqualTo: organizationId);
@@ -85,17 +84,14 @@ class OrdersRepository {
           .where(OrderDtoFields.status, whereNotIn: whereNotStatusIn.map((e) => e.name))
           .orderBy(OrderDtoFields.status);
     }
-    return query
-        .orderBy(OrderDtoFields.createdAt, descending: true)
-        .snapshots()
-        .takeUntil(_auth.userLogged)
-        .map((event) => event.docs.map((e) => e.data()).toIList());
+    final snapshot = await query.orderBy(OrderDtoFields.createdAt, descending: true).get();
+    return snapshot.docs.map((e) => e.data()).toIList();
   }
 
-  Stream<IList<OrderDto>> watchPage(String organizationId, Cursor cursor) {
-    final onSnapshot = _ref(
+  Future<IList<OrderDto>> fetchPage(String organizationId, Cursor cursor) async {
+    final snapshot = await _ref(
       organizationId,
-    ).orderBy(OrderDtoFields.updatedAt).apply(cursor).snapshots();
-    return onSnapshot.map((snapshot) => snapshot.docs.map((e) => e.data()).toIList());
+    ).orderBy(OrderDtoFields.updatedAt).apply(cursor).get();
+    return snapshot.docs.map((e) => e.data()).toIList();
   }
 }

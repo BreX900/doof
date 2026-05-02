@@ -15,22 +15,21 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:mek/mek.dart';
 
 abstract class OrdersProviders {
-  static final all = StreamProvider.family((
+  static final all = FutureProvider.family((
     ref,
     (String organizationId, {List<OrderStatus> whereNotStatusIn}) args,
-  ) async* {
+  ) async {
     final (organizationId, :whereNotStatusIn) = args;
     final userId = await ref.watch(UsersProviders.currentId.future);
     if (userId == null) throw MissingCredentialsFailure();
     final users = await ref.watch(UsersProviders.all.future);
 
-    await for (final orders in OrdersRepository.instance.watchAll(
+    final orders = await OrdersRepository.instance.fetchAll(
       organizationId,
       userId: userId,
       whereNotStatusIn: whereNotStatusIn,
-    )) {
-      yield orders.map((order) => _modelFrom(order, users: users)).toIList();
-    }
+    );
+    return orders.map((order) => _modelFrom(order, users: users)).toIList();
   });
 
   static Future<void> delete(MutationRef ref, String organizationId, OrderModel order) async {
@@ -44,6 +43,8 @@ abstract class OrdersProviders {
       }),
     );
     await OrdersRepository.instance.delete(organizationId, order.id);
+
+    _invalidate(ref);
   }
 
   /// ========== ADMIN
@@ -52,17 +53,15 @@ abstract class OrdersProviders {
     return CursorBloc(size: CoreUtils.tableSize);
   });
 
-  static final page = StreamProvider.family((ref, (String organiationId,) args) async* {
+  static final page = FutureProvider.family((ref, (String organiationId,) args) async {
     final (organizationId,) = args;
     final users = await ref.watch(UsersProviders.all.future);
     final cursor = ref.watch(pageCursor.select((value) => value.pageCursor));
 
-    final onPage = OrdersRepository.instance.watchPage(organizationId, cursor);
+    final page = await OrdersRepository.instance.fetchPage(organizationId, cursor);
 
-    await for (final page in onPage) {
-      ref.read(pageCursor.notifier).registerOffsets(page.ids, page: cursor.page);
-      yield page.map((e) => _modelFrom(e, users: users)).toList();
-    }
+    ref.read(pageCursor.notifier).registerOffsets(page.ids, page: cursor.page);
+    return page.map((e) => _modelFrom(e, users: users)).toList();
   });
 
   static final single = FutureProvider.autoDispose.family((
@@ -83,6 +82,14 @@ abstract class OrdersProviders {
     required OrderStatus status,
   }) async {
     await OrdersRepository.instance.update(organizationId, orderId, OrderUpdateDto(status: status));
+
+    _invalidate(ref);
+  }
+
+  static void _invalidate(MutationRef ref) {
+    ref.invalidate(all);
+    ref.invalidate(page);
+    ref.invalidate(single);
   }
 }
 

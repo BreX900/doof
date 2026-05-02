@@ -51,6 +51,9 @@ abstract class IngredientsProviders {
     );
     await IngredientsRepository.instance.upsert(organizationId, ingredient);
 
+    ref.invalidate(all);
+    ref.invalidate(pageCursor);
     ref.invalidate(page);
+    ref.invalidate(single);
   }
 }

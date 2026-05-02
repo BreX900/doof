@@ -28,16 +28,16 @@ final _stateProvider = FutureProvider.family((ref, String organizationId) {
   );
 });
 
-class CartScreen extends SourceConsumerStatefulWidget {
+class CartScreen extends ConsumerStatefulWidget {
   final String organizationId;
 
   const CartScreen({super.key, required this.organizationId});
 
   @override
-  SourceConsumerState<CartScreen> createState() => _CartScreenState();
+  ConsumerState<CartScreen> createState() => _CartScreenState();
 }
 
-class _CartScreenState extends SourceConsumerState<CartScreen> {
+class _CartScreenState extends ConsumerState<CartScreen> {
   FutureProvider<
     ({
       CartModel cart,
@@ -48,8 +48,16 @@ class _CartScreenState extends SourceConsumerState<CartScreen> {
   >
   get _provider => _stateProvider(widget.organizationId);
 
-  late final _removeItem = ref.mutation(
-    (ref, (String cartId, String itemId) args) => CartItemsProviders.remove(ref, args.$1, args.$2),
+  late final _mutation = MutationController(ref);
+
+  @override
+  void dispose() {
+    _mutation.dispose();
+    super.dispose();
+  }
+
+  void _removeItem(String cartId, String itemId) => _mutation(
+    (ref) async => await CartItemsProviders.remove(ref, cartId, itemId),
     onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
   );
 
@@ -75,7 +83,7 @@ class _CartScreenState extends SourceConsumerState<CartScreen> {
     required CartModel cart,
     required IList<CartItemModel> items,
   }) {
-    final isIdle = !ref.watchIsMutating([_removeItem]);
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
 
     final formats = AppFormats.of(context);
 
@@ -107,7 +115,7 @@ class _CartScreenState extends SourceConsumerState<CartScreen> {
           label: Text(product.category.title),
           subtitle: Text(formats.formatPrice(item.totalCost)),
           trailing: IconButton(
-            onPressed: isIdle ? () => _removeItem((cart.id, item.id)) : null,
+            onPressed: isIdle ? () => _removeItem(cart.id, item.id) : null,
             icon: const Icon(Icons.delete_outline),
           ),
           footers: [

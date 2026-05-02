@@ -26,7 +26,7 @@ final _stateProvider = FutureProvider.autoDispose.family((ref, (String organizai
   );
 });
 
-class CartCheckoutScreen extends SourceConsumerStatefulWidget {
+class CartCheckoutScreen extends ConsumerStatefulWidget {
   final String organizationId;
 
   CartCheckoutScreen({super.key, required this.organizationId});
@@ -34,10 +34,12 @@ class CartCheckoutScreen extends SourceConsumerStatefulWidget {
   late final stateProvider = _stateProvider((organizationId,));
 
   @override
-  SourceConsumerState<CartCheckoutScreen> createState() => _CartCheckoutScreenState();
+  ConsumerState<CartCheckoutScreen> createState() => _CartCheckoutScreenState();
 }
 
-class _CartCheckoutScreenState extends SourceConsumerState<CartCheckoutScreen> {
+class _CartCheckoutScreenState extends ConsumerState<CartCheckoutScreen> {
+  late final _mutation = MutationController(ref);
+
   final _placeFb = FormControlTyped(initialValue: '');
 
   late final _form = FormArray([_placeFb]);
@@ -45,21 +47,21 @@ class _CartCheckoutScreenState extends SourceConsumerState<CartCheckoutScreen> {
   @override
   void dispose() {
     _form.dispose();
+    _mutation.dispose();
     super.dispose();
   }
 
-  late final _checkout = ref.mutation((
-    ref,
-    ({CartModel cart, IList<CartItemModel> cartItems}) arg,
-  ) async {
-    await CartsProviders.sendOrder(
-      ref,
-      widget.organizationId,
-      cart: arg.cart,
-      items: arg.cartItems,
-      place: _placeFb.value,
-    );
-  }, onError: (_, error) => CoreUtils.showErrorSnackBar(context, error));
+  void _checkout(CartModel cart, IList<CartItemModel> cartItems) {
+    _mutation.call((ref) async {
+      await CartsProviders.sendOrder(
+        ref,
+        widget.organizationId,
+        cart: cart,
+        items: cartItems,
+        place: _placeFb.value,
+      );
+    }, onError: (error, _) => CoreUtils.showErrorSnackBar(context, error));
+  }
 
   Widget _buildBody({
     required User? user,
@@ -68,7 +70,7 @@ class _CartCheckoutScreenState extends SourceConsumerState<CartCheckoutScreen> {
   }) {
     final formats = AppFormats.of(context);
 
-    final isIdle = !ref.watchIsMutating([_checkout]);
+    final isIdle = ref.watch(_mutation.provider.isIdle);
     final total = cartItems.fold(Fixed.zero, (total, item) => total + item.totalCost);
 
     return Column(
@@ -103,7 +105,7 @@ class _CartCheckoutScreenState extends SourceConsumerState<CartCheckoutScreen> {
         const Spacer(),
         AppButtonBar(
           child: ElevatedButton(
-            onPressed: isIdle ? () => _checkout((cart: cart, cartItems: cartItems)) : null,
+            onPressed: isIdle ? () => _checkout(cart, cartItems) : null,
             child: const Text('PLACE ORDER'),
           ),
         ),

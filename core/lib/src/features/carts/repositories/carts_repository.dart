@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:core/src/apis/firebase/firebase_auth_extensions.dart';
 import 'package:core/src/apis/firebase/firestore.dart';
 import 'package:core/src/features/carts/dto/cart_dto.dart';
 import 'package:core/src/features/organizations/repositories/organizations_repository.dart';
@@ -8,13 +7,13 @@ import 'package:core/src/shared/instances.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mekart/mekart.dart';
-import 'package:rxdart/rxdart.dart';
 
 class CartsRepository {
   static CartsRepository get instance => CartsRepository._();
   static const String collection = 'carts';
 
   FirebaseAuth get _auth => Instances.auth;
+
   FirebaseFirestore get _firestore => Instances.firestore;
 
   CartsRepository._();
@@ -42,13 +41,12 @@ class CartsRepository {
     return snapshot.docs.oneOrNull?.data();
   }
 
-  Stream<IList<CartDto>> watchAll(String organizationId, {required String userId}) {
-    return _ref(organizationId)
-        .where(CartDtoFields.membersIds, arrayContains: userId)
-        .orderBy(CartDtoFields.title)
-        .snapshots()
-        .takeUntil(_auth.userLogged)
-        .map((event) => event.docs.map((e) => e.data()).toIList());
+  Future<IList<CartDto>> fetchAll(String organizationId, {required String userId}) async {
+    final snapshot = await _ref(
+      organizationId,
+    ).where(CartDtoFields.membersIds, arrayContains: userId).orderBy(CartDtoFields.title).get();
+
+    return snapshot.docs.map((e) => e.data()).toIList();
   }
 
   Future<String> create(
@@ -57,13 +55,15 @@ class CartsRepository {
     required String? title,
   }) async {
     final userId = _auth.currentUser!.uid;
-    final ref = await _ref(organizationId).add(CartDto(
-      id: '',
-      ownerId: userId,
-      membersIds: IList([userId]),
-      isPublic: isPublic,
-      title: title,
-    ));
+    final ref = await _ref(organizationId).add(
+      CartDto(
+        id: '',
+        ownerId: userId,
+        membersIds: IList([userId]),
+        isPublic: isPublic,
+        title: title,
+      ),
+    );
     return ref.id;
   }
 

@@ -37,7 +37,7 @@ final _stateProvider = FutureProvider.autoDispose.family((
   return (cart: cartState.requireValue, product: vls.product, cartItem: vls.cartItem);
 });
 
-class ProductScreen extends SourceConsumerStatefulWidget {
+class ProductScreen extends ConsumerStatefulWidget {
   final String organizationId;
   final Either<String, String> id;
 
@@ -48,12 +48,14 @@ class ProductScreen extends SourceConsumerStatefulWidget {
     : id = Either.right(itemId);
 
   @override
-  SourceConsumerState<ProductScreen> createState() => _ProductScreenState();
+  ConsumerState<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _ProductScreenState extends SourceConsumerState<ProductScreen> {
+class _ProductScreenState extends ConsumerState<ProductScreen> {
   FutureProvider<({CartModel cart, CartItemModel? cartItem, ProductModel product})> get _provider =>
       _stateProvider((widget.organizationId, widget.id));
+
+  late final _mutation = MutationController(ref);
 
   final _quantityFb = FormControlTyped<int>(
     initialValue: 1,
@@ -68,22 +70,6 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
 
   late final _form = FormArray([_quantityFb, _removableIngredientsFb, _addableIngredientsFb]);
 
-  late final _upsertProduct = ref.mutation(
-    (ref, ({String cartId, String productId}) args) async {
-      return await CartItemsProviders.upsert(
-        ref,
-        widget.organizationId,
-        args.cartId,
-        productId: args.productId,
-        quantity: _quantityFb.value,
-        ingredientsRemoved: _removableIngredientsFb.value,
-        ingredientsAdded: _addableIngredientsFb.value,
-      );
-    },
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, __) => Navigator.pop(context),
-  );
-
   @override
   void initState() {
     super.initState();
@@ -93,6 +79,7 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
   @override
   void dispose() {
     _form.dispose();
+    _mutation.dispose();
     super.dispose();
   }
 
@@ -106,6 +93,24 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
     _addableIngredientsFb.updateValue(cartItem.ingredientsAdded);
   }
 
+  void _upsertProduct(({String cartId, String productId}) args) => _mutation(
+    (ref) async {
+      return await CartItemsProviders.upsert(
+        ref,
+        widget.organizationId,
+        args.cartId,
+        productId: args.productId,
+        quantity: _quantityFb.value,
+        ingredientsRemoved: _removableIngredientsFb.value,
+        ingredientsAdded: _addableIngredientsFb.value,
+      );
+    },
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+    onSettled: (_, result) {
+      if (result != null) Navigator.pop(context);
+    },
+  );
+
   Widget _buildBody({
     required ProductModel product,
     required CartModel cart,
@@ -115,7 +120,7 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
-    final isIdle = !ref.watchIsMutating([_upsertProduct]);
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
     final upsertProduct = _form.handleSubmitWith(_upsertProduct);
 
     Widget buildQuantityField() {
@@ -202,12 +207,11 @@ class _ProductScreenState extends SourceConsumerState<ProductScreen> {
           child: AppButtonBar(
             child: Row(
               children: [
-                SourceBuilder(
+                Consumer(
                   builder: (context, ref, child) {
-                    final quantity = Fixed.fromInt(ref.watchSource(_quantityFb.source.value) ?? 0);
+                    final quantity = Fixed.fromInt(ref.watch(_quantityFb.provider.value) ?? 0);
                     final extras =
-                        ref.watchSource(_addableIngredientsFb.source.value)?.map((e) => e.price) ??
-                        [];
+                        ref.watch(_addableIngredientsFb.provider.value)?.map((e) => e.price) ?? [];
                     final total = (product.price + extras.sum) * quantity;
 
                     return Text(formats.formatPrice(total), style: textTheme.labelLarge);

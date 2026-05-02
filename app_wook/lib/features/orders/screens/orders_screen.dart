@@ -8,36 +8,49 @@ import 'package:mek_gasol/shared/navigation/routes/app_routes.dart';
 import 'package:mek_gasol/shared/widgets/riverpod_utils.dart';
 import 'package:mek_gasol/shared/widgets/sign_out_icon_button.dart';
 
-class OrdersScreen extends SourceConsumerStatefulWidget {
+class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
 
   @override
-  SourceConsumerState<OrdersScreen> createState() => _OrdersScreenState();
+  ConsumerState<OrdersScreen> createState() => _OrdersScreenState();
 }
 
-class _OrdersScreenState extends SourceConsumerState<OrdersScreen> {
-  StreamProvider<IList<OrderModel>> get _provider =>
+class _OrdersScreenState extends ConsumerState<OrdersScreen> {
+  FutureProvider<IList<OrderModel>> get _provider =>
       OrdersProviders.all((Env.organizationId, whereNotStatusIn: const []));
 
+  late final _mutation = MutationController(ref);
   final _removedOrderIds = <String>{};
 
-  late final _cancelOrder = ref.mutation(
-    (ref, OrderModel order) async {
-      final items = await ref.read(OrderItemsProviders.all((Env.organizationId, order.id)).future);
-      await CartItemsProviders.upsertFromOrder(ref, Env.organizationId, Env.cartId, items);
-      await OrdersProviders.delete(ref, Env.organizationId, order);
-    },
-    onStart: (OrderModel order) => _removedOrderIds.add(order.id),
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onFinish: (order, _, __) => _removedOrderIds.remove(order.id),
-  );
+  @override
+  void dispose() {
+    _mutation.dispose();
+    super.dispose();
+  }
 
-  late final _deleteOrder = ref.mutation(
-    (ref, OrderModel order) async => await OrdersProviders.delete(ref, Env.organizationId, order),
-    onStart: (OrderModel order) => _removedOrderIds.add(order.id),
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onFinish: (order, _, __) => _removedOrderIds.remove(order.id),
-  );
+  void _cancelOrder(OrderModel order) {
+    _removedOrderIds.add(order.id);
+    _mutation(
+      (ref) async {
+        final items = await ref.read(
+          OrderItemsProviders.all((Env.organizationId, order.id)).future,
+        );
+        await CartItemsProviders.upsertFromOrder(ref, Env.organizationId, Env.cartId, items);
+        await OrdersProviders.delete(ref, Env.organizationId, order);
+      },
+      onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
+      onSettled: (_, __) => _removedOrderIds.remove(order.id),
+    );
+  }
+
+  void _deleteOrder(OrderModel order) {
+    _removedOrderIds.add(order.id);
+    _mutation(
+      (ref) async => await OrdersProviders.delete(ref, Env.organizationId, order),
+      onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+      onSettled: (_, __) => _removedOrderIds.remove(order.id),
+    );
+  }
 
   Widget _buildBody(IList<OrderModel> orders) {
     if (orders.isEmpty) {
@@ -47,7 +60,7 @@ class _OrdersScreenState extends SourceConsumerState<OrdersScreen> {
       );
     }
 
-    final isMutating = ref.watchIsMutating([_deleteOrder]);
+    final isMutating = ref.watch(_mutation.provider.isMutating);
     final formats = AppFormats.of(context);
 
     return ListView.builder(

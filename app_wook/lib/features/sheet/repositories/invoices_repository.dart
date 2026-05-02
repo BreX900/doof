@@ -28,10 +28,8 @@ class InvoicesRepository {
     return snapshot.data();
   }
 
-  Stream<IList<InvoiceDto>> watchAll() {
-    return _ref()
-        .orderBy(InvoiceDtoFields.createdAt, descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((e) => e.data()).toIList());
+  Future<IList<InvoiceDto>> readAll() async {
+    final snapshot = await _ref().orderBy(InvoiceDtoFields.createdAt, descending: true).get();
+    return snapshot.docs.map((e) => e.data()).toIList();
   }
 }

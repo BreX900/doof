@@ -16,15 +16,23 @@ final _stateProvider = FutureProvider.autoDispose((ref) {
   return (userId: userId, cart: cartState.requireValue);
 });
 
-class CartScreen extends SourceConsumerStatefulWidget {
+class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
 
   @override
-  SourceConsumerState<CartScreen> createState() => _CartScreenState();
+  ConsumerState<CartScreen> createState() => _CartScreenState();
 }
 
-class _CartScreenState extends SourceConsumerState<CartScreen> {
+class _CartScreenState extends ConsumerState<CartScreen> {
   FutureProvider<({CartModel cart, String userId})> get _provider => _stateProvider;
+
+  late final _mutation = MutationController(ref);
+
+  @override
+  void dispose() {
+    _mutation.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -48,8 +56,8 @@ class _CartScreenState extends SourceConsumerState<CartScreen> {
     );
   }
 
-  late final _join = ref.mutation(
-    (ref, arg) async => await CartsProviders.join(ref, Env.organizationId, Env.cartId),
+  void _join() => _mutation(
+    (ref) async => await CartsProviders.join(ref, Env.organizationId, Env.cartId),
     onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
   );
 
@@ -67,11 +75,11 @@ class _CartScreenState extends SourceConsumerState<CartScreen> {
   }
 
   Widget _buildBody(CartModel cart) {
-    final isIdle = !ref.watchIsMutating([_join]);
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
 
     return Center(
       child: ElevatedButton(
-        onPressed: isIdle ? () => _join(null) : null,
+        onPressed: isIdle ? _join : null,
         child: Text('Join in to "${cart.title}" cart!'),
       ),
     );

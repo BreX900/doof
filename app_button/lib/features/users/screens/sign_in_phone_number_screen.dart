@@ -2,11 +2,12 @@ import 'package:app_button/shared/data/r.dart';
 import 'package:app_button/shared/navigation/routes.dart';
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mek/mek.dart';
 import 'package:reactive_phone_form_field/reactive_phone_form_field.dart';
 
-class SignInPhoneNumberScreen extends SourceConsumerStatefulWidget {
+class SignInPhoneNumberScreen extends ConsumerStatefulWidget {
   final String? organizationId;
   final String? verificationId;
   final bool shouldPop;
@@ -19,10 +20,12 @@ class SignInPhoneNumberScreen extends SourceConsumerStatefulWidget {
   });
 
   @override
-  SourceConsumerState<SignInPhoneNumberScreen> createState() => _SignInPhoneNumberScreenState();
+  ConsumerState<SignInPhoneNumberScreen> createState() => _SignInPhoneNumberScreenState();
 }
 
-class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumberScreen> {
+class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScreen> {
+  late final _mutation = MutationController(ref);
+
   final _phoneNumberFb = FormControlTypedOptional<PhoneNumber>(
     validators: [
       ValidatorsTyped.required(),
@@ -40,47 +43,51 @@ class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumbe
     validators: [ValidatorsTyped.required(), ValidatorsTyped.text(minLength: 6)],
   );
 
-  late final _signIn = ref.mutation(
-    (ref, None _) {
+  @override
+  void dispose() {
+    _sentCodeFb.dispose();
+    _mutation.dispose();
+    super.dispose();
+  }
+
+  void _signIn() => _mutation(
+    (ref) async {
       final phoneNumber = _phoneNumberFb.value!;
-      return UsersProviders.signInWithPhoneNumber(ref, phoneNumber.international);
+      await UsersProviders.signInWithPhoneNumber(ref, phoneNumber.international);
     },
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, verificationId) {
-      SignInPhoneNumberRoute(
-        organizationId: widget.organizationId,
-        verificationId: verificationId,
-        shouldPop: widget.shouldPop,
-      ).pushReplacement(context);
-    },
-  );
-  late final _confirmVerification = ref.mutation(
-    (ref, String verificationId) {
-      return UsersProviders.confirmPhoneNumberVerification(
-        ref,
-        verificationId,
-        organizationId: widget.organizationId,
-        code: _sentCodeFb.value,
-      );
-    },
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, __) {
-      final organizationId = widget.organizationId;
-      if (widget.shouldPop) {
-        Navigator.pop(context, true);
-      } else if (organizationId != null) {
-        ServicesRoute(organizationId).go(context);
-      } else {
-        const QrCodeRoute().go(context);
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+    onSettled: (_, result) {
+      if (result != null) {
+        SignInPhoneNumberRoute(
+          organizationId: widget.organizationId,
+          verificationId: result,
+          shouldPop: widget.shouldPop,
+        ).pushReplacement(context);
       }
     },
   );
 
-  @override
-  void dispose() {
-    _sentCodeFb.dispose();
-    super.dispose();
-  }
+  void _confirmVerification(String verificationId) => _mutation(
+    (ref) async => await UsersProviders.confirmPhoneNumberVerification(
+      ref,
+      verificationId,
+      organizationId: widget.organizationId,
+      code: _sentCodeFb.value,
+    ),
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+    onSettled: (_, result) {
+      if (result != null) {
+        final organizationId = widget.organizationId;
+        if (widget.shouldPop) {
+          Navigator.pop(context, true);
+        } else if (organizationId != null) {
+          ServicesRoute(organizationId).go(context);
+        } else {
+          const QrCodeRoute().go(context);
+        }
+      }
+    },
+  );
 
   Widget _buildContent({required Widget title, required Widget field, required Widget action}) {
     final theme = Theme.of(context);
@@ -115,8 +122,8 @@ class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumbe
     final verificationId = widget.verificationId;
     switch (verificationId) {
       case null:
-        final isIdle = !ref.watchIsMutating([_signIn]);
-        final signIn = _phoneNumberFb.handleSubmitWith(_signIn.run);
+        final isIdle = !ref.watch(_mutation.provider.isMutating);
+        final signIn = _phoneNumberFb.handleSubmit(_signIn);
 
         return _buildContent(
           title: const Text('Ultimo sforzo, conferma il tuo ordine tramite sms\n\nGrazie!'),
@@ -130,14 +137,13 @@ class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumbe
               hintText: 'numero',
             ),
           ),
-          action: OutlinedButton(
-            onPressed: isIdle ? () => signIn(none) : null,
-            child: const Text('SEND'),
-          ),
+          action: OutlinedButton(onPressed: isIdle ? signIn : null, child: const Text('SEND')),
         );
       default:
-        final isIdle = !ref.watchIsMutating([_confirmVerification]);
-        final confirmVerification = _sentCodeFb.handleSubmitWith(_confirmVerification.run);
+        final isIdle = !ref.watch(_mutation.provider.isMutating);
+        final confirmVerification = _sentCodeFb.handleSubmit(
+          () => _confirmVerification(verificationId),
+        );
 
         return _buildContent(
           title: const Text('Ultimo sforzo, conferma il tuo ordine tramite sms\n\nGrazie!'),
@@ -151,7 +157,7 @@ class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumbe
             ),
           ),
           action: OutlinedButton(
-            onPressed: isIdle ? () => confirmVerification(verificationId) : null,
+            onPressed: isIdle ? confirmVerification : null,
             child: const Text('CONFIRM'),
           ),
         );

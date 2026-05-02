@@ -88,7 +88,7 @@ final _screenProvider = FutureProvider.autoDispose.family((ref, _Args args) {
   );
 });
 
-class InvoiceScreen extends SourceConsumerStatefulWidget {
+class InvoiceScreen extends ConsumerStatefulWidget {
   final _Args _args;
 
   const InvoiceScreen.create({super.key}) : _args = const Either.left(null);
@@ -99,11 +99,13 @@ class InvoiceScreen extends SourceConsumerStatefulWidget {
     : _args = Either.left(orderId);
 
   @override
-  SourceConsumerState<InvoiceScreen> createState() => _InvoiceScreenState();
+  ConsumerState<InvoiceScreen> createState() => _InvoiceScreenState();
 }
 
-class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
+class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
   FutureProvider<_Data> get _provider => _screenProvider(widget._args);
+
+  late final _mutation = MutationController(ref);
 
   final _payerFb = FormControlTypedOptional<UserDto>(validators: [ValidatorsTyped.required()]);
   final _payedAmountControl = FormControlTypedOptional<Fixed>();
@@ -188,8 +190,8 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
     }
   }
 
-  late final _createInvoice = ref.mutation(
-    (ref, OrderModel? order) async {
+  void _createInvoice(OrderModel? order) => _mutation(
+    (ref) async {
       final isVaultUsed = _isVaultUsedControl.value;
       await InvoicesProviders.create(
         ref,
@@ -200,12 +202,12 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
         items: _itemsFb.controls.map((e) => MapEntry(e.userId, e.toValue())).toIMap(),
       );
     },
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, __) => Navigator.pop(context),
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+    onSuccess: (_) => Navigator.pop(context),
   );
 
-  late final _updateInvoice = ref.mutation(
-    (ref, InvoiceDto invoice) async {
+  void _updateInvoice(InvoiceDto invoice) => _mutation(
+    (ref) async {
       final isVaultUsed = _isVaultUsedControl.value;
       await InvoicesProviders.update(
         ref,
@@ -216,8 +218,8 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
         items: _itemsFb.controls.map((e) => MapEntry(e.userId, e.toValue())).toIMap(),
       );
     },
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, __) => Navigator.pop(context),
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+    onSuccess: (_) => Navigator.pop(context),
   );
 
   Future<void> _showItemUpsertDialog([_ItemFieldBloc? formControl]) async {
@@ -244,8 +246,8 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
     final formats = AppFormats.of(context);
     final ThemeData(:colorScheme) = Theme.of(context);
 
-    final itemsFb = ref.watchSource(_itemsFb.source.controlsTyped);
-    final itemsError = ref.watchSource(_itemsFb.source.error);
+    final itemsFb = ref.watch(_itemsFb.provider.controlsTyped);
+    final itemsError = ref.watch(_itemsFb.provider.error);
 
     final children = <Widget>[
       FieldPadding(
@@ -336,15 +338,15 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
     ];
 
     final vault = InvoicesUtils.calculateVault(invoices);
-    final vaultOutcomesControls = ref.watchSource(_vaultOutcomesControl.source.controlsTyped);
+    final vaultOutcomesControls = ref.watch(_vaultOutcomesControl.provider.controlsTyped);
 
-    final isVaultUsed = ref.watchSource(_isVaultUsedControl.source.value) ?? false;
-    final usedAmount = ref.watchSource(
-      _vaultOutcomesControl.source.value.select((entries) {
+    final isVaultUsed = ref.watch(_isVaultUsedControl.provider.value) ?? false;
+    final usedAmount = ref.watch(
+      _vaultOutcomesControl.provider.value.select((entries) {
         return entries?.values.nonNulls.cast<Fixed>().sum ?? Fixed.zero;
       }),
     );
-    final payedAmount = ref.watchSource(_payedAmountControl.source.value) ?? Fixed.zero;
+    final payedAmount = ref.watch(_payedAmountControl.provider.value) ?? Fixed.zero;
     final missingAmount = Fixed.max(payedAmount - usedAmount, Fixed.zero);
     final isVaultOutcomesValid = missingAmount == Fixed.zero;
 
@@ -367,7 +369,7 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
           ),
           if (isVaultUsed)
             ...vaultOutcomesControls.mapTo((userId, control) {
-              final hasValue = !ref.watchSource(control.source.value.isNull);
+              final hasValue = !ref.watch(control.provider.value.isNull);
               final user = users.firstWhereOrNull((e) => e.id == userId);
               final vaultAmount = vault[userId] ?? Fixed.zero;
 
@@ -408,7 +410,7 @@ class _InvoiceScreenState extends SourceConsumerState<InvoiceScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
     final data = state.value;
-    final isIdle = !ref.watchIsMutating([_createInvoice]);
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
     final createInvoice = _form.handleSubmitWith(_createInvoice);
     final updateInvoice = _form.handleSubmitWith(_updateInvoice);
 

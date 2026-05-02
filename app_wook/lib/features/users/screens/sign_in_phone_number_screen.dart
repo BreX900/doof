@@ -1,26 +1,35 @@
 import 'package:core/core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mek/mek.dart';
 import 'package:mek_gasol/core/env.dart';
 import 'package:mek_gasol/shared/navigation/routes/routes.dart';
 
-class SignInPhoneNumberScreen extends SourceConsumerStatefulWidget {
+class SignInPhoneNumberScreen extends ConsumerStatefulWidget {
   final String? verificationId;
 
   const SignInPhoneNumberScreen({super.key, this.verificationId});
 
   @override
-  SourceConsumerState<SignInPhoneNumberScreen> createState() => _SignInPhoneNumberScreenState();
+  ConsumerState<SignInPhoneNumberScreen> createState() => _SignInPhoneNumberScreenState();
 }
 
-class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumberScreen> {
+class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScreen> {
+  late final _mutation = MutationController(ref);
+
   final _phoneNumberFb = FormControlTyped(initialValue: '');
 
   String? get _verificationId => widget.verificationId;
 
   final _sentCodeFb = FormControlTyped(initialValue: '');
+
+  @override
+  void dispose() {
+    _mutation.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -29,29 +38,31 @@ class _SignInPhoneNumberScreenState extends SourceConsumerState<SignInPhoneNumbe
     _phoneNumberFb.updateValue('+39 346 811 4956');
   }
 
-  late final _signIn = ref.mutation(
-    (ref, None _) async => await UsersProviders.signInWithPhoneNumber(ref, _phoneNumberFb.value),
-    onError: (_, error) => CoreUtils.showErrorSnackBar(context, error),
-    onSuccess: (_, verificationId) {
-      final route = SignInPhoneNumberRoute(verificationId: verificationId);
-      context.pushReplacement(route.location, extra: route);
+  void _signIn() => _mutation(
+    (ref) async => await UsersProviders.signInWithPhoneNumber(ref, _phoneNumberFb.value),
+    onError: (error, _) => CoreUtils.showErrorSnackBar(context, error),
+    onSettled: (_, result) {
+      if (result != null) {
+        final route = SignInPhoneNumberRoute(verificationId: result);
+        context.pushReplacement(route.location, extra: route);
+      }
     },
   );
 
-  late final _confirmVerification = ref.mutation((ref, None _) async {
+  void _confirmVerification() => _mutation((ref) async {
     await UsersProviders.confirmPhoneNumberVerification(
       ref,
       _verificationId!,
       organizationId: Env.organizationId,
       code: _sentCodeFb.value,
     );
-  }, onError: (_, error) => CoreUtils.showErrorSnackBar(context, error));
+  }, onError: (error, _) => CoreUtils.showErrorSnackBar(context, error));
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = !ref.watchIsMutating([_signIn, _confirmVerification]);
-    final signIn = _phoneNumberFb.handleSubmit(() => _signIn(none));
-    final confirmVerification = _sentCodeFb.handleSubmit(() => _confirmVerification(none));
+    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final signIn = _phoneNumberFb.handleSubmit(_signIn);
+    final confirmVerification = _sentCodeFb.handleSubmit(_confirmVerification);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Phone Number')),
