@@ -122,7 +122,7 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
     final verificationId = widget.verificationId;
     switch (verificationId) {
       case null:
-        final isIdle = !ref.watch(_mutation.provider.isMutating);
+        final isIdle = !ref.watch(_mutation.provider.isPending);
         final signIn = _phoneNumberFb.handleSubmit(_signIn);
 
         return _buildContent(
@@ -140,7 +140,7 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
           action: OutlinedButton(onPressed: isIdle ? signIn : null, child: const Text('SEND')),
         );
       default:
-        final isIdle = !ref.watch(_mutation.provider.isMutating);
+        final isIdle = !ref.watch(_mutation.provider.isPending);
         final confirmVerification = _sentCodeFb.handleSubmit(
           () => _confirmVerification(verificationId),
         );

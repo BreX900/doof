@@ -20,9 +20,9 @@ abstract class OrdersProviders {
     (String organizationId, {List<OrderStatus> whereNotStatusIn}) args,
   ) async {
     final (organizationId, :whereNotStatusIn) = args;
-    final userId = await ref.watch(UsersProviders.currentId.future);
+    final userId = ref.watch(UsersProviders.currentId).requireValue;
     if (userId == null) throw MissingCredentialsFailure();
-    final users = await ref.watch(UsersProviders.all.future);
+    final users = ref.watch(UsersProviders.all).requireValue;
 
     final orders = await OrdersRepository.instance.fetchAll(
       organizationId,
@@ -108,9 +108,9 @@ abstract class OrderItemsProviders {
     (String organizationId, String orderId) args,
   ) async {
     final (organizationId, orderId) = args;
-    final users = await ref.watch(UsersProviders.all.future);
+    final users = ref.watch(UsersProviders.all).requireValue;
+    final products = ref.watch(ProductsProviders.all(organizationId)).requireValue;
     final items = await OrderItemsRepository.instance.fetchAll(orderId);
-    final products = await ref.watch(ProductsProviders.all(organizationId).future);
 
     return items.map((item) {
       return OrderItemModel(

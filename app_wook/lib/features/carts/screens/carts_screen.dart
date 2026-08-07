@@ -89,12 +89,12 @@ class _CartsBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isMutating = ref.watch(state._mutation.provider.isMutating);
+    final isMutating = ref.watch(state._mutation.provider.isPending);
 
     final tabController = DefaultTabController.of(context);
     final formats = AppFormats.of(context);
 
-    final tabIndex = ref.watch(tabController.asProvider.index);
+    final tabIndex = ref.watch(tabController.provider.index);
     final cartEntry = carts.entries.elementAt(tabIndex);
     final cart = cartEntry.key;
     final items = cartEntry.value;

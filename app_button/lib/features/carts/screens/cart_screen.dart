@@ -83,7 +83,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     required CartModel cart,
     required IList<CartItemModel> items,
   }) {
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
 
     final formats = AppFormats.of(context);
 

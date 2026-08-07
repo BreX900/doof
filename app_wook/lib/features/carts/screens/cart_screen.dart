@@ -75,7 +75,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _buildBody(CartModel cart) {
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
 
     return Center(
       child: ElevatedButton(

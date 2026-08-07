@@ -101,7 +101,7 @@ class _OrderCheckoutScreenState extends ConsumerState<OrderCheckoutScreen> {
     final state = ref.watch(_provider);
     final items = state.value;
 
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Conferma invio ordine')),

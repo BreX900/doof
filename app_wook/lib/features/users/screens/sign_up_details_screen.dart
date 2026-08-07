@@ -35,7 +35,7 @@ class _SignUpDetailsScreenState extends ConsumerState<SignUpDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
     final signUp = _displayNameFb.handleSubmit(_signUp);
 
     return Scaffold(

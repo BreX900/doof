@@ -30,9 +30,9 @@ abstract class ProductsProviders {
   });
 
   static final page = FutureProvider.family((ref, String organizationId) async {
-    final categories = await ref.watch(CategoriesProviders.all(organizationId).future);
-    final ingredients = await ref.watch(IngredientsProviders.all(organizationId).future);
-    final levels = await ref.watch(LevelsProviders.all((organizationId,)).future);
+    final categories = ref.watch(CategoriesProviders.all(organizationId)).requireValue;
+    final ingredients = ref.watch(IngredientsProviders.all(organizationId)).requireValue;
+    final levels = ref.watch(LevelsProviders.all((organizationId,))).requireValue;
     final cursor = ref.watch(pageCursor.select((state) => state.pageCursor));
 
     final page = await ProductsRepository.instance.fetchPage(organizationId, cursor);
@@ -48,9 +48,9 @@ abstract class ProductsProviders {
     (String organizationId, String productId) args,
   ) async {
     final (organizationId, productId) = args;
-    final categories = await ref.watch(CategoriesProviders.all(organizationId).future);
-    final ingredients = await ref.watch(IngredientsProviders.all(organizationId).future);
-    final levels = await ref.watch(LevelsProviders.all((organizationId,)).future);
+    final categories = ref.watch(CategoriesProviders.all(organizationId)).requireValue;
+    final ingredients = ref.watch(IngredientsProviders.all(organizationId)).requireValue;
+    final levels = ref.watch(LevelsProviders.all((organizationId,))).requireValue;
 
     final product = await ProductsRepository.instance.fetch(organizationId, productId);
 

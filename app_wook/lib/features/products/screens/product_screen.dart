@@ -170,7 +170,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
     final items = state.value;
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
 
     return Scaffold(
       appBar: AppBar(title: Text(state.value?.product.title ?? 'Product...')),

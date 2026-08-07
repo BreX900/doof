@@ -24,13 +24,11 @@ class CartsRepository {
       .collection(collection)
       .withJsonConverter(CartDto.fromJson);
 
-  Stream<CartDto> watch(String organizationId, String cartId) {
-    final ref = _ref(organizationId).doc(cartId);
-    return ref.snapshots().map((snapshot) {
-      final cart = snapshot.data();
-      if (cart == null) throw TargetNotFoundFailure(ref.path);
-      return cart;
-    });
+  Future<CartDto> read(String organizationId, String cartId) async {
+    final snapshot = await _ref(organizationId).doc(cartId).get();
+    final cart = snapshot.data();
+    if (cart == null) throw TargetNotFoundFailure(snapshot.reference.path);
+    return cart;
   }
 
   Future<CartDto?> fetchPersonal(String organizationId, {required String userId}) async {

@@ -120,7 +120,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
     final upsertProduct = _form.handleSubmitWith(_upsertProduct);
 
     Widget buildQuantityField() {

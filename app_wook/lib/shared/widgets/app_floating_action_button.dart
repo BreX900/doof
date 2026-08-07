@@ -18,7 +18,7 @@ class AppFloatingActionButton extends StatelessWidget {
     final colors = theme.colorScheme;
 
     return FloatingActionButton.extended(
-      backgroundColor: colors.secondary.withOpacity(onPressed != null ? 1.0 : 0.5),
+      backgroundColor: colors.secondary.withValues(alpha: onPressed != null ? 1.0 : 0.5),
       onPressed: onPressed,
       icon: icon,
       label: label,

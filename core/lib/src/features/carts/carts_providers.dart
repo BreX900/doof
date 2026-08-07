@@ -2,36 +2,32 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:core/core.dart';
-import 'package:core/src/utils/dart_utils.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mek/mek.dart';
 import 'package:mekart/mekart.dart';
 
 abstract class CartsProviders {
-  static final personal = FutureProvider.family((ref, String organizationId) async {
-    final userId = await ref.watch(UsersProviders.currentId.future);
+  static final personal = FutureProvider.family((ref, String organizationId) {
+    final userId = ref.watch(UsersProviders.currentId).requireValue;
     if (userId == null) return CartModel.local;
 
-    final carts = await ref.watch(all(organizationId).future);
+    final carts = ref.watch(all(organizationId)).requireValue;
     return carts.firstWhere((cart) => cart.isPersonal(userId));
   });
 
-  static final first = FutureProvider.family((
-    ref,
-    (String organizationId, String cartId) args,
-  ) async {
+  static final first = FutureProvider.family((ref, (String organizationId, String cartId) args) {
     final (organizationId, cartId) = args;
-    final carts = await ref.watch(all(organizationId).future);
+    final carts = ref.watch(all(organizationId)).requireValue;
     return carts.firstWhereId(cartId);
   });
 
-  static final all = FutureProvider.family((ref, String organizationId) async {
-    final user = await ref.watch(UsersProviders.current.future);
+  static final all = FutureProvider.family((ref, String organizationId) {
+    final user = ref.watch(UsersProviders.current).requireValue;
     if (user == null) return const IListConst([CartModel.local]);
 
-    final users = await ref.watch(UsersProviders.all.future);
-    final carts = await ref.watch(_all(organizationId).future);
+    final users = ref.watch(UsersProviders.all).requireValue;
+    final carts = ref.watch(_all(organizationId)).requireValue;
 
     var allCarts = carts.map((cart) {
       return CartModel(
@@ -59,22 +55,21 @@ abstract class CartsProviders {
     return allCarts.toIList();
   });
 
-  static final public = StreamProvider.family((
+  static final public = FutureProvider.family((
     ref,
     (String organizationId, String cartId) args,
-  ) async* {
+  ) async {
     final (organizationId, cartId) = args;
 
-    final users = await ref.watch(UsersProviders.all.future);
-    await for (final cart in CartsRepository.instance.watch(organizationId, cartId)) {
-      yield CartModel(
-        id: cart.id,
-        owner: users.firstWhereId(cart.ownerId),
-        members: users.whereIds(cart.membersIds).toIList(),
-        isPublic: cart.isPublic,
-        title: cart.title,
-      );
-    }
+    final users = ref.watch(UsersProviders.all).requireValue;
+    final cart = await CartsRepository.instance.read(organizationId, cartId);
+    return CartModel(
+      id: cart.id,
+      owner: users.firstWhereId(cart.ownerId),
+      members: users.whereIds(cart.membersIds).toIList(),
+      isPublic: cart.isPublic,
+      title: cart.title,
+    );
   });
 
   static Future<void> create(
@@ -145,7 +140,7 @@ abstract class CartsProviders {
   }
 
   static final _all = FutureProvider.family((ref, String organizationId) async {
-    final user = await ref.watch(UsersProviders.current.future);
+    final user = ref.watch(UsersProviders.current).requireValue;
     if (user == null) throw MissingCredentialsFailure();
     return await CartsRepository.instance.fetchAll(organizationId, userId: user.id);
   });
@@ -163,26 +158,23 @@ abstract class CartItemsProviders {
   static final first = FutureProvider.family((
     ref,
     (String organizationId, String cartId, String itemId) args,
-  ) async {
+  ) {
     final (organizationId, cartId, itemId) = args;
 
-    final products = await ref.watch(all((organizationId, cartId)).future);
+    final products = ref.watch(all((organizationId, cartId))).requireValue;
     return products.firstWhereId(itemId);
   });
 
-  static final all = FutureProvider.family((
-    ref,
-    (String organizationId, String cartId) args,
-  ) async {
+  static final all = FutureProvider.family((ref, (String organizationId, String cartId) args) {
     final (organizationId, cartId) = args;
 
-    final users = await ref.watch(UsersProviders.all.future);
-    final products = await ref.watch(ProductsProviders.all(organizationId).future);
-    final cartItems = await ref.watch(_all(cartId).future);
+    final users = ref.watch(UsersProviders.all).requireValue;
+    final products = ref.watch(ProductsProviders.all(organizationId)).requireValue;
+    final cartItems = ref.watch(_all(cartId)).requireValue;
 
-    return await FutureUtils.map(cartItems, (e) async {
-      final ingredients = await ref.watch(IngredientsProviders.all(organizationId).future);
-      final levels = await ref.watch(LevelsProviders.all((organizationId,)).future);
+    return cartItems.map((e) {
+      final ingredients = ref.watch(IngredientsProviders.all(organizationId)).requireValue;
+      final levels = ref.watch(LevelsProviders.all((organizationId,))).requireValue;
 
       return CartItemModel(
         id: e.id,
@@ -205,7 +197,7 @@ abstract class CartItemsProviders {
               .sortedBy((e) => e.key.title),
         ),
       );
-    });
+    }).toIList();
   });
 
   static Future<void> upsert(

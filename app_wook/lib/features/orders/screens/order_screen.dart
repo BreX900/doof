@@ -111,7 +111,7 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
     final formats = AppFormats.of(context);
     final selection = _selection;
 
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
 
     Widget? floatingActionButton;
     if (selection != null) {

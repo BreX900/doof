@@ -53,7 +53,7 @@ class _TicketCreateScreenState extends ConsumerState<TicketCreateScreen> {
     final textTheme = theme.textTheme;
     final colors = theme.colorScheme;
 
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
 
     return Column(
       children: [

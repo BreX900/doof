@@ -69,7 +69,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
     final signIn = _form.handleSubmit(_signIn);
     final sendPasswordResetEmail = _emailFb.handleSubmit(_sendPasswordResetEmail);
 

@@ -1,15 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:core/core.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mek/mek.dart';
 import 'package:mekart/mekart.dart';
 
 class OrdersRepository {
   static OrdersRepository get instance => OrdersRepository._();
   static const String collection = 'orders';
-
-  FirebaseAuth get _auth => Instances.auth;
 
   FirebaseFirestore get _firestore => Instances.firestore;
 

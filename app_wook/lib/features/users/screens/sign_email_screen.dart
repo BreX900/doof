@@ -42,7 +42,7 @@ class _SignEmailScreenState extends ConsumerState<SignEmailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
 
     return Scaffold(
       appBar: AppBar(

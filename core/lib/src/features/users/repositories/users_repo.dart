@@ -87,6 +87,11 @@ class UsersRepository {
         .map((snapshot) => snapshot.data());
   }
 
+  Future<UserDto?> read(String uid) async {
+    final snapshot = await _ref().doc(uid).get();
+    return snapshot.data();
+  }
+
   Future<IList<UserDto>> fetchAll() async {
     final snapshot = await _ref().get();
     return snapshot.docs.map((e) => e.data()).toIList();

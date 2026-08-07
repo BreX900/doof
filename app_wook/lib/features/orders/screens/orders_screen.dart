@@ -60,7 +60,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       );
     }
 
-    final isMutating = ref.watch(_mutation.provider.isMutating);
+    final isMutating = ref.watch(_mutation.provider.isPending);
     final formats = AppFormats.of(context);
 
     return ListView.builder(

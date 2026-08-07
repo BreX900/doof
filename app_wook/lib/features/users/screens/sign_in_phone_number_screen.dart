@@ -60,7 +60,7 @@ class _SignInPhoneNumberScreenState extends ConsumerState<SignInPhoneNumberScree
 
   @override
   Widget build(BuildContext context) {
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
     final signIn = _phoneNumberFb.handleSubmit(_signIn);
     final confirmVerification = _sentCodeFb.handleSubmit(_confirmVerification);
 

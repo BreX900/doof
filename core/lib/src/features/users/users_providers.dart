@@ -25,42 +25,45 @@ abstract class UsersProviders {
     return await UsersRepository.instance.fetchAll();
   });
 
-  static final current = FutureProvider<UserDto?>((ref) async {
-    final auth = await ref.watch(currentAuth.future);
+  static final current = FutureProvider<UserDto?>((ref) {
+    final auth = ref.watch(currentAuth).requireValue;
     if (auth == null) return null;
 
-    final user = await ref.watch(single(auth.uid).future);
+    final user = ref.watch(single(auth.uid)).requireValue;
     if (user == null) return null;
 
     return user;
   });
 
-  static final currentId = FutureProvider((ref) async {
-    final user = await ref.watch(current.future);
+  static final currentId = FutureProvider((ref) {
+    final user = ref.watch(current).requireValue;
     return user?.id;
   });
 
-  static final currentStatus = FutureProvider((ref) async {
-    final authUser = await ref.watch(currentAuth.future);
+  static final currentStatus = FutureProvider((ref) {
+    final authUser = ref.watch(currentAuth).requireValue;
     if (authUser == null) return SignStatus.none;
 
     if (CoreEnv.shouldVerifyEmail && !authUser.emailVerified) return SignStatus.unverified;
 
-    final user = await ref.watch(single(authUser.uid).future);
+    final user = ref.watch(single(authUser.uid)).requireValue;
     lg.info('DbUser: ${user?.id}');
     if (user == null) return SignStatus.partial;
 
     return SignStatus.full;
   });
 
-  static final currentAuth = StreamProvider((ref) {
-    return Instances.auth.userChanges();
+  static final currentAuth = StreamProvider((ref) async* {
+    if (Instances.auth.currentUser case final user?) yield user;
+    yield* Instances.auth.userChanges();
   });
 
   static final BehaviorSubject<SignStatus> signStatusController = BehaviorSubject<SignStatus>(
     onListen: () async {
       await signStatusController.addStream(
-        Instances.auth.userChanges().asyncExpand((authUser) async* {
+        Instances.auth.userChanges().startWith(Instances.auth.currentUser).asyncExpand((
+          authUser,
+        ) async* {
           if (authUser == null) {
             yield SignStatus.none;
             return;
@@ -82,8 +85,8 @@ abstract class UsersProviders {
     },
   );
 
-  static final single = StreamProvider.family((ref, String userId) {
-    return UsersRepository.instance.watch(userId);
+  static final single = FutureProvider.family((ref, String userId) async {
+    return await UsersRepository.instance.read(userId);
   });
 
   static Future<void> signIn(

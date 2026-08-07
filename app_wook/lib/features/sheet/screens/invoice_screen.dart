@@ -410,7 +410,7 @@ class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
     final data = state.value;
-    final isIdle = !ref.watch(_mutation.provider.isMutating);
+    final isIdle = !ref.watch(_mutation.provider.isPending);
     final createInvoice = _form.handleSubmitWith(_createInvoice);
     final updateInvoice = _form.handleSubmitWith(_updateInvoice);
 

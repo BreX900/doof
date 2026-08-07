@@ -4,14 +4,11 @@ import 'package:core/src/features/carts/dto/cart_dto.dart';
 import 'package:core/src/features/carts/repositories/carts_repository.dart';
 import 'package:core/src/shared/instances.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mekart/mekart.dart';
 
 class CartItemsRepository {
   static CartItemsRepository get instance => CartItemsRepository._();
   static const String collection = 'products';
-
-  FirebaseAuth get _auth => Instances.auth;
 
   FirebaseFirestore get _firestore => Instances.firestore;
 
